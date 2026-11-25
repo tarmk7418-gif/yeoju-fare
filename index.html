@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, viewport-fit=cover" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="여주 요금표" />
+  <meta name="mobile-web-app-capable" content="yes" />
+  <meta name="theme-color" content="#1e3a8a" />
+  <title>여주시 기준 길찾기 요금표 생성기</title>
+
+  <!-- PWA 동적 아이콘 및 매니페스트 (스크립트에서 자동 주입) -->
+  <link id="apple-touch-icon" rel="apple-touch-icon" href="" />
+  <link id="pwa-manifest" rel="manifest" href="" />
+
+  <!-- 폴백 지도용 Leaflet CSS/JS (카카오 키 미입력 시 자동 동작) -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin="" />
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin=""></script>
+
+  <style>
+    :root {
+      --primary: #1d4ed8;
+      --primary-dark: #1e3a8a;
+      --primary-light: #eff6ff;
+      --kakao-yellow: #fee500;
+      --kakao-brown: #191919;
+      --success: #059669;
+      --success-bg: #ecfdf5;
+      --danger: #dc2626;
+      --danger-bg: #fef2f2;
+      --warning: #d97706;
+      --warning-bg: #fffbeb;
+      --bg: #f1f5f9;
+      --card: #ffffff;
+      --text: #0f172a;
+      --text-muted: #475569;
+      --border: #cbd5e1;
+      --radius: 12px;
+      --shadow: 0 2px 10px rgba(15, 23, 42, 0.06);
+    }
+
+    * {
+      box-sizing: border-box;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    body {
+      margin: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo", "Pretendard", "Malgun Gothic", sans-serif;
+      background-color: var(--bg);
+      color: var(--text);
+      line-height: 1.5;
+      padding-top: env(safe-area-inset-top);
+      padding-bottom: calc(24px + env(safe-area-inset-bottom));
+    }
+
+    /* 상단 헤더 */
+    header {
+      background: linear-gradient(135deg, var(--primary-dark), var(--primary));
+      color: #fff;
+      padding: 16px 20px;
+      position: sticky;
+      top: 0;
+      z-index: 1000;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+    }
+
+    .header-inner {
+      max-width: 1320px;
+      margin: 0 auto;
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+    }
+
+    .header-title h1 {
+      margin: 0;
+      font-size: 1.2rem;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+    }
+
+    .header-title p {
+      margin: 2px 0 0;
+      font-size: 0.8rem;
+      opacity: 0.9;
+    }
+
+    .header-actions {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .badge-status {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 5px 10px;
+      border-radius: 999px;
+      font-size: 0.78rem;
+      font-weight: 600;
+      background: rgba(255, 255, 255, 0.18);
+      color: #fff;
+    }
+
+    .badge-status.connected {
+      background: #10b981;
+      color: #fff;
+    }
+
+    .dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: #fbbf24;
+    }
+
+    .badge-status.connected .dot {
+      background: #fff;
+    }
+
+    /* 메인 컨테이너 */
+    .container {
+      max-width: 1320px;
+      margin: 16px auto;
+      padding: 0 14px;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    .card {
+      background: var(--card);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      border: 1px solid #e2e8f0;
+      padding: 16px;
+    }
+
+    .card-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 12px;
+      padding-bottom: 8px;
+      border-bottom: 1px solid #f1f5f9;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .card-title {
+      font-size: 1rem;
+      font-weight: 700;
+      color: var(--text);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      margin: 0;
+    }
+
+    /* 버튼 스타일 */
+    button {
+      font-family: inherit;
+      cursor: pointer;
+      border: none;
+      border-radius: 8px;
+      font-weight: 600;
+      font-size: 0.88rem;
+      padding: 9px 14px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 5px;
+      transition: background 0.15s, transform 0.05s;
+    }
+
+    button:active {
+      transform: scale(0.98);
+    }
+
+    .btn-primary {
+      background: var(--primary);
+      color: #fff;
+    }
+    .btn-primary:hover { background: var(--primary-dark); }
+
+    .btn-kakao {
+      background: var(--kakao-yellow);
+      color: var(--kakao-brown);
+    }
+    .btn-kakao:hover { background: #f5dc00; }
+
+    .btn-success {
+      background: var(--success);
+      color: #fff;
+    }
+    .btn-success:hover { background: #047857; }
+
+    .btn-outline {
+      background: #fff;
+      color: var(--text);
+      border: 1px solid var(--border);
+    }
+    .btn-outline:hover { background: #f8fafc; }
+
+    .btn-outline.active {
+      background: var(--primary-light);
+      border-color: var(--primary);
+      color: var(--primary);
+    }
+
+    .btn-danger-outline {
+      background: #fff;
+      color: var(--danger);
+      border: 1px solid #fecaca;
+    }
+    .btn-danger-outline:hover { background: var(--danger-bg); }
+
+    .btn-sm {
+      padding: 6px 10px;
+      font-size: 0.8rem;
+    }
+
+    /* 입력 폼 */
+    label {
+      display: block;
+      font-size: 0.8rem;
+      font-weight: 600;
+      color: var(--text-muted);
+      margin-bottom: 4px;
+    }
+
+    input[type="text"],
+    input[type="password"],
+    input[type="number"],
+    select {
+      width: 100%;
+      padding: 9px 12px;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      font-size: 16px; /* iOS Safari 자동 확대 방지 */
+      color: var(--text);
+      background: #fff;
+      outline: none;
+    }
+
+    input:focus, select:focus {
+      border-color: var(--primary);
+      box-shadow: 0 0 0 3px rgba(29, 78, 216, 0.12);
+    }
+
+    /* API 설정 바 */
+    .api-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr auto;
+      gap: 10px;
+      align-items: end;
+    }
+
+    .api-help {
+      margin-top: 8px;
+      font-size: 0.8rem;
+      color: var(--text-muted);
+      background: #f8fafc;
+      padding: 8px 12px;
+      border-radius: 8px;
+      border: 1px solid #e2e8f0;
+    }
+
+    /* 메인 작업 영역 2단 그리드 */
+    .workspace-grid {
+      display: grid;
+      grid-template-columns: 1.05fr 0.95fr;
+      gap: 16px;
+      align-items: start;
+    }
+
+    .left-col, .right-col {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    /* 경로 입력 박스 */
+    .route-box {
+      background: #f8fafc;
+      border: 1px solid #e2e8f0;
+      border-radius: 10px;
+      padding: 12px;
+      margin-bottom: 12px;
+    }
+
+    .route-box-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 8px;
+      gap: 6px;
+      flex-wrap: wrap;
