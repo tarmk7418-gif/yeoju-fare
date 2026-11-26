@@ -74,7 +74,6 @@
     .point-badge.origin { background: #dbeafe; color: #1e40af; }
     .point-badge.waypoint { background: #fef3c7; color: #92400e; border: 1px solid #fcd34d; }
     .point-badge.dest { background: #fee2e2; color: #991b1b; }
-    .wp-add-bar { display: flex; align-items: center; justify-content: space-between; margin: 8px 0 10px; gap: 8px; }
     .input-wrap { position: relative; margin-top: 6px; }
     .input-row { display: grid; grid-template-columns: 1fr auto auto; gap: 5px; }
 
@@ -282,7 +281,7 @@
             </div>
             <div>
               <label for="cfg-base-dist">기본 포함 거리 (km)</label>
-              <input type="number" id="cfg-base-dist" value="1.0" step="0.1" min="0" onchange="APP.onSettingsChange()" />
+              <input type="number" id="cfg-base-dist" value="2.0" step="0.1" min="0" onchange="APP.onSettingsChange()" />
             </div>
             <div>
               <label for="cfg-rate-km">초과 거리당 요금 (원 / km)</label>
@@ -419,10 +418,10 @@
       KAKAO_REST_KEY: '8753d03a528d0664dfdaaca2a11ce75e',
       YEOJU_CENTER: { lat: 37.298344, lng: 127.637518 },
       MAX_WAYPOINTS: 5,
-      STORAGE_KEYS: { KEYS: 'yeoju_fare_kakao_keys_v2', SETTINGS: 'yeoju_fare_settings_v3', ROWS: 'yeoju_fare_rows_v1' },
+      STORAGE_KEYS: { KEYS: 'yeoju_fare_kakao_keys_v2', SETTINGS: 'yeoju_fare_settings_v4', ROWS: 'yeoju_fare_rows_v1' },
       DEFAULT_SETTINGS: {
         baseFare: 4000,
-        baseDistKm: 1.0,
+        baseDistKm: 2.0,
         ratePerKm: 1000,
         calcMode: 'floor1000',
         includeToll: true,
@@ -1402,7 +1401,7 @@
         this.currentRoute.tollFare = Math.max(0, Number(val) || 0);
         this.renderSummary();
       },
-      resetFareSettings() { localStorage.removeItem(CONFIG.STORAGE_KEYS.SETTINGS); this.loadSettings(); this.renderSummary(); UI.toast('요금 기준이 기본값으로 복원되었습니다.'); },
+      resetFareSettings() { localStorage.removeItem(CONFIG.STORAGE_KEYS.SETTINGS); this.loadSettings(); this.renderSummary(); UI.toast('요금 기준이 기본값(기본 포함 거리 2.0km)으로 복원되었습니다.'); },
 
       updateFormulaPreview() {
         const s = this.getSettings();
