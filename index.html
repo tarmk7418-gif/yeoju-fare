@@ -13,28 +13,20 @@
   <link id="pwa-manifest" rel="manifest" href="" />
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin="" />
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin=""></script>
-  <!-- 카카오내비 길안내 호출용 카카오 JS SDK -->
   <script src="https://t1.kakaocdn.net/kakao_js_sdk/2.7.4/kakao.min.js" crossorigin="anonymous"></script>
   <style>
     :root {
       --primary: #1d4ed8; --primary-dark: #1e3a8a; --primary-light: #eff6ff;
       --kakao-yellow: #fee500; --kakao-brown: #191919;
       --navi-bg: #1e293b; --navi-text: #fde047;
-      --wp-amber: #d97706; --wp-bg: #fffbeb; --wp-border: #fde68a;
+      --wp-bg: #fffbeb; --wp-border: #fde68a;
       --success: #059669; --danger: #dc2626; --danger-bg: #fef2f2;
       --bg: #f1f5f9; --card: #ffffff; --text: #0f172a; --text-muted: #475569;
       --border: #cbd5e1; --radius: 12px; --shadow: 0 2px 10px rgba(15, 23, 42, 0.06);
     }
     * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
-    body {
-      margin: 0; font-family: -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo", "Malgun Gothic", sans-serif;
-      background: var(--bg); color: var(--text); line-height: 1.5;
-      padding-top: env(safe-area-inset-top); padding-bottom: calc(24px + env(safe-area-inset-bottom));
-    }
-    header {
-      background: linear-gradient(135deg, var(--primary-dark), var(--primary)); color: #fff;
-      padding: 14px 18px; position: sticky; top: 0; z-index: 1000; box-shadow: 0 2px 8px rgba(0,0,0,0.15);
-    }
+    body { margin: 0; font-family: -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo", "Malgun Gothic", sans-serif; background: var(--bg); color: var(--text); line-height: 1.5; padding-top: env(safe-area-inset-top); padding-bottom: calc(24px + env(safe-area-inset-bottom)); }
+    header { background: linear-gradient(135deg, var(--primary-dark), var(--primary)); color: #fff; padding: 14px 18px; position: sticky; top: 0; z-index: 1000; box-shadow: 0 2px 8px rgba(0,0,0,0.15); }
     .header-inner { max-width: 1320px; margin: 0 auto; display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 10px; }
     .header-title h1 { margin: 0; font-size: 1.15rem; font-weight: 700; }
     .header-title p { margin: 2px 0 0; font-size: 0.78rem; opacity: 0.9; }
@@ -52,26 +44,20 @@
     .btn-primary { background: var(--primary); color: #fff; }
     .btn-kakao { background: var(--kakao-yellow); color: var(--kakao-brown); }
     .btn-navi { background: var(--navi-bg); color: var(--navi-text); }
-    .btn-navi:hover { background: #0f172a; }
     .btn-success { background: var(--success); color: #fff; }
     .btn-wp { background: #fef3c7; color: #92400e; border: 1px solid #fcd34d; }
-    .btn-wp:hover { background: #fde68a; }
     .btn-outline { background: #fff; color: var(--text); border: 1px solid var(--border); }
     .btn-outline.active { background: var(--primary-light); border-color: var(--primary); color: var(--primary); }
     .btn-danger-outline { background: #fff; color: var(--danger); border: 1px solid #fecaca; }
     .btn-sm { padding: 6px 10px; font-size: 0.78rem; }
     .btn-xs { padding: 4px 8px; font-size: 0.74rem; }
     label { display: block; font-size: 0.78rem; font-weight: 600; color: var(--text-muted); margin-bottom: 4px; }
-    input[type="text"], input[type="password"], input[type="number"], select {
-      width: 100%; padding: 9px 11px; border: 1px solid var(--border); border-radius: 8px; font-size: 16px; color: var(--text); background: #fff; outline: none;
-    }
+    input[type="text"], input[type="password"], input[type="number"], select { width: 100%; padding: 9px 11px; border: 1px solid var(--border); border-radius: 8px; font-size: 16px; color: var(--text); background: #fff; outline: none; }
     input:focus, select:focus { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(29,78,216,0.12); }
     .api-grid { display: grid; grid-template-columns: 1fr 1fr auto; gap: 10px; align-items: end; }
     .api-help { margin-top: 8px; font-size: 0.78rem; color: var(--text-muted); background: #f8fafc; padding: 8px 11px; border-radius: 8px; border: 1px solid #e2e8f0; }
     .workspace-grid { display: grid; grid-template-columns: 1.05fr 0.95fr; gap: 14px; align-items: start; }
     .left-col, .right-col { display: flex; flex-direction: column; gap: 14px; }
-
-    /* 출발/경유/도착 박스 */
     .route-box { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 10px; padding: 11px; margin-bottom: 10px; position: relative; }
     .route-box.waypoint-box { background: var(--wp-bg); border-color: var(--wp-border); }
     .route-box-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; gap: 6px; flex-wrap: wrap; }
@@ -81,19 +67,9 @@
     .point-badge.dest { background: #fee2e2; color: #991b1b; }
     .input-wrap { position: relative; margin-top: 6px; }
     .input-row { display: grid; grid-template-columns: 1fr auto auto; gap: 5px; }
-
-    /* 카카오맵 스타일 실시간 추천검색 드롭다운 */
-    .suggest-dropdown {
-      position: absolute; top: calc(100% + 4px); left: 0; right: 0;
-      background: #fff; border: 1.5px solid #3b82f6; border-radius: 10px;
-      box-shadow: 0 12px 28px rgba(15, 23, 42, 0.18);
-      max-height: 300px; overflow-y: auto; z-index: 1600; display: none;
-    }
+    .suggest-dropdown { position: absolute; top: calc(100% + 4px); left: 0; right: 0; background: #fff; border: 1.5px solid #3b82f6; border-radius: 10px; box-shadow: 0 12px 28px rgba(15, 23, 42, 0.18); max-height: 300px; overflow-y: auto; z-index: 1600; display: none; }
     .suggest-dropdown.open { display: block; }
-    .suggest-item {
-      padding: 10px 12px; border-bottom: 1px solid #f1f5f9; cursor: pointer;
-      display: flex; flex-direction: column; gap: 3px; transition: background 0.1s;
-    }
+    .suggest-item { padding: 10px 12px; border-bottom: 1px solid #f1f5f9; cursor: pointer; display: flex; flex-direction: column; gap: 3px; }
     .suggest-item:last-child { border-bottom: none; }
     .suggest-item:hover, .suggest-item.active { background: var(--primary-light); }
     .suggest-top { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
@@ -106,7 +82,6 @@
     .suggest-tag.road { background: #dbeafe; color: #1e40af; }
     .suggest-sub { font-size: 0.76rem; color: var(--text-muted); }
     .suggest-empty { padding: 14px; font-size: 0.8rem; color: var(--text-muted); text-align: center; }
-
     .addr-result-tag { margin-top: 8px; font-size: 0.78rem; padding: 7px 10px; border-radius: 6px; background: #fff; border: 1px solid #e2e8f0; }
     .addr-result-tag.error { background: var(--danger-bg); border-color: #fecaca; color: var(--danger); }
     .fare-settings-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; }
@@ -137,11 +112,7 @@
     .wp-cell { font-size: 0.8rem; color: #92400e; max-width: 180px; word-break: keep-all; }
     .note-input { padding: 5px 8px !important; font-size: 14px !important; min-width: 100px; }
     .empty-row { text-align: center; padding: 24px 12px; color: var(--text-muted); }
-    #toast {
-      position: fixed; bottom: calc(20px + env(safe-area-inset-bottom)); left: 50%; transform: translateX(-50%) translateY(80px);
-      background: #0f172a; color: #fff; padding: 10px 18px; border-radius: 999px; font-size: 0.84rem; font-weight: 600;
-      z-index: 9999; opacity: 0; transition: all 0.25s ease; box-shadow: 0 4px 14px rgba(0,0,0,0.25); max-width: 90vw; text-align: center;
-    }
+    #toast { position: fixed; bottom: calc(20px + env(safe-area-inset-bottom)); left: 50%; transform: translateX(-50%) translateY(80px); background: #0f172a; color: #fff; padding: 10px 18px; border-radius: 999px; font-size: 0.84rem; font-weight: 600; z-index: 9999; opacity: 0; transition: all 0.25s ease; box-shadow: 0 4px 14px rgba(0,0,0,0.25); max-width: 90vw; text-align: center; }
     #toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
     .modal-backdrop { position: fixed; inset: 0; background: rgba(15,23,42,0.55); display: none; align-items: center; justify-content: center; z-index: 5000; padding: 16px; }
     .modal-backdrop.open { display: flex; }
@@ -199,9 +170,7 @@
             <button type="button" class="btn-outline" onclick="APP.toggleKeyVisibility()">👁 보기</button>
           </div>
         </div>
-        <div class="api-help" id="api-status-msg">
-          카카오 JavaScript 키와 REST API 키가 코드에 기본 적용되어 있습니다.
-        </div>
+        <div class="api-help" id="api-status-msg">카카오 JavaScript 키와 REST API 키가 코드에 기본 적용되어 있습니다.</div>
       </div>
     </section>
 
@@ -216,26 +185,20 @@
             </div>
           </div>
 
-          <!-- 출발지 -->
           <div class="route-box">
             <div class="route-box-header">
               <span class="point-badge origin">출발지</span>
               <div style="display:flex; gap:6px;">
                 <button type="button" class="btn-outline btn-sm" onclick="APP.useCurrentLocation('origin')">📍 현위치</button>
-                <select id="preset-origin" style="width:auto; padding:5px 8px; font-size:14px;" onchange="APP.selectPreset('origin', this.value)">
-                  <option value="">여주시 거점 선택...</option>
-                </select>
+                <select id="preset-origin" style="width:auto; padding:5px 8px; font-size:14px;" onchange="APP.selectPreset('origin', this.value)"><option value="">여주시 거점 선택...</option></select>
               </div>
             </div>
             <div class="input-wrap">
               <div class="input-row">
-                <input type="text" id="input-origin" placeholder="건물명, 아파트, 상호, 도로명, 지번 입력"
-                  autocomplete="off"
-                  oninput="AUTOCOMPLETE.onInput('origin', this.value)"
-                  onfocus="AUTOCOMPLETE.onInput('origin', this.value)"
-                  onblur="AUTOCOMPLETE.scheduleClose('origin')"
-                  onkeydown="AUTOCOMPLETE.onKeyDown(event, 'origin')" />
-                <button type="button" class="btn-outline btn-sm" onclick="AUTOCOMPLETE.clearInput('origin')" title="입력 지우기">✕</button>
+                <input type="text" id="input-origin" placeholder="건물명, 아파트, 상호, 도로명, 지번 입력" autocomplete="off"
+                  oninput="AUTOCOMPLETE.onInput('origin', this.value)" onfocus="AUTOCOMPLETE.onInput('origin', this.value)"
+                  onblur="AUTOCOMPLETE.scheduleClose('origin')" onkeydown="AUTOCOMPLETE.onKeyDown(event, 'origin')" />
+                <button type="button" class="btn-outline btn-sm" onclick="AUTOCOMPLETE.clearInput('origin')">✕</button>
                 <button type="button" class="btn-primary" onclick="APP.searchPoint('origin')">검색</button>
               </div>
               <div id="suggest-origin" class="suggest-dropdown"></div>
@@ -243,29 +206,22 @@
             <div id="origin-status" class="addr-result-tag">현재 선택: <strong>여주시청</strong></div>
           </div>
 
-          <!-- 동적 경유지 목록 -->
           <div id="waypoints-container"></div>
 
-          <!-- 도착지 -->
           <div class="route-box" style="margin-bottom:0;">
             <div class="route-box-header">
               <span class="point-badge dest">도착지</span>
               <div style="display:flex; gap:6px;">
                 <button type="button" class="btn-outline btn-sm" onclick="APP.useCurrentLocation('dest')">📍 현위치</button>
-                <select id="preset-dest" style="width:auto; padding:5px 8px; font-size:14px;" onchange="APP.selectPreset('dest', this.value)">
-                  <option value="">여주시 거점 선택...</option>
-                </select>
+                <select id="preset-dest" style="width:auto; padding:5px 8px; font-size:14px;" onchange="APP.selectPreset('dest', this.value)"><option value="">여주시 거점 선택...</option></select>
               </div>
             </div>
             <div class="input-wrap">
               <div class="input-row">
-                <input type="text" id="input-dest" placeholder="건물명, 아파트, 상호, 도로명, 지번 입력"
-                  autocomplete="off"
-                  oninput="AUTOCOMPLETE.onInput('dest', this.value)"
-                  onfocus="AUTOCOMPLETE.onInput('dest', this.value)"
-                  onblur="AUTOCOMPLETE.scheduleClose('dest')"
-                  onkeydown="AUTOCOMPLETE.onKeyDown(event, 'dest')" />
-                <button type="button" class="btn-outline btn-sm" onclick="AUTOCOMPLETE.clearInput('dest')" title="입력 지우기">✕</button>
+                <input type="text" id="input-dest" placeholder="건물명, 아파트, 상호, 도로명, 지번 입력" autocomplete="off"
+                  oninput="AUTOCOMPLETE.onInput('dest', this.value)" onfocus="AUTOCOMPLETE.onInput('dest', this.value)"
+                  onblur="AUTOCOMPLETE.scheduleClose('dest')" onkeydown="AUTOCOMPLETE.onKeyDown(event, 'dest')" />
+                <button type="button" class="btn-outline btn-sm" onclick="AUTOCOMPLETE.clearInput('dest')">✕</button>
                 <button type="button" class="btn-primary" onclick="APP.searchPoint('dest')">검색</button>
               </div>
               <div id="suggest-dest" class="suggest-dropdown"></div>
@@ -280,18 +236,9 @@
             <button type="button" class="btn-outline btn-sm" onclick="APP.resetFareSettings()">기본값 복원</button>
           </div>
           <div class="fare-settings-grid">
-            <div>
-              <label for="cfg-base-fare">기본요금 (원)</label>
-              <input type="number" id="cfg-base-fare" value="4000" step="100" min="0" onchange="APP.onSettingsChange()" />
-            </div>
-            <div>
-              <label for="cfg-base-dist">기본 포함 거리 (km)</label>
-              <input type="number" id="cfg-base-dist" value="2.0" step="0.1" min="0" onchange="APP.onSettingsChange()" />
-            </div>
-            <div>
-              <label for="cfg-rate-km">초과 거리당 요금 (원 / km)</label>
-              <input type="number" id="cfg-rate-km" value="1000" step="100" min="0" onchange="APP.onSettingsChange()" />
-            </div>
+            <div><label for="cfg-base-fare">기본요금 (원)</label><input type="number" id="cfg-base-fare" value="4000" step="100" min="0" onchange="APP.onSettingsChange()" /></div>
+            <div><label for="cfg-base-dist">기본 포함 거리 (km)</label><input type="number" id="cfg-base-dist" value="2.0" step="0.1" min="0" onchange="APP.onSettingsChange()" /></div>
+            <div><label for="cfg-rate-km">초과 거리당 요금 (원 / km)</label><input type="number" id="cfg-rate-km" value="1000" step="100" min="0" onchange="APP.onSettingsChange()" /></div>
             <div>
               <label for="cfg-calc-mode">초과 거리요금 계산 방식</label>
               <select id="cfg-calc-mode" onchange="APP.onSettingsChange()">
@@ -303,7 +250,6 @@
               </select>
             </div>
           </div>
-
           <div class="toll-box">
             <div style="display:flex; align-items:center; gap:8px;">
               <input type="checkbox" id="cfg-include-toll" checked style="width:18px; height:18px;" onchange="APP.onSettingsChange()" />
@@ -319,13 +265,9 @@
                   <option value="exact">실제 통행료 그대로 (예: 1,150원 → 1,150원)</option>
                 </select>
               </div>
-              <div>
-                <label for="cfg-manual-toll">통행료 직접입력(원)</label>
-                <input type="number" id="cfg-manual-toll" value="0" step="100" min="0" placeholder="0" oninput="APP.onManualTollInput(this.value)" />
-              </div>
+              <div><label for="cfg-manual-toll">통행료 직접입력(원)</label><input type="number" id="cfg-manual-toll" value="0" step="100" min="0" placeholder="0" oninput="APP.onManualTollInput(this.value)" /></div>
             </div>
           </div>
-
           <div class="formula-preview" id="formula-preview"></div>
         </section>
       </div>
@@ -425,14 +367,7 @@
       YEOJU_CENTER: { lat: 37.298344, lng: 127.637518 },
       MAX_WAYPOINTS: 5,
       STORAGE_KEYS: { KEYS: 'yeoju_fare_kakao_keys_v2', SETTINGS: 'yeoju_fare_settings_v4', ROWS: 'yeoju_fare_rows_v1' },
-      DEFAULT_SETTINGS: {
-        baseFare: 4000,
-        baseDistKm: 2.0,
-        ratePerKm: 1000,
-        calcMode: 'floor1000',
-        includeToll: true,
-        tollCalcMode: 'ceil1000'
-      }
+      DEFAULT_SETTINGS: { baseFare: 4000, baseDistKm: 2.0, ratePerKm: 1000, calcMode: 'floor1000', includeToll: true, tollCalcMode: 'ceil1000' }
     };
 
     const YEOJU_PRESETS = [
@@ -456,9 +391,7 @@
     ];
 
     function calcStraightKm(lat, lng) {
-      const R = 6371;
-      const dLat = (lat - CONFIG.YEOJU_CENTER.lat) * Math.PI / 180;
-      const dLng = (lng - CONFIG.YEOJU_CENTER.lng) * Math.PI / 180;
+      const R = 6371, dLat = (lat - CONFIG.YEOJU_CENTER.lat) * Math.PI / 180, dLng = (lng - CONFIG.YEOJU_CENTER.lng) * Math.PI / 180;
       const a = Math.sin(dLat / 2) ** 2 + Math.cos(CONFIG.YEOJU_CENTER.lat * Math.PI / 180) * Math.cos(lat * Math.PI / 180) * Math.sin(dLng / 2) ** 2;
       return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
     }
@@ -488,12 +421,7 @@
           else if (mode === 'ceil100') appliedToll = Math.ceil(cleanRawToll / 100) * 100;
           else appliedToll = cleanRawToll;
         }
-
-        return {
-          totalKm, excessKm, baseFare, excessFare,
-          rawToll: cleanRawToll, appliedToll,
-          totalFare: baseFare + excessFare + appliedToll
-        };
+        return { totalKm, excessKm, baseFare, excessFare, rawToll: cleanRawToll, appliedToll, totalFare: baseFare + excessFare + appliedToll };
       }
     };
 
@@ -502,13 +430,9 @@
       initKakaoCoreSDK(jsKey) {
         if (!jsKey || !window.Kakao) return false;
         try {
-          if (!window.Kakao.isInitialized()) {
-            window.Kakao.init(jsKey);
-          }
+          if (!window.Kakao.isInitialized()) window.Kakao.init(jsKey);
           return window.Kakao.isInitialized();
-        } catch {
-          return false;
-        }
+        } catch { return false; }
       },
       loadSDK(jsKey) {
         this.initKakaoCoreSDK(jsKey);
@@ -525,20 +449,13 @@
           document.head.appendChild(s);
         });
       },
-
       async searchPlacesAndAddresses(rawQuery, restKey) {
         const query = rawQuery.trim();
         if (!query) return { items: [], isFallback: false };
-
-        const results = [];
-        const seen = new Set();
+        const results = [], seen = new Set();
         const pushItem = (item) => {
           const key = `${item.name}|${item.lat.toFixed(5)}|${item.lng.toFixed(5)}`;
-          if (!seen.has(key)) {
-            seen.add(key);
-            item.distFromYeoju = calcStraightKm(item.lat, item.lng);
-            results.push(item);
-          }
+          if (!seen.has(key)) { seen.add(key); item.distFromYeoju = calcStraightKm(item.lat, item.lng); results.push(item); }
         };
 
         if (restKey) {
@@ -547,112 +464,54 @@
             fetch(`https://dapi.kakao.com/v2/local/search/keyword.json?query=${encodeURIComponent(query)}&x=${CONFIG.YEOJU_CENTER.lng}&y=${CONFIG.YEOJU_CENTER.lat}&sort=accuracy&size=12`, { headers }),
             fetch(`https://dapi.kakao.com/v2/local/search/address.json?query=${encodeURIComponent(query)}&size=5`, { headers })
           ]);
-
           if (kwRes.status === 'fulfilled' && kwRes.value.ok) {
             const kwData = await kwRes.value.json();
             (kwData.documents || []).forEach(d => {
               const cat = d.category_name ? d.category_name.split('>').pop().trim() : (d.category_group_name || '건물/장소');
-              pushItem({
-                name: d.place_name,
-                roadAddr: d.road_address_name || '-',
-                jibunAddr: d.address_name || '-',
-                lat: parseFloat(d.y),
-                lng: parseFloat(d.x),
-                badge: cat,
-                badgeType: 'poi',
-                source: '카카오 장소/건물'
-              });
+              pushItem({ name: d.place_name, roadAddr: d.road_address_name || '-', jibunAddr: d.address_name || '-', lat: parseFloat(d.y), lng: parseFloat(d.x), badge: cat, badgeType: 'poi', source: '카카오 장소/건물' });
             });
           }
-
           if (addrRes.status === 'fulfilled' && addrRes.value.ok) {
             const addrData = await addrRes.value.json();
             (addrData.documents || []).forEach(d => {
               const roadAddr = d.road_address ? d.road_address.address_name : '-';
               const jibunAddr = d.address ? d.address.address_name : '-';
               const bName = d.road_address?.building_name || '';
-              pushItem({
-                name: bName ? `${bName} (${roadAddr !== '-' ? roadAddr : jibunAddr})` : (roadAddr !== '-' ? roadAddr : jibunAddr),
-                roadAddr,
-                jibunAddr,
-                lat: parseFloat(d.y),
-                lng: parseFloat(d.x),
-                badge: roadAddr !== '-' ? '도로명' : '지번',
-                badgeType: 'road',
-                source: '카카오 주소'
-              });
+              pushItem({ name: bName ? `${bName} (${roadAddr !== '-' ? roadAddr : jibunAddr})` : (roadAddr !== '-' ? roadAddr : jibunAddr), roadAddr, jibunAddr, lat: parseFloat(d.y), lng: parseFloat(d.x), badge: roadAddr !== '-' ? '도로명' : '지번', badgeType: 'road', source: '카카오 주소' });
             });
           }
-
-          if (results.length > 0) {
-            return { items: results.slice(0, 15), isFallback: false };
-          }
+          if (results.length > 0) return { items: results.slice(0, 15), isFallback: false };
         }
 
         if (this.sdkLoaded && window.kakao?.maps?.services) {
           const ps = new window.kakao.maps.services.Places();
           const gc = new window.kakao.maps.services.Geocoder();
           const centerLatLng = new window.kakao.maps.LatLng(CONFIG.YEOJU_CENTER.lat, CONFIG.YEOJU_CENTER.lng);
-
           const [kwList, addrList] = await Promise.all([
-            new Promise(resolve => {
-              ps.keywordSearch(query, (data, status) => {
-                resolve(status === window.kakao.maps.services.Status.OK ? data : []);
-              }, { location: centerLatLng, sort: window.kakao.maps.services.SortBy.ACCURACY, size: 12 });
-            }),
-            new Promise(resolve => {
-              gc.addressSearch(query, (data, status) => {
-                resolve(status === window.kakao.maps.services.Status.OK ? data : []);
-              });
-            })
+            new Promise(resolve => ps.keywordSearch(query, (data, status) => resolve(status === window.kakao.maps.services.Status.OK ? data : []), { location: centerLatLng, sort: window.kakao.maps.services.SortBy.ACCURACY, size: 12 })),
+            new Promise(resolve => gc.addressSearch(query, (data, status) => resolve(status === window.kakao.maps.services.Status.OK ? data : [])))
           ]);
-
           kwList.forEach(d => {
             const cat = d.category_name ? d.category_name.split('>').pop().trim() : (d.category_group_name || '건물/장소');
-            pushItem({
-              name: d.place_name,
-              roadAddr: d.road_address_name || '-',
-              jibunAddr: d.address_name || '-',
-              lat: parseFloat(d.y),
-              lng: parseFloat(d.x),
-              badge: cat,
-              badgeType: 'poi',
-              source: '카카오 장소/건물'
-            });
+            pushItem({ name: d.place_name, roadAddr: d.road_address_name || '-', jibunAddr: d.address_name || '-', lat: parseFloat(d.y), lng: parseFloat(d.x), badge: cat, badgeType: 'poi', source: '카카오 장소/건물' });
           });
-
           addrList.forEach(d => {
             const roadAddr = d.road_address ? d.road_address.address_name : '-';
             const jibunAddr = d.address ? d.address.address_name : '-';
             const bName = d.road_address?.building_name || '';
-            pushItem({
-              name: bName ? `${bName} (${roadAddr !== '-' ? roadAddr : jibunAddr})` : (roadAddr !== '-' ? roadAddr : jibunAddr),
-              roadAddr,
-              jibunAddr,
-              lat: parseFloat(d.y),
-              lng: parseFloat(d.x),
-              badge: roadAddr !== '-' ? '도로명' : '지번',
-              badgeType: 'road',
-              source: '카카오 주소'
-            });
+            pushItem({ name: bName ? `${bName} (${roadAddr !== '-' ? roadAddr : jibunAddr})` : (roadAddr !== '-' ? roadAddr : jibunAddr), roadAddr, jibunAddr, lat: parseFloat(d.y), lng: parseFloat(d.x), badge: roadAddr !== '-' ? '도로명' : '지번', badgeType: 'road', source: '카카오 주소' });
           });
-
           return { items: results.slice(0, 15), isFallback: false };
         }
 
         const qLower = query.toLowerCase();
         YEOJU_PRESETS.forEach(p => {
           if (p.name.toLowerCase().includes(qLower) || p.roadAddr.includes(query) || p.jibunAddr.includes(query)) {
-            pushItem({
-              name: p.name, roadAddr: p.roadAddr, jibunAddr: p.jibunAddr,
-              lat: p.lat, lng: p.lng, badge: '여주거점', badgeType: 'road', source: '여주시 거점 프리셋'
-            });
+            pushItem({ name: p.name, roadAddr: p.roadAddr, jibunAddr: p.jibunAddr, lat: p.lat, lng: p.lng, badge: '여주거점', badgeType: 'road', source: '여주시 거점 프리셋' });
           }
         });
-
         return { items: results.slice(0, 10), isFallback: true };
       },
-
       async exactGeocode(rawQuery, restKey) {
         const query = rawQuery.trim();
         if (!query) throw new Error('건물명 또는 주소를 입력해 주세요.');
@@ -660,7 +519,6 @@
         if (items.length > 0) return items[0];
         throw new Error(`"${query}"에 대한 검색 결과가 없습니다. 다른 건물명이나 주소를 입력해 보세요.`);
       },
-
       async reverseGeocode(lat, lng, restKey) {
         if (restKey) {
           try {
@@ -672,10 +530,7 @@
                 const roadAddr = doc.road_address ? doc.road_address.address_name : '-';
                 const jibunAddr = doc.address ? doc.address.address_name : '-';
                 const bName = doc.road_address?.building_name || '';
-                return {
-                  name: bName ? `${bName} (${roadAddr})` : (roadAddr !== '-' ? roadAddr : jibunAddr),
-                  roadAddr, jibunAddr, lat, lng, source: '카카오 역지오코딩'
-                };
+                return { name: bName ? `${bName} (${roadAddr})` : (roadAddr !== '-' ? roadAddr : jibunAddr), roadAddr, jibunAddr, lat, lng, source: '카카오 역지오코딩' };
               }
             }
           } catch {}
@@ -688,10 +543,7 @@
                 const roadAddr = doc.road_address ? doc.road_address.address_name : '-';
                 const jibunAddr = doc.address ? doc.address.address_name : '-';
                 const bName = doc.road_address?.building_name || '';
-                resolve({
-                  name: bName ? `${bName} (${roadAddr})` : (roadAddr !== '-' ? roadAddr : jibunAddr),
-                  roadAddr, jibunAddr, lat, lng, source: '카카오 역지오코딩'
-                });
+                resolve({ name: bName ? `${bName} (${roadAddr})` : (roadAddr !== '-' ? roadAddr : jibunAddr), roadAddr, jibunAddr, lat, lng, source: '카카오 역지오코딩' });
               } else {
                 resolve({ name: `좌표 (${lat.toFixed(5)}, ${lng.toFixed(5)})`, roadAddr: '-', jibunAddr: '-', lat, lng, source: '지도 좌표 지정' });
               }
@@ -700,20 +552,13 @@
         }
         return { name: `좌표 (${lat.toFixed(5)}, ${lng.toFixed(5)})`, roadAddr: '-', jibunAddr: '-', lat, lng, source: '직접 좌표 지정' };
       },
-
       async getDrivingRoute(origin, waypoints, dest, restKey) {
         const activeWps = (waypoints || []).filter(w => w && typeof w.lat === 'number' && typeof w.lng === 'number');
-
         if (restKey) {
           try {
             let url = `https://apis-navi.kakaomobility.com/v1/directions?origin=${origin.lng},${origin.lat}&destination=${dest.lng},${dest.lat}&priority=RECOMMEND`;
-            if (activeWps.length > 0) {
-              const wpStr = activeWps.map(w => `${w.lng},${w.lat}`).join('|');
-              url += `&waypoints=${encodeURIComponent(wpStr)}`;
-            }
-            const res = await fetch(url, {
-              headers: { Authorization: `KakaoAK ${restKey}`, 'Content-Type': 'application/json' }
-            });
+            if (activeWps.length > 0) url += `&waypoints=${encodeURIComponent(activeWps.map(w => `${w.lng},${w.lat}`).join('|'))}`;
+            const res = await fetch(url, { headers: { Authorization: `KakaoAK ${restKey}`, 'Content-Type': 'application/json' } });
             if (res.ok) {
               const data = await res.json();
               const route = data.routes && data.routes[0];
@@ -723,275 +568,121 @@
                   const v = road.vertexes || [];
                   for (let i = 0; i < v.length; i += 2) pathCoords.push([v[i + 1], v[i]]);
                 }));
-                return {
-                  distanceMeters: route.summary.distance,
-                  durationSeconds: route.summary.duration,
-                  tollFare: route.summary.fare?.toll || 0,
-                  pathCoords,
-                  engine: activeWps.length ? `카카오모빌리티 (경유 ${activeWps.length}곳)` : '카카오모빌리티 실도로'
-                };
+                return { distanceMeters: route.summary.distance, durationSeconds: route.summary.duration, tollFare: route.summary.fare?.toll || 0, pathCoords, engine: activeWps.length ? `카카오모빌리티 (경유 ${activeWps.length}곳)` : '카카오모빌리티 실도로' };
               }
             }
           } catch {}
         }
-
         const allPoints = [origin, ...activeWps, dest];
-        const coordPath = allPoints.map(p => `${p.lng},${p.lat}`).join(';');
-        const osrmRes = await fetch(`https://router.project-osrm.org/route/v1/driving/${coordPath}?overview=full&geometries=geojson`);
+        const osrmRes = await fetch(`https://router.project-osrm.org/route/v1/driving/${allPoints.map(p => `${p.lng},${p.lat}`).join(';')}?overview=full&geometries=geojson`);
         if (!osrmRes.ok) throw new Error('경로 탐색 서버 응답 오류가 발생했습니다.');
         const osrmData = await osrmRes.json();
         const osrmRoute = osrmData.routes && osrmData.routes[0];
         if (!osrmRoute) throw new Error('지정한 지점 간 자동차 경로를 찾을 수 없습니다.');
-        return {
-          distanceMeters: Math.round(osrmRoute.distance),
-          durationSeconds: Math.round(osrmRoute.duration),
-          tollFare: 0,
-          pathCoords: (osrmRoute.geometry?.coordinates || []).map(c => [c[1], c[0]]),
-          engine: activeWps.length ? `OSRM 실도로 (경유 ${activeWps.length}곳)` : 'OSRM 실도로'
-        };
+        return { distanceMeters: Math.round(osrmRoute.distance), durationSeconds: Math.round(osrmRoute.duration), tollFare: 0, pathCoords: (osrmRoute.geometry?.coordinates || []).map(c => [c[1], c[0]]), engine: activeWps.length ? `OSRM 실도로 (경유 ${activeWps.length}곳)` : 'OSRM 실도로' };
       }
     };
 
     const AUTOCOMPLETE = {
-      timers: {},
-      closeTimers: {},
-      items: {},
-      activeIndex: {},
-      lastQuery: {},
-
+      timers: {}, closeTimers: {}, items: {}, activeIndex: {}, lastQuery: {},
       onInput(target, value) {
-        clearTimeout(this.closeTimers[target]);
-        clearTimeout(this.timers[target]);
-        const q = value.trim();
-        this.lastQuery[target] = q;
-        if (q.length < 1) {
-          this.hide(target);
-          return;
-        }
+        clearTimeout(this.closeTimers[target]); clearTimeout(this.timers[target]);
+        const q = value.trim(); this.lastQuery[target] = q;
+        if (q.length < 1) { this.hide(target); return; }
         this.timers[target] = setTimeout(async () => {
           const box = document.getElementById(`suggest-${target}`);
           if (!box) return;
-          box.innerHTML = '<div class="suggest-empty">카카오 장소·건물 검색 중...</div>';
-          box.classList.add('open');
+          box.innerHTML = '<div class="suggest-empty">카카오 장소·건물 검색 중...</div>'; box.classList.add('open');
           try {
             const { items } = await KAKAO_API.searchPlacesAndAddresses(q, APP.getKeys().restKey);
-            this.items[target] = items;
-            this.activeIndex[target] = -1;
-            this.render(target, items, q);
-          } catch {
-            this.hide(target);
-          }
+            this.items[target] = items; this.activeIndex[target] = -1; this.render(target, items, q);
+          } catch { this.hide(target); }
         }, 200);
       },
-
       highlightMatch(text, query) {
-        const safeText = UI.escapeHtml(text);
-        const safeQuery = query.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-        if (!safeQuery) return safeText;
-        return safeText.replace(new RegExp(`(${safeQuery})`, 'gi'), '<mark>$1</mark>');
+        const safeText = UI.escapeHtml(text), safeQuery = query.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+        return safeQuery ? safeText.replace(new RegExp(`(${safeQuery})`, 'gi'), '<mark>$1</mark>') : safeText;
       },
-
       render(target, list, query) {
         const box = document.getElementById(`suggest-${target}`);
         if (!box) return;
-        if (!list.length) {
-          box.innerHTML = `<div class="suggest-empty">"${UI.escapeHtml(query)}" 검색 결과가 없습니다.</div>`;
-          box.classList.add('open');
-          return;
-        }
+        if (!list.length) { box.innerHTML = `<div class="suggest-empty">"${UI.escapeHtml(query)}" 검색 결과가 없습니다.</div>`; box.classList.add('open'); return; }
         box.innerHTML = list.map((item, idx) => {
           const subParts = [];
           if (item.roadAddr && item.roadAddr !== '-') subParts.push(`도로명: ${item.roadAddr}`);
           if (item.jibunAddr && item.jibunAddr !== '-') subParts.push(`지번: ${item.jibunAddr}`);
           const distStr = typeof item.distFromYeoju === 'number' ? `여주시청 ${item.distFromYeoju.toFixed(1)}km` : '';
-          return `
-            <div class="suggest-item ${idx === this.activeIndex[target] ? 'active' : ''}"
-                 onmousedown="event.preventDefault(); AUTOCOMPLETE.select('${target}', ${idx})">
-              <div class="suggest-top">
-                <span class="suggest-title">${this.highlightMatch(item.name, query)}</span>
-                <div class="suggest-meta">
-                  ${distStr ? `<span class="suggest-dist">${distStr}</span>` : ''}
-                  <span class="suggest-tag ${item.badgeType || ''}">${UI.escapeHtml(item.badge || '장소')}</span>
-                </div>
-              </div>
-              <div class="suggest-sub">${UI.escapeHtml(subParts.join(' | ') || '좌표 확인됨')}</div>
-            </div>
-          `;
+          return `<div class="suggest-item ${idx === this.activeIndex[target] ? 'active' : ''}" onmousedown="event.preventDefault(); AUTOCOMPLETE.select('${target}', ${idx})">
+            <div class="suggest-top"><span class="suggest-title">${this.highlightMatch(item.name, query)}</span><div class="suggest-meta">${distStr ? `<span class="suggest-dist">${distStr}</span>` : ''}<span class="suggest-tag ${item.badgeType || ''}">${UI.escapeHtml(item.badge || '장소')}</span></div></div>
+            <div class="suggest-sub">${UI.escapeHtml(subParts.join(' | ') || '좌표 확인됨')}</div></div>`;
         }).join('');
         box.classList.add('open');
       },
-
       select(target, idx) {
         const picked = (this.items[target] || [])[idx];
         if (!picked) return;
-        this.hide(target);
-        APP.applyPointData(target, picked);
-        const label = APP.getTargetLabel(target);
-        UI.toast(`${label}: ${picked.name}`);
+        this.hide(target); APP.applyPointData(target, picked); UI.toast(`${APP.getTargetLabel(target)}: ${picked.name}`);
       },
-
-      clearInput(target) {
-        const el = document.getElementById(`input-${target}`);
-        if (el) {
-          el.value = '';
-          el.focus();
-        }
-        this.hide(target);
-      },
-
+      clearInput(target) { const el = document.getElementById(`input-${target}`); if (el) { el.value = ''; el.focus(); } this.hide(target); },
       onKeyDown(e, target) {
-        const box = document.getElementById(`suggest-${target}`);
-        const list = this.items[target] || [];
-        if (!box || !box.classList.contains('open') || !list.length) {
-          if (e.key === 'Enter') APP.searchPoint(target);
-          return;
-        }
-        if (e.key === 'ArrowDown') {
-          e.preventDefault();
-          this.activeIndex[target] = (this.activeIndex[target] + 1) % list.length;
-          this.render(target, list, this.lastQuery[target] || '');
-        } else if (e.key === 'ArrowUp') {
-          e.preventDefault();
-          this.activeIndex[target] = (this.activeIndex[target] - 1 + list.length) % list.length;
-          this.render(target, list, this.lastQuery[target] || '');
-        } else if (e.key === 'Enter') {
-          e.preventDefault();
-          if (this.activeIndex[target] >= 0) {
-            this.select(target, this.activeIndex[target]);
-          } else {
-            this.hide(target);
-            APP.searchPoint(target);
-          }
-        } else if (e.key === 'Escape') {
-          this.hide(target);
-        }
+        const box = document.getElementById(`suggest-${target}`), list = this.items[target] || [];
+        if (!box || !box.classList.contains('open') || !list.length) { if (e.key === 'Enter') APP.searchPoint(target); return; }
+        if (e.key === 'ArrowDown') { e.preventDefault(); this.activeIndex[target] = (this.activeIndex[target] + 1) % list.length; this.render(target, list, this.lastQuery[target] || ''); }
+        else if (e.key === 'ArrowUp') { e.preventDefault(); this.activeIndex[target] = (this.activeIndex[target] - 1 + list.length) % list.length; this.render(target, list, this.lastQuery[target] || ''); }
+        else if (e.key === 'Enter') { e.preventDefault(); if (this.activeIndex[target] >= 0) this.select(target, this.activeIndex[target]); else { this.hide(target); APP.searchPoint(target); } }
+        else if (e.key === 'Escape') this.hide(target);
       },
-
-      scheduleClose(target) {
-        this.closeTimers[target] = setTimeout(() => this.hide(target), 200);
-      },
-
-      hide(target) {
-        const box = document.getElementById(`suggest-${target}`);
-        if (box) box.classList.remove('open');
-      }
+      scheduleClose(target) { this.closeTimers[target] = setTimeout(() => this.hide(target), 200); },
+      hide(target) { const box = document.getElementById(`suggest-${target}`); if (box) box.classList.remove('open'); }
     };
 
     const MAP_CONTROLLER = {
-      mode: 'leaflet', pickMode: null,
-      leafletMap: null, lMarkers: [], lLine: null,
-      kakaoMap: null, kMarkers: [], kOverlays: [], kLine: null,
-
+      mode: 'leaflet', pickMode: null, leafletMap: null, lMarkers: [], lLine: null, kakaoMap: null, kMarkers: [], kOverlays: [], kLine: null,
       initLeaflet() {
         if (this.leafletMap) return;
         const c = YEOJU_PRESETS[0];
         this.leafletMap = L.map('leaflet-map').setView([c.lat, c.lng], 12);
         L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { attribution: '&copy; OpenStreetMap' }).addTo(this.leafletMap);
-        this.leafletMap.on('click', (e) => {
-          if (!this.pickMode) return;
-          const t = this.pickMode; this.setPickMode(null);
-          APP.setPointByCoord(t, e.latlng.lat, e.latlng.lng);
-        });
+        this.leafletMap.on('click', (e) => { if (!this.pickMode) return; const t = this.pickMode; this.setPickMode(null); APP.setPointByCoord(t, e.latlng.lat, e.latlng.lng); });
       },
-
       initKakao() {
         const c = YEOJU_PRESETS[0];
         this.kakaoMap = new window.kakao.maps.Map(document.getElementById('kakao-map'), { center: new window.kakao.maps.LatLng(c.lat, c.lng), level: 6 });
-        window.kakao.maps.event.addListener(this.kakaoMap, 'click', (e) => {
-          if (!this.pickMode) return;
-          const t = this.pickMode; this.setPickMode(null);
-          APP.setPointByCoord(t, e.latLng.getLat(), e.latLng.getLng());
-        });
+        window.kakao.maps.event.addListener(this.kakaoMap, 'click', (e) => { if (!this.pickMode) return; const t = this.pickMode; this.setPickMode(null); APP.setPointByCoord(t, e.latLng.getLat(), e.latLng.getLng()); });
       },
-
-      switchToKakao() {
-        document.getElementById('leaflet-map').style.display = 'none';
-        document.getElementById('kakao-map').style.display = 'block';
-        this.mode = 'kakao';
-        if (!this.kakaoMap) this.initKakao(); else this.kakaoMap.relayout();
-      },
-
-      switchToLeaflet() {
-        document.getElementById('kakao-map').style.display = 'none';
-        document.getElementById('leaflet-map').style.display = 'block';
-        this.mode = 'leaflet';
-        this.initLeaflet();
-        setTimeout(() => this.leafletMap.invalidateSize(), 100);
-      },
-
+      switchToKakao() { document.getElementById('leaflet-map').style.display = 'none'; document.getElementById('kakao-map').style.display = 'block'; this.mode = 'kakao'; if (!this.kakaoMap) this.initKakao(); else this.kakaoMap.relayout(); },
+      switchToLeaflet() { document.getElementById('kakao-map').style.display = 'none'; document.getElementById('leaflet-map').style.display = 'block'; this.mode = 'leaflet'; this.initLeaflet(); setTimeout(() => this.leafletMap.invalidateSize(), 100); },
       setPickMode(target) {
         this.pickMode = target;
         document.querySelectorAll('[id^="btn-pick-"]').forEach(btn => btn.classList.remove('active'));
-        if (target) {
-          const activeBtn = document.getElementById(`btn-pick-${target}`);
-          if (activeBtn) activeBtn.classList.add('active');
-          UI.toast(`지도에서 ${APP.getTargetLabel(target)} 위치를 클릭하세요.`);
-        }
+        if (target) { const activeBtn = document.getElementById(`btn-pick-${target}`); if (activeBtn) activeBtn.classList.add('active'); UI.toast(`지도에서 ${APP.getTargetLabel(target)} 위치를 클릭하세요.`); }
       },
-
       renderRoute(origin, waypoints, dest, pathCoords) {
         const activeWps = (waypoints || []).map((w, idx) => ({ ...w, wpIdx: idx })).filter(w => typeof w.lat === 'number' && typeof w.lng === 'number');
-        const allNodes = [
-          { target: 'origin', label: '출발', bg: '#1d4ed8', pt: origin },
-          ...activeWps.map((w, i) => ({ target: `wp-${w.wpIdx}`, label: `경유${i + 1}`, bg: '#d97706', pt: w })),
-          { target: 'dest', label: '도착', bg: '#dc2626', pt: dest }
-        ];
-
+        const allNodes = [{ target: 'origin', label: '출발', bg: '#1d4ed8', pt: origin }, ...activeWps.map((w, i) => ({ target: `wp-${w.wpIdx}`, label: `경유${i + 1}`, bg: '#d97706', pt: w })), { target: 'dest', label: '도착', bg: '#dc2626', pt: dest }];
         if (this.mode === 'kakao' && this.kakaoMap) {
-          this.kMarkers.forEach(m => m.setMap(null));
-          this.kOverlays.forEach(o => o.setMap(null));
-          if (this.kLine) this.kLine.setMap(null);
-          this.kMarkers = [];
-          this.kOverlays = [];
-
+          this.kMarkers.forEach(m => m.setMap(null)); this.kOverlays.forEach(o => o.setMap(null)); if (this.kLine) this.kLine.setMap(null);
+          this.kMarkers = []; this.kOverlays = [];
           allNodes.forEach(node => {
             const pos = new window.kakao.maps.LatLng(node.pt.lat, node.pt.lng);
             const marker = new window.kakao.maps.Marker({ map: this.kakaoMap, position: pos, draggable: true });
-            const overlay = new window.kakao.maps.CustomOverlay({
-              map: this.kakaoMap,
-              position: pos,
-              yAnchor: 2.35,
-              content: `<div style="background:${node.bg};color:#fff;font-weight:700;font-size:11px;padding:2px 7px;border-radius:999px;border:1.5px solid #fff;box-shadow:0 2px 5px rgba(0,0,0,0.28);white-space:nowrap;">${node.label}</div>`
-            });
-            window.kakao.maps.event.addListener(marker, 'dragend', () => {
-              const p = marker.getPosition();
-              APP.setPointByCoord(node.target, p.getLat(), p.getLng());
-            });
-            this.kMarkers.push(marker);
-            this.kOverlays.push(overlay);
+            const overlay = new window.kakao.maps.CustomOverlay({ map: this.kakaoMap, position: pos, yAnchor: 2.35, content: `<div style="background:${node.bg};color:#fff;font-weight:700;font-size:11px;padding:2px 7px;border-radius:999px;border:1.5px solid #fff;box-shadow:0 2px 5px rgba(0,0,0,0.28);white-space:nowrap;">${node.label}</div>` });
+            window.kakao.maps.event.addListener(marker, 'dragend', () => { const p = marker.getPosition(); APP.setPointByCoord(node.target, p.getLat(), p.getLng()); });
+            this.kMarkers.push(marker); this.kOverlays.push(overlay);
           });
-
-          const fallbackPts = allNodes.map(n => [n.pt.lat, n.pt.lng]);
-          const linePath = (pathCoords?.length ? pathCoords : fallbackPts).map(c => new window.kakao.maps.LatLng(c[0], c[1]));
+          const linePath = (pathCoords?.length ? pathCoords : allNodes.map(n => [n.pt.lat, n.pt.lng])).map(c => new window.kakao.maps.LatLng(c[0], c[1]));
           this.kLine = new window.kakao.maps.Polyline({ path: linePath, strokeWeight: 5, strokeColor: '#1d4ed8', strokeOpacity: 0.88, strokeStyle: 'solid' });
           this.kLine.setMap(this.kakaoMap);
-
-          const bounds = new window.kakao.maps.LatLngBounds();
-          linePath.forEach(pt => bounds.extend(pt));
-          this.kakaoMap.setBounds(bounds);
+          const bounds = new window.kakao.maps.LatLngBounds(); linePath.forEach(pt => bounds.extend(pt)); this.kakaoMap.setBounds(bounds);
         } else {
           this.initLeaflet();
-          this.lMarkers.forEach(m => this.leafletMap.removeLayer(m));
-          if (this.lLine) this.leafletMap.removeLayer(this.lLine);
-          this.lMarkers = [];
-
+          this.lMarkers.forEach(m => this.leafletMap.removeLayer(m)); if (this.lLine) this.leafletMap.removeLayer(this.lLine); this.lMarkers = [];
           allNodes.forEach(node => {
-            const icon = L.divIcon({
-              html: `<div style="background:${node.bg};color:#fff;font-weight:700;font-size:11px;padding:3px 7px;border-radius:999px;border:2px solid #fff;box-shadow:0 2px 6px rgba(0,0,0,0.3);white-space:nowrap;">${node.label}</div>`,
-              className: '',
-              iconAnchor: [20, 12]
-            });
-            const m = L.marker([node.pt.lat, node.pt.lng], { icon, draggable: true })
-              .addTo(this.leafletMap)
-              .on('dragend', e => {
-                const p = e.target.getLatLng();
-                APP.setPointByCoord(node.target, p.lat, p.lng);
-              });
+            const icon = L.divIcon({ html: `<div style="background:${node.bg};color:#fff;font-weight:700;font-size:11px;padding:3px 7px;border-radius:999px;border:2px solid #fff;box-shadow:0 2px 6px rgba(0,0,0,0.3);white-space:nowrap;">${node.label}</div>`, className: '', iconAnchor: [20, 12] });
+            const m = L.marker([node.pt.lat, node.pt.lng], { icon, draggable: true }).addTo(this.leafletMap).on('dragend', e => { const p = e.target.getLatLng(); APP.setPointByCoord(node.target, p.lat, p.lng); });
             this.lMarkers.push(m);
           });
-
-          const fallbackPts = allNodes.map(n => [n.pt.lat, n.pt.lng]);
-          const coords = pathCoords?.length ? pathCoords : fallbackPts;
+          const coords = pathCoords?.length ? pathCoords : allNodes.map(n => [n.pt.lat, n.pt.lng]);
           this.lLine = L.polyline(coords, { color: '#1d4ed8', weight: 5, opacity: 0.85 }).addTo(this.leafletMap);
           this.leafletMap.fitBounds(this.lLine.getBounds(), { padding: [35, 35] });
         }
@@ -1000,10 +691,7 @@
 
     const TABLE_MANAGER = {
       rows: [],
-      load() {
-        try { this.rows = JSON.parse(localStorage.getItem(CONFIG.STORAGE_KEYS.ROWS) || '[]'); } catch { this.rows = []; }
-        this.render();
-      },
+      load() { try { this.rows = JSON.parse(localStorage.getItem(CONFIG.STORAGE_KEYS.ROWS) || '[]'); } catch { this.rows = []; } this.render(); },
       save() { localStorage.setItem(CONFIG.STORAGE_KEYS.ROWS, JSON.stringify(this.rows)); },
       addRow(entry) { this.rows.push({ id: Date.now() + Math.random(), ...entry }); this.save(); this.render(); },
       deleteRow(id) { this.rows = this.rows.filter(r => r.id !== id); this.save(); this.render(); UI.toast('삭제되었습니다.'); },
@@ -1011,26 +699,16 @@
       recalculateAll() {
         if (!this.rows.length) return UI.toast('재계산할 내역이 없습니다.');
         const s = APP.getSettings();
-        this.rows = this.rows.map(r => {
-          const c = FARE_CALCULATOR.calculate(r.distanceMeters, r.rawTollFare || 0, s);
-          return { ...r, baseFare: c.baseFare, excessFare: c.excessFare, appliedToll: c.appliedToll, totalFare: c.totalFare };
-        });
+        this.rows = this.rows.map(r => { const c = FARE_CALCULATOR.calculate(r.distanceMeters, r.rawTollFare || 0, s); return { ...r, baseFare: c.baseFare, excessFare: c.excessFare, appliedToll: c.appliedToll, totalFare: c.totalFare }; });
         this.save(); this.render(); UI.toast('현재 기준으로 전체 재계산했습니다.');
       },
-      clearAll() {
-        if (!this.rows.length || !confirm('요금표 내역을 모두 삭제하시겠습니까?')) return;
-        this.rows = []; this.save(); this.render(); UI.toast('전체 삭제되었습니다.');
-      },
+      clearAll() { if (!this.rows.length || !confirm('요금표 내역을 모두 삭제하시겠습니까?')) return; this.rows = []; this.save(); this.render(); UI.toast('전체 삭제되었습니다.'); },
       render() {
         const tbody = document.getElementById('fare-table-body');
         document.getElementById('row-count').textContent = this.rows.length;
-        if (!this.rows.length) {
-          tbody.innerHTML = '<tr><td colspan="12" class="empty-row">아직 추가된 경로가 없습니다. 위에서 <strong>[요금표에 추가하기]</strong>를 눌러주세요.</td></tr>';
-          return;
-        }
+        if (!this.rows.length) { tbody.innerHTML = '<tr><td colspan="12" class="empty-row">아직 추가된 경로가 없습니다. 위에서 <strong>[요금표에 추가하기]</strong>를 눌러주세요.</td></tr>'; return; }
         tbody.innerHTML = this.rows.map((r, i) => {
-          const wps = r.waypoints || [];
-          const wpText = wps.length ? wps.map(w => w.name).join(' → ') : '-';
+          const wps = r.waypoints || [], wpText = wps.length ? wps.map(w => w.name).join(' → ') : '-';
           const mapUrl = APP.buildKakaoMapUrl({ name: r.originName, lat: r.originLat, lng: r.originLng }, wps, { name: r.destName, lat: r.destLat, lng: r.destLng });
           return `<tr>
             <td class="center" data-label="번호">${i + 1}</td>
@@ -1048,17 +726,13 @@
               <a href="${mapUrl}" target="_blank" rel="noopener" style="text-decoration:none;"><button type="button" class="btn-kakao btn-sm">지도↗</button></a>
               <button type="button" class="btn-navi btn-sm" onclick="APP.openRowKakaoNavi(${i})">내비↗</button>
               <button type="button" class="btn-danger-outline btn-sm" onclick="TABLE_MANAGER.deleteRow(${r.id})">삭제</button>
-            </div></td>
-          </tr>`;
+            </div></td></tr>`;
         }).join('');
       },
       copyForExcel() {
         if (!this.rows.length) return UI.toast('복사할 데이터가 없습니다.');
         const h = ['번호', '출발지', '경유지', '도착지', '주행거리(km)', '소요시간(분)', '기본요금', '초과요금', '통행료', '최종요금', '비고'].join('\t');
-        const lines = this.rows.map((r, i) => {
-          const wpText = (r.waypoints && r.waypoints.length) ? r.waypoints.map(w => w.name).join(' → ') : '-';
-          return [i + 1, r.originName, wpText, r.destName, (r.distanceMeters / 1000).toFixed(2), Math.max(1, Math.round(r.durationSeconds / 60)), r.baseFare, r.excessFare, r.appliedToll, r.totalFare, r.note || ''].join('\t');
-        });
+        const lines = this.rows.map((r, i) => [i + 1, r.originName, (r.waypoints && r.waypoints.length) ? r.waypoints.map(w => w.name).join(' → ') : '-', r.destName, (r.distanceMeters / 1000).toFixed(2), Math.max(1, Math.round(r.durationSeconds / 60)), r.baseFare, r.excessFare, r.appliedToll, r.totalFare, r.note || ''].join('\t'));
         navigator.clipboard.writeText([h, ...lines].join('\n')).then(() => UI.toast('엑셀 붙여넣기용 표가 복사되었습니다.'));
       },
       exportCSV() {
@@ -1068,19 +742,12 @@
           const wpText = (r.waypoints && r.waypoints.length) ? r.waypoints.map(w => w.name).join(' → ') : '-';
           return [i + 1, `"${(r.originName || '').replace(/"/g, '""')}"`, `"${wpText.replace(/"/g, '""')}"`, `"${(r.destName || '').replace(/"/g, '""')}"`, (r.distanceMeters / 1000).toFixed(2), Math.max(1, Math.round(r.durationSeconds / 60)), r.baseFare, r.excessFare, r.appliedToll, r.totalFare, `"${(r.note || '').replace(/"/g, '""')}"`].join(',');
         })];
-        const a = document.createElement('a');
-        a.href = URL.createObjectURL(new Blob(['\uFEFF' + csv.join('\n')], { type: 'text/csv;charset=utf-8;' }));
-        a.download = `여주시_요금표_${new Date().toISOString().slice(0, 10)}.csv`;
-        a.click();
+        const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob(['\uFEFF' + csv.join('\n')], { type: 'text/csv;charset=utf-8;' })); a.download = `여주시_요금표_${new Date().toISOString().slice(0, 10)}.csv`; a.click();
       },
       async shareAllTable() {
         if (!this.rows.length) return UI.toast('공유할 내역이 없습니다.');
-        const text = this.rows.map((r, i) => {
-          const wpPart = (r.waypoints && r.waypoints.length) ? ` → [경유: ${r.waypoints.map(w => w.name).join(', ')}]` : '';
-          return `${i + 1}. ${r.originName}${wpPart} → ${r.destName} (${(r.distanceMeters / 1000).toFixed(2)}km) : ${r.totalFare.toLocaleString()}원`;
-        }).join('\n');
-        if (navigator.share) { try { await navigator.share({ title: '여주시 기준 요금표', text }); } catch {} }
-        else { navigator.clipboard.writeText(text); UI.toast('요금표가 클립보드에 복사되었습니다.'); }
+        const text = this.rows.map((r, i) => `${i + 1}. ${r.originName}${(r.waypoints && r.waypoints.length) ? ` → [경유: ${r.waypoints.map(w => w.name).join(', ')}]` : ''} → ${r.destName} (${(r.distanceMeters / 1000).toFixed(2)}km) : ${r.totalFare.toLocaleString()}원`).join('\n');
+        if (navigator.share) { try { await navigator.share({ title: '여주시 기준 요금표', text }); } catch {} } else { navigator.clipboard.writeText(text); UI.toast('요금표가 클립보드에 복사되었습니다.'); }
       }
     };
 
@@ -1088,21 +755,16 @@
       deferredPrompt: null,
       init() {
         try {
-          const c = document.createElement('canvas'); c.width = 512; c.height = 512;
-          const ctx = c.getContext('2d');
+          const c = document.createElement('canvas'); c.width = 512; c.height = 512; const ctx = c.getContext('2d');
           ctx.fillStyle = '#1e3a8a'; ctx.fillRect(0, 0, 512, 512);
           ctx.fillStyle = '#fee500'; ctx.beginPath(); ctx.arc(256, 190, 68, 0, Math.PI * 2); ctx.fill();
           ctx.fillStyle = '#1e3a8a'; ctx.font = 'bold 54px sans-serif'; ctx.textAlign = 'center'; ctx.fillText('₩', 256, 210);
           ctx.fillStyle = '#fff'; ctx.font = 'bold 62px sans-serif'; ctx.fillText('여주 요금표', 256, 355);
-          const iconUrl = c.toDataURL('image/png');
-          document.getElementById('apple-touch-icon').href = iconUrl;
+          const iconUrl = c.toDataURL('image/png'); document.getElementById('apple-touch-icon').href = iconUrl;
           const manifest = { name: '여주시 기준 길찾기 요금표', short_name: '여주 요금표', start_url: location.href, display: 'standalone', background_color: '#f1f5f9', theme_color: '#1e3a8a', icons: [{ src: iconUrl, sizes: '512x512', type: 'image/png' }] };
           document.getElementById('pwa-manifest').href = URL.createObjectURL(new Blob([JSON.stringify(manifest)], { type: 'application/json' }));
         } catch {}
-        window.addEventListener('beforeinstallprompt', e => {
-          e.preventDefault(); this.deferredPrompt = e;
-          document.getElementById('btn-android-install').style.display = 'inline-flex';
-        });
+        window.addEventListener('beforeinstallprompt', e => { e.preventDefault(); this.deferredPrompt = e; document.getElementById('btn-android-install').style.display = 'inline-flex'; });
       },
       openInstallGuide() { document.getElementById('install-modal').classList.add('open'); },
       closeInstallGuide() { document.getElementById('install-modal').classList.remove('open'); },
@@ -1111,10 +773,7 @@
 
     const UI = {
       timer: null,
-      toast(msg) {
-        const el = document.getElementById('toast'); el.textContent = msg; el.classList.add('show');
-        clearTimeout(this.timer); this.timer = setTimeout(() => el.classList.remove('show'), 3000);
-      },
+      toast(msg) { const el = document.getElementById('toast'); el.textContent = msg; el.classList.add('show'); clearTimeout(this.timer); this.timer = setTimeout(() => el.classList.remove('show'), 3200); },
       escapeHtml(s) { return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;'); },
       toggleApiPanel() { const b = document.getElementById('api-panel-body'); b.style.display = b.style.display === 'none' ? 'block' : 'none'; }
     };
@@ -1129,47 +788,25 @@
         ['preset-origin', 'preset-dest'].forEach(id => this.fillPresetOptions(document.getElementById(id)));
         this.loadSettings(); TABLE_MANAGER.load(); PWA_MANAGER.init(); MAP_CONTROLLER.switchToLeaflet();
         const saved = JSON.parse(localStorage.getItem(CONFIG.STORAGE_KEYS.KEYS) || '{}');
-        const jsKey = CONFIG.KAKAO_JS_KEY || saved.jsKey || '';
-        const restKey = CONFIG.KAKAO_REST_KEY || saved.restKey || '';
-        document.getElementById('input-js-key').value = jsKey;
-        document.getElementById('input-rest-key').value = restKey;
+        const jsKey = CONFIG.KAKAO_JS_KEY || saved.jsKey || '', restKey = CONFIG.KAKAO_REST_KEY || saved.restKey || '';
+        document.getElementById('input-js-key').value = jsKey; document.getElementById('input-rest-key').value = restKey;
         KAKAO_API.initKakaoCoreSDK(jsKey);
         this.updateAllPointsUI();
         if (jsKey || restKey) await this.connectKakaoKeys(true); else await this.calculateRoute();
       },
-
       fillPresetOptions(sel) {
         if (!sel) return;
         sel.innerHTML = '<option value="">여주시 거점 선택...</option>';
-        YEOJU_PRESETS.forEach(p => {
-          const o = document.createElement('option');
-          o.value = p.id;
-          o.textContent = p.name;
-          sel.appendChild(o);
-        });
+        YEOJU_PRESETS.forEach(p => { const o = document.createElement('option'); o.value = p.id; o.textContent = p.name; sel.appendChild(o); });
       },
-
       getTargetLabel(target) {
         if (target === 'origin') return '출발지';
         if (target === 'dest') return '도착지';
         if (target.startsWith('wp-')) return `경유지 ${Number(target.split('-')[1]) + 1}`;
         return '지점';
       },
-
-      getKeys() {
-        return {
-          jsKey: document.getElementById('input-js-key').value.trim(),
-          restKey: document.getElementById('input-rest-key').value.trim()
-        };
-      },
-
-      toggleKeyVisibility() {
-        this.keysVisible = !this.keysVisible;
-        const t = this.keysVisible ? 'text' : 'password';
-        document.getElementById('input-js-key').type = t;
-        document.getElementById('input-rest-key').type = t;
-      },
-
+      getKeys() { return { jsKey: document.getElementById('input-js-key').value.trim(), restKey: document.getElementById('input-rest-key').value.trim() }; },
+      toggleKeyVisibility() { this.keysVisible = !this.keysVisible; const t = this.keysVisible ? 'text' : 'password'; document.getElementById('input-js-key').type = t; document.getElementById('input-rest-key').type = t; },
       async connectKakaoKeys(silent = false) {
         const { jsKey, restKey } = this.getKeys();
         localStorage.setItem(CONFIG.STORAGE_KEYS.KEYS, JSON.stringify({ jsKey, restKey }));
@@ -1177,8 +814,7 @@
         if (!jsKey && !restKey) { MAP_CONTROLLER.switchToLeaflet(); badge.classList.remove('connected'); bText.textContent = '기본 지도 모드'; return; }
         try {
           if (jsKey) { await KAKAO_API.loadSDK(jsKey); MAP_CONTROLLER.switchToKakao(); } else MAP_CONTROLLER.switchToLeaflet();
-          badge.classList.add('connected');
-          bText.textContent = '카카오맵 + 카카오내비 연결됨';
+          badge.classList.add('connected'); bText.textContent = '카카오맵 + 카카오내비 연결됨';
           msg.innerHTML = '<span style="color:var(--success);font-weight:700;">✅ 카카오 API가 연결되었습니다.</span> 출발지·경유지·도착지 검색, 카카오내비 길안내 및 실도로 요금 산출이 활성화되었습니다.';
           if (!silent) UI.toast('카카오 API 연결 완료');
         } catch (err) {
@@ -1188,261 +824,125 @@
         }
         await this.calculateRoute();
       },
-
-      /* 경유지 추가/삭제/순서변경 */
       addWaypoint() {
-        if (this.waypoints.length >= CONFIG.MAX_WAYPOINTS) {
-          return UI.toast(`경유지는 최대 ${CONFIG.MAX_WAYPOINTS}곳까지 추가할 수 있습니다.`);
-        }
+        if (this.waypoints.length >= CONFIG.MAX_WAYPOINTS) return UI.toast(`경유지는 최대 ${CONFIG.MAX_WAYPOINTS}곳까지 추가할 수 있습니다.`);
         this.waypoints.push({ name: '', roadAddr: '-', jibunAddr: '-', lat: null, lng: null, source: '' });
         this.renderWaypoints();
-        const newIdx = this.waypoints.length - 1;
-        setTimeout(() => {
-          const inp = document.getElementById(`input-wp-${newIdx}`);
-          if (inp) inp.focus();
-        }, 50);
+        setTimeout(() => { const inp = document.getElementById(`input-wp-${this.waypoints.length - 1}`); if (inp) inp.focus(); }, 50);
       },
-
-      removeWaypoint(idx) {
-        this.waypoints.splice(idx, 1);
-        this.renderWaypoints();
-        this.updateVerifyGrid();
-        this.calculateRoute();
-        UI.toast('경유지가 삭제되었습니다.');
-      },
-
+      removeWaypoint(idx) { this.waypoints.splice(idx, 1); this.renderWaypoints(); this.updateVerifyGrid(); this.calculateRoute(); UI.toast('경유지가 삭제되었습니다.'); },
       moveWaypoint(idx, dir) {
         const nextIdx = idx + dir;
         if (nextIdx < 0 || nextIdx >= this.waypoints.length) return;
         [this.waypoints[idx], this.waypoints[nextIdx]] = [this.waypoints[nextIdx], this.waypoints[idx]];
-        this.renderWaypoints();
-        this.updateVerifyGrid();
-        this.calculateRoute();
+        this.renderWaypoints(); this.updateVerifyGrid(); this.calculateRoute();
       },
-
       renderWaypoints() {
         const container = document.getElementById('waypoints-container');
-        if (!this.waypoints.length) {
-          container.innerHTML = '';
-          this.updateVerifyGrid();
-          return;
-        }
+        if (!this.waypoints.length) { container.innerHTML = ''; this.updateVerifyGrid(); return; }
         container.innerHTML = this.waypoints.map((wp, idx) => {
-          const targetId = `wp-${idx}`;
-          const isConfirmed = typeof wp.lat === 'number' && typeof wp.lng === 'number';
+          const targetId = `wp-${idx}`, isConfirmed = typeof wp.lat === 'number' && typeof wp.lng === 'number';
           const statusHtml = wp.error
             ? `<div id="${targetId}-status" class="addr-result-tag error">⚠️ ${UI.escapeHtml(wp.error)}</div>`
-            : (isConfirmed
-              ? `<div id="${targetId}-status" class="addr-result-tag">확정 경유지: <strong>${UI.escapeHtml(wp.name)}</strong></div>`
-              : `<div id="${targetId}-status" class="addr-result-tag" style="color:var(--text-muted);">건물명·주소를 검색하거나 <strong>[📌 지도찍기]</strong>를 눌러 지정하세요.</div>`);
-
-          return `
-            <div class="route-box waypoint-box">
-              <div class="route-box-header">
-                <span class="point-badge waypoint">경유 ${idx + 1}</span>
-                <div style="display:flex; gap:4px; flex-wrap:wrap; align-items:center;">
-                  <button type="button" class="btn-outline btn-xs" id="btn-pick-${targetId}" onclick="MAP_CONTROLLER.setPickMode('${targetId}')" title="지도 클릭 지정">📌 지도찍기</button>
-                  <button type="button" class="btn-outline btn-xs" onclick="APP.useCurrentLocation('${targetId}')">📍 현위치</button>
-                  <select id="preset-${targetId}" style="width:auto; padding:4px 6px; font-size:13px;" onchange="APP.selectPreset('${targetId}', this.value)">
-                    <option value="">거점 선택...</option>
-                    ${YEOJU_PRESETS.map(p => `<option value="${p.id}">${UI.escapeHtml(p.name)}</option>`).join('')}
-                  </select>
-                  ${idx > 0 ? `<button type="button" class="btn-outline btn-xs" onclick="APP.moveWaypoint(${idx}, -1)" title="위로 이동">↑</button>` : ''}
-                  ${idx < this.waypoints.length - 1 ? `<button type="button" class="btn-outline btn-xs" onclick="APP.moveWaypoint(${idx}, 1)" title="아래로 이동">↓</button>` : ''}
-                  <button type="button" class="btn-danger-outline btn-xs" onclick="APP.removeWaypoint(${idx})">삭제</button>
-                </div>
+            : (isConfirmed ? `<div id="${targetId}-status" class="addr-result-tag">확정 경유지: <strong>${UI.escapeHtml(wp.name)}</strong></div>` : `<div id="${targetId}-status" class="addr-result-tag" style="color:var(--text-muted);">건물명·주소를 검색하거나 <strong>[📌 지도찍기]</strong>를 눌러 지정하세요.</div>`);
+          return `<div class="route-box waypoint-box">
+            <div class="route-box-header"><span class="point-badge waypoint">경유 ${idx + 1}</span>
+              <div style="display:flex; gap:4px; flex-wrap:wrap; align-items:center;">
+                <button type="button" class="btn-outline btn-xs" id="btn-pick-${targetId}" onclick="MAP_CONTROLLER.setPickMode('${targetId}')">📌 지도찍기</button>
+                <button type="button" class="btn-outline btn-xs" onclick="APP.useCurrentLocation('${targetId}')">📍 현위치</button>
+                <select id="preset-${targetId}" style="width:auto; padding:4px 6px; font-size:13px;" onchange="APP.selectPreset('${targetId}', this.value)"><option value="">거점 선택...</option>${YEOJU_PRESETS.map(p => `<option value="${p.id}">${UI.escapeHtml(p.name)}</option>`).join('')}</select>
+                ${idx > 0 ? `<button type="button" class="btn-outline btn-xs" onclick="APP.moveWaypoint(${idx}, -1)">↑</button>` : ''}
+                ${idx < this.waypoints.length - 1 ? `<button type="button" class="btn-outline btn-xs" onclick="APP.moveWaypoint(${idx}, 1)">↓</button>` : ''}
+                <button type="button" class="btn-danger-outline btn-xs" onclick="APP.removeWaypoint(${idx})">삭제</button>
               </div>
-              <div class="input-wrap">
-                <div class="input-row">
-                  <input type="text" id="input-${targetId}" value="${UI.escapeHtml(wp.name || '')}"
-                    placeholder="경유지 ${idx + 1} 건물명, 도로명 또는 지번 입력"
-                    autocomplete="off"
-                    oninput="AUTOCOMPLETE.onInput('${targetId}', this.value)"
-                    onfocus="AUTOCOMPLETE.onInput('${targetId}', this.value)"
-                    onblur="AUTOCOMPLETE.scheduleClose('${targetId}')"
-                    onkeydown="AUTOCOMPLETE.onKeyDown(event, '${targetId}')" />
-                  <button type="button" class="btn-outline btn-sm" onclick="AUTOCOMPLETE.clearInput('${targetId}')" title="입력 지우기">✕</button>
-                  <button type="button" class="btn-primary" onclick="APP.searchPoint('${targetId}')">검색</button>
-                </div>
-                <div id="suggest-${targetId}" class="suggest-dropdown"></div>
-              </div>
-              ${statusHtml}
             </div>
-          `;
+            <div class="input-wrap"><div class="input-row">
+              <input type="text" id="input-${targetId}" value="${UI.escapeHtml(wp.name || '')}" placeholder="경유지 ${idx + 1} 건물명, 도로명 또는 지번 입력" autocomplete="off"
+                oninput="AUTOCOMPLETE.onInput('${targetId}', this.value)" onfocus="AUTOCOMPLETE.onInput('${targetId}', this.value)"
+                onblur="AUTOCOMPLETE.scheduleClose('${targetId}')" onkeydown="AUTOCOMPLETE.onKeyDown(event, '${targetId}')" />
+              <button type="button" class="btn-outline btn-sm" onclick="AUTOCOMPLETE.clearInput('${targetId}')">✕</button>
+              <button type="button" class="btn-primary" onclick="APP.searchPoint('${targetId}')">검색</button>
+            </div><div id="suggest-${targetId}" class="suggest-dropdown"></div></div>${statusHtml}</div>`;
         }).join('');
         this.updateVerifyGrid();
       },
-
       applyPointData(target, pointData) {
         if (target === 'origin' || target === 'dest') {
           this[target] = pointData;
-          const inp = document.getElementById(`input-${target}`);
-          if (inp) inp.value = pointData.name;
+          const inp = document.getElementById(`input-${target}`); if (inp) inp.value = pointData.name;
           this.updatePointUI(target);
         } else if (target.startsWith('wp-')) {
           const idx = Number(target.split('-')[1]);
-          if (this.waypoints[idx]) {
-            this.waypoints[idx] = { ...pointData };
-            this.renderWaypoints();
-          }
+          if (this.waypoints[idx]) { this.waypoints[idx] = { ...pointData }; this.renderWaypoints(); }
         }
         this.calculateRoute();
       },
-
-      selectPreset(target, id) {
-        const f = YEOJU_PRESETS.find(p => p.id === id);
-        if (!f) return;
-        AUTOCOMPLETE.hide(target);
-        this.applyPointData(target, { ...f, source: '여주시 거점 프리셋' });
-      },
-
+      selectPreset(target, id) { const f = YEOJU_PRESETS.find(p => p.id === id); if (!f) return; AUTOCOMPLETE.hide(target); this.applyPointData(target, { ...f, source: '여주시 거점 프리셋' }); },
       async searchPoint(target) {
         AUTOCOMPLETE.hide(target);
-        const inp = document.getElementById(`input-${target}`);
-        const q = inp ? inp.value.trim() : '';
-        const { restKey } = this.getKeys();
-
+        const inp = document.getElementById(`input-${target}`), q = inp ? inp.value.trim() : '', { restKey } = this.getKeys();
         if (target.startsWith('wp-')) {
-          const idx = Number(target.split('-')[1]);
-          const st = document.getElementById(`${target}-status`);
-          try {
-            if (st) { st.className = 'addr-result-tag'; st.textContent = '경유지 검색 중...'; }
-            const res = await KAKAO_API.exactGeocode(q, restKey);
-            this.applyPointData(target, res);
-          } catch (err) {
-            if (this.waypoints[idx]) {
-              this.waypoints[idx].name = q;
-              this.waypoints[idx].error = err.message;
-              this.renderWaypoints();
-            }
-          }
+          const idx = Number(target.split('-')[1]), st = document.getElementById(`${target}-status`);
+          try { if (st) { st.className = 'addr-result-tag'; st.textContent = '경유지 검색 중...'; } this.applyPointData(target, await KAKAO_API.exactGeocode(q, restKey)); }
+          catch (err) { if (this.waypoints[idx]) { this.waypoints[idx].name = q; this.waypoints[idx].error = err.message; this.renderWaypoints(); } }
           return;
         }
-
         const st = document.getElementById(`${target}-status`);
-        try {
-          st.className = 'addr-result-tag'; st.textContent = '건물명/주소 검색 중...';
-          const res = await KAKAO_API.exactGeocode(q, restKey);
-          this.applyPointData(target, res);
-        } catch (err) {
-          st.className = 'addr-result-tag error';
-          st.textContent = `⚠️ ${err.message}`;
-        }
+        try { st.className = 'addr-result-tag'; st.textContent = '건물명/주소 검색 중...'; this.applyPointData(target, await KAKAO_API.exactGeocode(q, restKey)); }
+        catch (err) { st.className = 'addr-result-tag error'; st.textContent = `⚠️ ${err.message}`; }
       },
-
-      async setPointByCoord(target, lat, lng) {
-        const { restKey } = this.getKeys();
-        const pt = await KAKAO_API.reverseGeocode(lat, lng, restKey);
-        this.applyPointData(target, pt);
-      },
-
+      async setPointByCoord(target, lat, lng) { const pt = await KAKAO_API.reverseGeocode(lat, lng, this.getKeys().restKey); this.applyPointData(target, pt); },
       useCurrentLocation(target) {
         if (!navigator.geolocation) return UI.toast('GPS 기능을 지원하지 않는 기기입니다.');
         UI.toast('현재 위치를 확인 중입니다...');
-        navigator.geolocation.getCurrentPosition(
-          p => this.setPointByCoord(target, p.coords.latitude, p.coords.longitude),
-          () => UI.toast('위치 권한을 허용해 주세요.'),
-          { enableHighAccuracy: true, timeout: 8000 }
-        );
+        navigator.geolocation.getCurrentPosition(p => this.setPointByCoord(target, p.coords.latitude, p.coords.longitude), () => UI.toast('위치 권한을 허용해 주세요.'), { enableHighAccuracy: true, timeout: 8000 });
       },
-
       swapPoints() {
         [this.origin, this.dest] = [this.dest, this.origin];
         if (this.waypoints.length > 1) this.waypoints.reverse();
-        document.getElementById('input-origin').value = this.origin.name;
-        document.getElementById('input-dest').value = this.dest.name;
-        this.updateAllPointsUI();
-        this.calculateRoute();
+        document.getElementById('input-origin').value = this.origin.name; document.getElementById('input-dest').value = this.dest.name;
+        this.updateAllPointsUI(); this.calculateRoute();
       },
-
-      updateAllPointsUI() {
-        this.updatePointUI('origin');
-        this.renderWaypoints();
-        this.updatePointUI('dest');
-      },
-
+      updateAllPointsUI() { this.updatePointUI('origin'); this.renderWaypoints(); this.updatePointUI('dest'); },
       updatePointUI(target) {
-        const pt = this[target];
-        const st = document.getElementById(`${target}-status`);
-        if (st) {
-          st.className = 'addr-result-tag';
-          st.innerHTML = `확정 위치: <strong>${UI.escapeHtml(pt.name)}</strong>`;
-        }
+        const pt = this[target], st = document.getElementById(`${target}-status`);
+        if (st) { st.className = 'addr-result-tag'; st.innerHTML = `확정 위치: <strong>${UI.escapeHtml(pt.name)}</strong>`; }
         this.updateVerifyGrid();
       },
-
       updateVerifyGrid() {
         const grid = document.getElementById('verify-grid');
         if (!grid) return;
         const activeWps = this.waypoints.map((w, i) => ({ ...w, idx: i })).filter(w => typeof w.lat === 'number' && typeof w.lng === 'number');
-        const cards = [
-          { cls: '', title: `🔵 출발지 (${this.origin.source || ''})`, pt: this.origin },
-          ...activeWps.map((w, i) => ({ cls: 'wp', title: `🟡 경유 ${i + 1} (${w.source || ''})`, pt: w })),
-          { cls: '', title: `🔴 도착지 (${this.dest.source || ''})`, pt: this.dest }
-        ];
-        grid.innerHTML = cards.map(c => `
-          <div class="verify-item ${c.cls}">
-            <strong>${UI.escapeHtml(c.title)}</strong>
-            <div class="verify-line">명칭: ${UI.escapeHtml(c.pt.name || '-')}</div>
-            <div class="verify-line">도로명: ${UI.escapeHtml(c.pt.roadAddr || '-')}</div>
-            <div class="verify-line">지번: ${UI.escapeHtml(c.pt.jibunAddr || '-')}</div>
-            <div class="verify-line">GPS: ${c.pt.lat.toFixed(6)}, ${c.pt.lng.toFixed(6)}</div>
-          </div>
-        `).join('');
+        const cards = [{ cls: '', title: `🔵 출발지 (${this.origin.source || ''})`, pt: this.origin }, ...activeWps.map((w, i) => ({ cls: 'wp', title: `🟡 경유 ${i + 1} (${w.source || ''})`, pt: w })), { cls: '', title: `🔴 도착지 (${this.dest.source || ''})`, pt: this.dest }];
+        grid.innerHTML = cards.map(c => `<div class="verify-item ${c.cls}"><strong>${UI.escapeHtml(c.title)}</strong><div class="verify-line">명칭: ${UI.escapeHtml(c.pt.name || '-')}</div><div class="verify-line">도로명: ${UI.escapeHtml(c.pt.roadAddr || '-')}</div><div class="verify-line">지번: ${UI.escapeHtml(c.pt.jibunAddr || '-')}</div><div class="verify-line">GPS: ${c.pt.lat.toFixed(6)}, ${c.pt.lng.toFixed(6)}</div></div>`).join('');
       },
-
       getSettings() {
-        return {
-          baseFare: Number(document.getElementById('cfg-base-fare').value) || 0,
-          baseDistKm: Number(document.getElementById('cfg-base-dist').value) || 0,
-          ratePerKm: Number(document.getElementById('cfg-rate-km').value) || 0,
-          calcMode: document.getElementById('cfg-calc-mode').value,
-          includeToll: document.getElementById('cfg-include-toll').checked,
-          tollCalcMode: document.getElementById('cfg-toll-mode').value
-        };
+        return { baseFare: Number(document.getElementById('cfg-base-fare').value) || 0, baseDistKm: Number(document.getElementById('cfg-base-dist').value) || 0, ratePerKm: Number(document.getElementById('cfg-rate-km').value) || 0, calcMode: document.getElementById('cfg-calc-mode').value, includeToll: document.getElementById('cfg-include-toll').checked, tollCalcMode: document.getElementById('cfg-toll-mode').value };
       },
-
       loadSettings() {
         try {
           const s = { ...CONFIG.DEFAULT_SETTINGS, ...(JSON.parse(localStorage.getItem(CONFIG.STORAGE_KEYS.SETTINGS) || 'null') || {}) };
-          document.getElementById('cfg-base-fare').value = s.baseFare;
-          document.getElementById('cfg-base-dist').value = s.baseDistKm;
-          document.getElementById('cfg-rate-km').value = s.ratePerKm;
-          document.getElementById('cfg-calc-mode').value = s.calcMode;
-          document.getElementById('cfg-include-toll').checked = s.includeToll;
-          document.getElementById('cfg-toll-mode').value = s.tollCalcMode || 'ceil1000';
+          document.getElementById('cfg-base-fare').value = s.baseFare; document.getElementById('cfg-base-dist').value = s.baseDistKm; document.getElementById('cfg-rate-km').value = s.ratePerKm; document.getElementById('cfg-calc-mode').value = s.calcMode; document.getElementById('cfg-include-toll').checked = s.includeToll; document.getElementById('cfg-toll-mode').value = s.tollCalcMode || 'ceil1000';
         } catch {}
         this.updateFormulaPreview();
       },
-
       onSettingsChange() { localStorage.setItem(CONFIG.STORAGE_KEYS.SETTINGS, JSON.stringify(this.getSettings())); this.updateFormulaPreview(); this.renderSummary(); },
-      onManualTollInput(val) {
-        if (!this.currentRoute) return;
-        this.currentRoute.tollFare = Math.max(0, Number(val) || 0);
-        this.renderSummary();
-      },
+      onManualTollInput(val) { if (!this.currentRoute) return; this.currentRoute.tollFare = Math.max(0, Number(val) || 0); this.renderSummary(); },
       resetFareSettings() { localStorage.removeItem(CONFIG.STORAGE_KEYS.SETTINGS); this.loadSettings(); this.renderSummary(); UI.toast('요금 기준이 기본값(기본 포함 거리 2.0km)으로 복원되었습니다.'); },
-
       updateFormulaPreview() {
         const s = this.getSettings();
         const m = { floor1000: '100원 단위 버림', floor100: '100원 미만 버림', round100: '100원 단위 반올림', ceil1km: '1km 단위 올림', exact: '1원 단위 절사' };
         const tm = { ceil1000: '1,000원 단위 올림', ceil500: '500원 단위 올림', ceil100: '100원 단위 올림', exact: '실제 통행료' };
-        const tollTxt = s.includeToll ? ` + 통행료(${tm[s.tollCalcMode]})` : ' (통행료 미포함)';
-        document.getElementById('formula-preview').innerHTML = `적용 공식: 기본 <strong>${s.baseDistKm}km</strong>까지 <strong>${s.baseFare.toLocaleString()}원</strong> + 초과 거리 × <strong>${s.ratePerKm.toLocaleString()}원/km</strong> (${m[s.calcMode]})${tollTxt}`;
+        document.getElementById('formula-preview').innerHTML = `적용 공식: 기본 <strong>${s.baseDistKm}km</strong>까지 <strong>${s.baseFare.toLocaleString()}원</strong> + 초과 거리 × <strong>${s.ratePerKm.toLocaleString()}원/km</strong> (${m[s.calcMode]})${s.includeToll ? ` + 통행료(${tm[s.tollCalcMode]})` : ' (통행료 미포함)'}`;
       },
-
       async calculateRoute() {
         const tag = document.getElementById('route-engine-tag'); tag.textContent = '실도로 경로 탐색 중...';
         try {
           const r = await KAKAO_API.getDrivingRoute(this.origin, this.waypoints, this.dest, this.getKeys().restKey);
-          this.currentRoute = r;
-          document.getElementById('cfg-manual-toll').value = r.tollFare || 0;
-          tag.textContent = `엔진: ${r.engine}`;
-          MAP_CONTROLLER.renderRoute(this.origin, this.waypoints, this.dest, r.pathCoords);
-          this.renderSummary();
+          this.currentRoute = r; document.getElementById('cfg-manual-toll').value = r.tollFare || 0; tag.textContent = `엔진: ${r.engine}`;
+          MAP_CONTROLLER.renderRoute(this.origin, this.waypoints, this.dest, r.pathCoords); this.renderSummary();
         } catch (err) { tag.textContent = '경로 탐색 오류'; UI.toast(err.message); }
       },
-
       renderSummary() {
         if (!this.currentRoute) return;
         const c = FARE_CALCULATOR.calculate(this.currentRoute.distanceMeters, this.currentRoute.tollFare, this.getSettings());
@@ -1453,105 +953,63 @@
         document.getElementById('res-raw-toll').textContent = `원통행료 ${c.rawToll.toLocaleString()}원`;
         document.getElementById('res-total-fare').textContent = `${c.totalFare.toLocaleString()}원`;
       },
-
       addCurrentToTable() {
         if (!this.currentRoute) return UI.toast('먼저 경로를 계산해 주세요.');
         const c = FARE_CALCULATOR.calculate(this.currentRoute.distanceMeters, this.currentRoute.tollFare, this.getSettings());
-        const activeWps = this.waypoints
-          .filter(w => typeof w.lat === 'number' && typeof w.lng === 'number')
-          .map(w => ({ name: w.name, lat: w.lat, lng: w.lng }));
-
-        TABLE_MANAGER.addRow({
-          originName: this.origin.name, originLat: this.origin.lat, originLng: this.origin.lng,
-          waypoints: activeWps,
-          destName: this.dest.name, destLat: this.dest.lat, destLng: this.dest.lng,
-          distanceMeters: this.currentRoute.distanceMeters, durationSeconds: this.currentRoute.durationSeconds,
-          rawTollFare: this.currentRoute.tollFare, baseFare: c.baseFare, excessFare: c.excessFare, appliedToll: c.appliedToll, totalFare: c.totalFare, note: ''
-        });
+        const activeWps = this.waypoints.filter(w => typeof w.lat === 'number' && typeof w.lng === 'number').map(w => ({ name: w.name, lat: w.lat, lng: w.lng }));
+        TABLE_MANAGER.addRow({ originName: this.origin.name, originLat: this.origin.lat, originLng: this.origin.lng, waypoints: activeWps, destName: this.dest.name, destLat: this.dest.lat, destLng: this.dest.lng, distanceMeters: this.currentRoute.distanceMeters, durationSeconds: this.currentRoute.durationSeconds, rawTollFare: this.currentRoute.tollFare, baseFare: c.baseFare, excessFare: c.excessFare, appliedToll: c.appliedToll, totalFare: c.totalFare, note: '' });
         UI.toast('요금표에 추가되었습니다.');
       },
-
       buildKakaoMapUrl(origin, waypoints, dest) {
         let url = `https://map.kakao.com/link/from/${encodeURIComponent(origin.name)},${origin.lat},${origin.lng}`;
-        (waypoints || []).forEach(w => {
-          if (typeof w.lat === 'number' && typeof w.lng === 'number') {
-            url += `/by/${encodeURIComponent(w.name)},${w.lat},${w.lng}`;
-          }
-        });
-        url += `/to/${encodeURIComponent(dest.name)},${dest.lat},${dest.lng}`;
-        return url;
+        (waypoints || []).forEach(w => { if (typeof w.lat === 'number' && typeof w.lng === 'number') url += `/by/${encodeURIComponent(w.name)},${w.lat},${w.lng}`; });
+        return `${url}/to/${encodeURIComponent(dest.name)},${dest.lat},${dest.lng}`;
       },
-
-      openExternalKakaoMap() {
-        window.open(this.buildKakaoMapUrl(this.origin, this.waypoints, this.dest), '_blank', 'noopener');
-      },
-
-      /* 카카오내비 앱 길안내 실행 */
+      openExternalKakaoMap() { window.open(this.buildKakaoMapUrl(this.origin, this.waypoints, this.dest), '_blank', 'noopener'); },
       launchKakaoNavi(origin, waypoints, dest) {
+        const isMobile = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
+        if (!isMobile) {
+          UI.toast('PC에서는 모바일 카카오내비 앱 대신 카카오맵 길찾기로 연결합니다.');
+          window.open(this.buildKakaoMapUrl(origin, waypoints, dest), '_blank', 'noopener');
+          return;
+        }
         const { jsKey } = this.getKeys();
         if (!KAKAO_API.initKakaoCoreSDK(jsKey) || !window.Kakao?.Navi) {
-          return UI.toast('카카오 JavaScript 키가 연결되지 않았습니다. 상단 API 설정을 확인하세요.');
+          return UI.toast('카카오 JavaScript 키가 초기화되지 않았습니다.');
         }
-
         const validWps = (waypoints || []).filter(w => typeof w.lat === 'number' && typeof w.lng === 'number');
         const naviOptions = {
-          name: dest.name || '도착지',
+          name: String(dest.name || '도착지'),
           x: Number(dest.lng),
           y: Number(dest.lat),
           coordType: 'wgs84'
         };
-
-        if (origin && typeof origin.lat === 'number' && typeof origin.lng === 'number') {
-          naviOptions.sName = origin.name || '출발지';
-          naviOptions.sX = Number(origin.lng);
-          naviOptions.sY = Number(origin.lat);
-        }
-
         if (validWps.length > 0) {
-          if (validWps.length > 3) {
-            UI.toast('카카오내비는 경유지 최대 3곳까지 지원하여 앞 3곳만 전달합니다.');
-          }
+          if (validWps.length > 3) UI.toast('카카오내비는 경유지 최대 3곳까지 전달됩니다.');
           naviOptions.viaPoints = validWps.slice(0, 3).map(w => ({
-            name: w.name || '경유지',
+            name: String(w.name || '경유지'),
             x: Number(w.lng),
             y: Number(w.lat)
           }));
         }
-
-        const isMobile = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
-        if (!isMobile) {
-          UI.toast('카카오내비 길안내는 스마트폰(아이폰·안드로이드)에서 내비 앱으로 바로 연결됩니다.');
-        }
-
         try {
           window.Kakao.Navi.start(naviOptions);
         } catch (err) {
-          UI.toast('카카오내비 호출 중 오류가 발생했습니다. 카카오디벨로퍼스의 카카오내비 사용 설정을 확인해 주세요.');
+          UI.toast(`카카오내비 실행 오류: ${err?.message || '앱 실행 실패'}`);
         }
       },
-
-      openExternalKakaoNavi() {
-        this.launchKakaoNavi(this.origin, this.waypoints, this.dest);
-      },
-
+      openExternalKakaoNavi() { this.launchKakaoNavi(this.origin, this.waypoints, this.dest); },
       openRowKakaoNavi(rowIndex) {
         const r = TABLE_MANAGER.rows[rowIndex];
         if (!r) return;
-        this.launchKakaoNavi(
-          { name: r.originName, lat: r.originLat, lng: r.originLng },
-          r.waypoints || [],
-          { name: r.destName, lat: r.destLat, lng: r.destLng }
-        );
+        this.launchKakaoNavi({ name: r.originName, lat: r.originLat, lng: r.originLng }, r.waypoints || [], { name: r.destName, lat: r.destLat, lng: r.destLng });
       },
-
       async shareCurrentResult() {
         if (!this.currentRoute) return;
         const c = FARE_CALCULATOR.calculate(this.currentRoute.distanceMeters, this.currentRoute.tollFare, this.getSettings());
         const activeWps = this.waypoints.filter(w => typeof w.lat === 'number' && typeof w.lng === 'number');
-        const wpLine = activeWps.length ? `\n경유: ${activeWps.map(w => w.name).join(' → ')}` : '';
-        const text = `[여주시 요금 산출]\n출발: ${this.origin.name}${wpLine}\n도착: ${this.dest.name}\n거리: ${c.totalKm.toFixed(2)}km\n통행료: ${c.appliedToll.toLocaleString()}원\n최종 요금: ${c.totalFare.toLocaleString()}원`;
-        if (navigator.share) { try { await navigator.share({ title: '여주시 요금 산출', text }); } catch {} }
-        else { navigator.clipboard.writeText(text); UI.toast('산출 결과가 클립보드에 복사되었습니다.'); }
+        const text = `[여주시 요금 산출]\n출발: ${this.origin.name}${activeWps.length ? `\n경유: ${activeWps.map(w => w.name).join(' → ')}` : ''}\n도착: ${this.dest.name}\n거리: ${c.totalKm.toFixed(2)}km\n통행료: ${c.appliedToll.toLocaleString()}원\n최종 요금: ${c.totalFare.toLocaleString()}원`;
+        if (navigator.share) { try { await navigator.share({ title: '여주시 요금 산출', text }); } catch {} } else { navigator.clipboard.writeText(text); UI.toast('산출 결과가 클립보드에 복사되었습니다.'); }
       }
     };
 
