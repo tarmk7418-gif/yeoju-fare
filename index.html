@@ -17,13 +17,13 @@
     * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
     body { margin:0; font-family:-apple-system,BlinkMacSystemFont,"Apple SD Gothic Neo","Malgun Gothic",sans-serif; background:var(--bg); color:var(--text); padding-bottom:calc(28px + env(safe-area-inset-bottom)); }
     header { background:linear-gradient(135deg,var(--primary-dark),var(--primary)); color:#fff; padding:12px 16px; position:sticky; top:0; z-index:1000; box-shadow:0 2px 8px rgba(0,0,0,0.16); }
-    .header-inner { max-width:1100px; margin:0 auto; display:flex; justify-content:space-between; align-items:center; gap:8px; flex-wrap:wrap; }
+    .header-inner { max-width:1180px; margin:0 auto; display:flex; justify-content:space-between; align-items:center; gap:8px; flex-wrap:wrap; }
     .header-title h1 { margin:0; font-size:1.08rem; }
     .header-title p { margin:2px 0 0; font-size:0.75rem; opacity:0.9; }
     .header-right { display:flex; align-items:center; gap:6px; flex-wrap:wrap; }
     .pill { font-size:0.74rem; font-weight:700; padding:4px 10px; border-radius:999px; background:rgba(255,255,255,0.2); color:#fff; }
     .pill.live { background:#10b981; }
-    .container { max-width:1100px; margin:12px auto; padding:0 12px; }
+    .container { max-width:1180px; margin:12px auto; padding:0 12px; }
     .card { background:var(--card); border-radius:12px; border:1px solid #e2e8f0; box-shadow:0 2px 8px rgba(15,23,42,0.05); padding:15px; margin-bottom:12px; }
     button { font-family:inherit; cursor:pointer; border:none; border-radius:8px; font-weight:700; font-size:0.85rem; padding:9px 13px; display:inline-flex; align-items:center; justify-content:center; gap:5px; }
     button:active { transform:scale(0.98); }
@@ -34,7 +34,9 @@
     .btn-kakao { background:var(--kakao-yellow); color:var(--kakao-brown); }
     .btn-navi { background:var(--navi-bg); color:var(--navi-text); }
     .btn-outline { background:#fff; color:var(--text); border:1px solid var(--border); }
+    .btn-outline.active { background:var(--primary-light); border-color:var(--primary); color:var(--primary); }
     .btn-sm { padding:6px 10px; font-size:0.78rem; }
+    .btn-xs { padding:4px 7px; font-size:0.73rem; }
     input, select { width:100%; padding:9px 11px; border:1px solid var(--border); border-radius:8px; font-size:16px; background:#fff; outline:none; }
     input:focus, select:focus { border-color:var(--primary); }
     label { display:block; font-size:0.76rem; font-weight:700; color:var(--muted); margin-bottom:4px; }
@@ -56,9 +58,10 @@
     .dc-fare { font-size:1.05rem; font-weight:800; color:var(--primary); }
     .dc-actions { display:flex; flex-wrap:wrap; gap:6px; margin-top:10px; }
     .dc-actions > * { flex:1; min-width:110px; }
-    .grid-2 { display:grid; grid-template-columns:1fr 1fr; gap:12px; }
+    .grid-2 { display:grid; grid-template-columns:1fr 1fr; gap:12px; align-items:start; }
     .route-box { background:#f8fafc; border:1px solid #e2e8f0; border-radius:10px; padding:10px; margin-bottom:9px; position:relative; }
     .route-box.wp { background:#fffbeb; border-color:#fde68a; }
+    .route-hdr { display:flex; justify-content:space-between; align-items:center; gap:5px; flex-wrap:wrap; }
     .input-wrap { position:relative; margin-top:6px; }
     .input-row { display:grid; grid-template-columns:1fr auto auto; gap:5px; }
     .suggest-dropdown { position:absolute; top:calc(100% + 4px); left:0; right:0; background:#fff; border:1.5px solid #3b82f6; border-radius:10px; box-shadow:0 10px 24px rgba(0,0,0,0.16); max-height:250px; overflow-y:auto; z-index:1500; display:none; }
@@ -67,19 +70,27 @@
     .suggest-item:hover { background:var(--primary-light); }
     .suggest-title { font-weight:700; font-size:0.88rem; }
     .suggest-sub { font-size:0.74rem; color:var(--muted); }
-    #map-wrapper { width:100%; height:270px; border-radius:10px; overflow:hidden; border:1px solid var(--border); margin:8px 0; }
+    .pt-status { font-size:0.76rem; margin-top:6px; padding:5px 8px; border-radius:6px; background:#fff; border:1px solid #e2e8f0; }
+    #map-wrapper { width:100%; height:290px; border-radius:10px; overflow:hidden; border:1px solid var(--border); margin:8px 0; }
     #kakao-map, #leaflet-map { width:100%; height:100%; }
     .stat-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:6px; margin-top:8px; }
     .stat-box { background:#f8fafc; border:1px solid #e2e8f0; border-radius:8px; padding:8px; text-align:center; }
     .stat-box.hi { background:var(--primary-light); border-color:#93c5fd; }
-    .stat-val { font-size:0.96rem; font-weight:800; }
+    .stat-lbl { font-size:0.72rem; color:var(--muted); font-weight:600; }
+    .stat-val { font-size:0.98rem; font-weight:800; margin-top:2px; }
+    .stat-sub { font-size:0.69rem; color:var(--muted); margin-top:2px; }
     .stat-box.hi .stat-val { color:var(--primary); }
+    .verify-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(200px,1fr)); gap:8px; font-size:0.76rem; }
+    .verify-item { background:#f8fafc; border:1px solid #e2e8f0; border-radius:8px; padding:9px; }
+    .verify-item.wp { background:#fffbeb; border-color:#fde68a; }
+    .verify-item strong { display:block; margin-bottom:4px; font-size:0.8rem; }
+    .verify-line { color:var(--muted); margin:2px 0; word-break:keep-all; }
     table { width:100%; border-collapse:collapse; font-size:0.82rem; margin-top:8px; }
     th, td { padding:8px 6px; border-bottom:1px solid #e2e8f0; text-align:left; }
     th { background:#f8fafc; color:var(--muted); }
     #toast { position:fixed; bottom:22px; left:50%; transform:translateX(-50%) translateY(80px); background:#0f172a; color:#fff; padding:10px 18px; border-radius:999px; font-size:0.84rem; font-weight:700; z-index:9999; opacity:0; transition:all 0.25s; max-width:92vw; text-align:center; }
     #toast.show { opacity:1; transform:translateX(-50%) translateY(0); }
-    @media (max-width:760px) { .grid-2 { grid-template-columns:1fr; } .stat-grid { grid-template-columns:repeat(2,1fr); } }
+    @media (max-width:780px) { .grid-2 { grid-template-columns:1fr; } .stat-grid { grid-template-columns:repeat(2,1fr); } }
   </style>
 </head>
 <body>
@@ -108,12 +119,12 @@
       <button type="button" class="btn-primary" style="width:100%; padding:12px;" onclick="APP.login()">로그인 및 배차 대기 시작</button>
 
       <div style="margin-top:16px; border-top:1px solid #e2e8f0; padding-top:12px; text-align:left;">
-        <button type="button" class="btn-outline btn-sm" style="width:100%;" onclick="document.getElementById('sb-config-box').style.display = document.getElementById('sb-config-box').style.display === 'none' ? 'block' : 'none'">⚙️ 서버(Supabase) 연결 설정</button>
+        <button type="button" class="btn-outline btn-sm" style="width:100%;" onclick="document.getElementById('sb-config-box').style.display = document.getElementById('sb-config-box').style.display === 'none' ? 'block' : 'none'">⚙️ 서버(Supabase) 연결 정보 확인</button>
         <div id="sb-config-box" style="display:none; margin-top:10px;">
           <label>Supabase Project URL</label>
           <input type="text" id="cfg-sb-url" style="margin-bottom:8px;" />
           <label>Supabase Publishable Key</label>
-          <input type="password" id="cfg-sb-key" placeholder="sb_publishable_..." style="margin-bottom:8px;" />
+          <input type="password" id="cfg-sb-key" style="margin-bottom:8px;" />
           <button type="button" class="btn-success btn-sm" style="width:100%;" onclick="APP.saveSupabaseConfig()">연결 정보 저장</button>
         </div>
       </div>
@@ -146,93 +157,127 @@
 
       <section id="tab-calc" style="display:none;">
         <div class="grid-2">
-          <div class="card">
-            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px; gap:6px; flex-wrap:wrap;">
-              <strong style="font-size:0.95rem;">📍 출발지 · 경유지 · 도착지</strong>
-              <div style="display:flex; gap:5px;">
-                <button type="button" class="btn-warn btn-sm" onclick="CALC.addWaypoint()">➕ 경유지</button>
-                <button type="button" class="btn-outline btn-sm" onclick="CALC.swapPoints()">⇅ 반전</button>
-              </div>
-            </div>
-
-            <div class="route-box">
-              <div style="display:flex; justify-content:space-between; align-items:center; gap:6px;">
-                <span style="font-weight:800; color:#1e40af; font-size:0.82rem;">출발지</span>
-                <div style="display:flex; gap:4px;">
-                  <button type="button" class="btn-outline btn-sm" onclick="CALC.useCurrentLocation('origin')">📍 현위치</button>
-                  <select id="preset-origin" style="width:auto; padding:4px 6px; font-size:13px;" onchange="CALC.selectPreset('origin', this.value)"></select>
+          <div>
+            <div class="card">
+              <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px; gap:6px; flex-wrap:wrap;">
+                <strong style="font-size:0.95rem;">📍 출발지 · 경유지 · 도착지</strong>
+                <div style="display:flex; gap:5px;">
+                  <button type="button" class="btn-warn btn-sm" onclick="CALC.addWaypoint()">➕ 경유지 추가</button>
+                  <button type="button" class="btn-outline btn-sm" onclick="CALC.swapPoints()">⇅ 반전</button>
                 </div>
               </div>
-              <div class="input-wrap">
-                <div class="input-row">
-                  <input type="text" id="input-origin" placeholder="건물명, 도로명, 지번 입력" oninput="AC.onInput('origin', this.value)" onblur="AC.scheduleClose('origin')" />
-                  <button type="button" class="btn-outline btn-sm" onclick="AC.clear('origin')">✕</button>
-                  <button type="button" class="btn-primary btn-sm" onclick="CALC.searchPoint('origin')">검색</button>
+
+              <div class="route-box">
+                <div class="route-hdr">
+                  <span style="font-weight:800; color:#1e40af; font-size:0.82rem;">🔵 출발지</span>
+                  <div style="display:flex; gap:4px;">
+                    <button type="button" class="btn-outline btn-xs" onclick="CALC.useCurrentLocation('origin')">📍 현위치</button>
+                    <select id="preset-origin" style="width:auto; padding:4px 6px; font-size:13px;" onchange="CALC.selectPreset('origin', this.value)"></select>
+                  </div>
                 </div>
-                <div id="suggest-origin" class="suggest-dropdown"></div>
+                <div class="input-wrap">
+                  <div class="input-row">
+                    <input type="text" id="input-origin" placeholder="건물명, 도로명, 지번 입력" oninput="AC.onInput('origin', this.value)" onblur="AC.scheduleClose('origin')" />
+                    <button type="button" class="btn-outline btn-sm" onclick="AC.clear('origin')">✕</button>
+                    <button type="button" class="btn-primary btn-sm" onclick="CALC.searchPoint('origin')">검색</button>
+                  </div>
+                  <div id="suggest-origin" class="suggest-dropdown"></div>
+                </div>
+                <div id="origin-status" class="pt-status">확정 위치: <strong>여주시청</strong></div>
               </div>
-              <div id="origin-status" style="font-size:0.76rem; margin-top:5px;">확정: <strong>여주시청</strong></div>
-            </div>
 
-            <div id="waypoints-container"></div>
+              <div id="waypoints-container"></div>
 
-            <div class="route-box" style="margin-bottom:10px;">
-              <div style="display:flex; justify-content:space-between; align-items:center; gap:6px;">
-                <span style="font-weight:800; color:#991b1b; font-size:0.82rem;">도착지</span>
-                <div style="display:flex; gap:4px;">
-                  <button type="button" class="btn-outline btn-sm" onclick="CALC.useCurrentLocation('dest')">📍 현위치</button>
-                  <select id="preset-dest" style="width:auto; padding:4px 6px; font-size:13px;" onchange="CALC.selectPreset('dest', this.value)"></select>
+              <div class="route-box" style="margin-bottom:10px;">
+                <div class="route-hdr">
+                  <span style="font-weight:800; color:#991b1b; font-size:0.82rem;">🔴 도착지</span>
+                  <div style="display:flex; gap:4px;">
+                    <button type="button" class="btn-outline btn-xs" onclick="CALC.useCurrentLocation('dest')">📍 현위치</button>
+                    <select id="preset-dest" style="width:auto; padding:4px 6px; font-size:13px;" onchange="CALC.selectPreset('dest', this.value)"></select>
+                  </div>
+                </div>
+                <div class="input-wrap">
+                  <div class="input-row">
+                    <input type="text" id="input-dest" placeholder="건물명, 도로명, 지번 입력" oninput="AC.onInput('dest', this.value)" onblur="AC.scheduleClose('dest')" />
+                    <button type="button" class="btn-outline btn-sm" onclick="AC.clear('dest')">✕</button>
+                    <button type="button" class="btn-primary btn-sm" onclick="CALC.searchPoint('dest')">검색</button>
+                  </div>
+                  <div id="suggest-dest" class="suggest-dropdown"></div>
+                </div>
+                <div id="dest-status" class="pt-status">확정 위치: <strong>여주역 (경강선)</strong></div>
+              </div>
+
+              <div style="background:#eff6ff; border:1px solid #bfdbfe; border-radius:10px; padding:10px; margin-bottom:10px;">
+                <label for="calc-cust-phone">📞 손님 전화번호 (카톡·문자 안내 포함용)</label>
+                <div style="display:grid; grid-template-columns:1fr auto; gap:6px; margin-bottom:8px;">
+                  <input type="tel" id="calc-cust-phone" placeholder="010-0000-0000" oninput="CALC.formatPhone(this)" />
+                  <button type="button" class="btn-outline btn-sm" onclick="CALC.pastePhone()">📋 번호 붙여넣기</button>
+                </div>
+                <div style="display:grid; grid-template-columns:1fr 1fr; gap:6px;">
+                  <button type="button" class="btn-kakao btn-sm" onclick="CALC.shareMessage()">💬 카톡/공유 전송</button>
+                  <button type="button" class="btn-primary btn-sm" onclick="CALC.sendSMS()">✉️ 문자(SMS) 보내기</button>
                 </div>
               </div>
-              <div class="input-wrap">
-                <div class="input-row">
-                  <input type="text" id="input-dest" placeholder="건물명, 도로명, 지번 입력" oninput="AC.onInput('dest', this.value)" onblur="AC.scheduleClose('dest')" />
-                  <button type="button" class="btn-outline btn-sm" onclick="AC.clear('dest')">✕</button>
-                  <button type="button" class="btn-primary btn-sm" onclick="CALC.searchPoint('dest')">검색</button>
-                </div>
-                <div id="suggest-dest" class="suggest-dropdown"></div>
-              </div>
-              <div id="dest-status" style="font-size:0.76rem; margin-top:5px;">확정: <strong>여주역 (경강선)</strong></div>
-            </div>
 
-            <div style="background:#eff6ff; border:1px solid #bfdbfe; border-radius:10px; padding:10px; margin-bottom:10px;">
-              <label for="calc-cust-phone">📞 손님 전화번호 (카톡·문자 안내 포함용)</label>
-              <div style="display:grid; grid-template-columns:1fr auto; gap:6px; margin-bottom:8px;">
-                <input type="tel" id="calc-cust-phone" placeholder="010-0000-0000" oninput="CALC.formatPhone(this)" />
-                <button type="button" class="btn-outline btn-sm" onclick="CALC.pastePhone()">📋 번호 붙여넣기</button>
+              <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px;">
+                <div><label>기본요금(원)</label><input type="number" id="cfg-base-fare" value="4000" step="100" onchange="CALC.renderSummary()" /></div>
+                <div><label>기본 포함 거리(km)</label><input type="number" id="cfg-base-dist" value="2.0" step="0.1" onchange="CALC.renderSummary()" /></div>
+                <div><label>초과 km당(원)</label><input type="number" id="cfg-rate-km" value="1000" step="100" onchange="CALC.renderSummary()" /></div>
+                <div><label>통행료 직접입력(원)</label><input type="number" id="cfg-manual-toll" value="0" step="100" oninput="CALC.onManualToll(this.value)" /></div>
               </div>
-              <div style="display:grid; grid-template-columns:1fr 1fr; gap:6px;">
-                <button type="button" class="btn-kakao btn-sm" onclick="CALC.shareMessage()">💬 카톡/공유 전송</button>
-                <button type="button" class="btn-primary btn-sm" onclick="CALC.sendSMS()">✉️ 문자(SMS) 보내기</button>
-              </div>
-            </div>
-
-            <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px;">
-              <div><label>기본요금(원)</label><input type="number" id="cfg-base-fare" value="4000" step="100" onchange="CALC.renderSummary()" /></div>
-              <div><label>기본 포함 거리(km)</label><input type="number" id="cfg-base-dist" value="2.0" step="0.1" onchange="CALC.renderSummary()" /></div>
-              <div><label>초과 km당(원)</label><input type="number" id="cfg-rate-km" value="1000" step="100" onchange="CALC.renderSummary()" /></div>
-              <div><label>통행료 직접입력(원)</label><input type="number" id="cfg-manual-toll" value="0" step="100" oninput="CALC.onManualToll(this.value)" /></div>
             </div>
           </div>
 
-          <div class="card">
-            <div style="display:flex; gap:5px; flex-wrap:wrap; margin-bottom:6px;">
-              <button type="button" class="btn-outline btn-sm" onclick="MAP.setPickMode('origin')">📌 출발찍기</button>
-              <button type="button" class="btn-outline btn-sm" onclick="MAP.setPickMode('dest')">📌 도착찍기</button>
-              <button type="button" class="btn-kakao btn-sm" onclick="CALC.openKakaoMap()">카카오맵 ↗</button>
-              <button type="button" class="btn-navi btn-sm" onclick="CALC.openKakaoNavi()">🧭 카카오내비 ↗</button>
+          <div>
+            <div class="card">
+              <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px; flex-wrap:wrap; gap:6px;">
+                <strong style="font-size:0.94rem;">🗺️ 실도로 길찾기 &amp; 요금 산출</strong>
+                <span id="route-engine-tag" style="font-size:0.75rem; color:var(--muted); font-weight:700;">탐색 대기 중</span>
+              </div>
+              <div style="display:flex; gap:5px; flex-wrap:wrap; margin-bottom:6px;">
+                <button type="button" class="btn-outline btn-sm" id="btn-pick-origin" onclick="MAP.setPickMode('origin')">📌 지도 출발찍기</button>
+                <button type="button" class="btn-outline btn-sm" id="btn-pick-dest" onclick="MAP.setPickMode('dest')">📌 지도 도착찍기</button>
+                <button type="button" class="btn-primary btn-sm" onclick="CALC.calcRoute()">🔄 재탐색</button>
+                <button type="button" class="btn-kakao btn-sm" onclick="CALC.openKakaoMap()">카카오맵 ↗</button>
+                <button type="button" class="btn-navi btn-sm" onclick="CALC.openKakaoNavi()">🧭 카카오내비 ↗</button>
+              </div>
+              <div style="font-size:0.73rem; color:var(--muted); margin-bottom:4px;">💡 지도의 <strong>출발 · 경유 · 도착 핀을 드래그</strong>하면 위치와 요금이 자동 재계산됩니다.</div>
+              <div id="map-wrapper">
+                <div id="kakao-map" style="display:none;"></div>
+                <div id="leaflet-map"></div>
+              </div>
+              <div class="stat-grid">
+                <div class="stat-box">
+                  <div class="stat-lbl">실주행 거리</div>
+                  <div class="stat-val" id="res-dist">-</div>
+                  <div class="stat-sub" id="res-dur">-</div>
+                </div>
+                <div class="stat-box">
+                  <div class="stat-lbl">초과 거리요금</div>
+                  <div class="stat-val" id="res-excess">-</div>
+                  <div class="stat-sub">기본요금 별도</div>
+                </div>
+                <div class="stat-box">
+                  <div class="stat-lbl">통행료(천원올림)</div>
+                  <div class="stat-val" id="res-toll">0원</div>
+                  <div class="stat-sub" id="res-raw-toll">원통행료 0원</div>
+                </div>
+                <div class="stat-box hi">
+                  <div class="stat-lbl">최종 산출 요금</div>
+                  <div class="stat-val" id="res-total">-</div>
+                  <div class="stat-sub">기본+초과+통행료</div>
+                </div>
+              </div>
+              <button type="button" class="btn-success" style="width:100%; margin-top:10px;" onclick="CALC.addToLocalTable()">➕ 아래 개인 요금표에 추가</button>
             </div>
-            <div id="map-wrapper">
-              <div id="kakao-map" style="display:none;"></div>
-              <div id="leaflet-map"></div>
+
+            <div class="card">
+              <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+                <strong style="font-size:0.92rem;">✅ 선택 지점 상세 주소 · GPS 좌표</strong>
+                <span style="font-size:0.73rem; color:var(--muted);">경유지 포함 실좌표 확인</span>
+              </div>
+              <div class="verify-grid" id="verify-grid"></div>
             </div>
-            <div class="stat-grid">
-              <div class="stat-box"><div style="font-size:0.72rem;color:var(--muted);">주행거리</div><div class="stat-val" id="res-dist">-</div></div>
-              <div class="stat-box"><div style="font-size:0.72rem;color:var(--muted);">초과요금</div><div class="stat-val" id="res-excess">-</div></div>
-              <div class="stat-box"><div style="font-size:0.72rem;color:var(--muted);">통행료(천원올림)</div><div class="stat-val" id="res-toll">0원</div></div>
-              <div class="stat-box hi"><div style="font-size:0.72rem;color:var(--muted);">최종요금</div><div class="stat-val" id="res-total">-</div></div>
-            </div>
-            <button type="button" class="btn-success" style="width:100%; margin-top:10px;" onclick="CALC.addToLocalTable()">➕ 아래 개인 요금표에 추가</button>
           </div>
         </div>
 
@@ -262,28 +307,28 @@
       KAKAO_JS_KEY: '348aec403735e7af2a661c30ce11e8e5',
       KAKAO_REST_KEY: '8753d03a528d0664dfdaaca2a11ce75e',
       SUPABASE_URL: 'https://uoayezajeeadhmofgfrd.supabase.co',
-      SUPABASE_ANON_KEY: '여기에_복사한_sb_publishable_전체키_붙여넣기',
+      SUPABASE_ANON_KEY: 'sb_publishable_kTviyUA-HeO4-_Us2--PWA_8yhpZ2XP',
       YEOJU_CENTER: { lat: 37.298344, lng: 127.637518 }
     };
 
     const YEOJU_PRESETS = [
-      { id: 'cityhall', name: '여주시청', lat: 37.298344, lng: 127.637518 },
-      { id: 'yeojustation', name: '여주역 (경강선)', lat: 37.282795, lng: 127.628571 },
-      { id: 'sejongstation', name: '세종대왕릉역', lat: 37.293933, lng: 127.570728 },
-      { id: 'terminal', name: '여주종합터미널', lat: 37.291642, lng: 127.637915 },
-      { id: 'outlet', name: '여주프리미엄아울렛', lat: 37.243542, lng: 127.614828 },
-      { id: 'emart', name: '이마트 여주점', lat: 37.292118, lng: 127.649122 },
-      { id: 'silleuksa', name: '신륵사 관광지', lat: 37.299581, lng: 127.656241 },
-      { id: 'yeojuic', name: '여주IC', lat: 37.260215, lng: 127.623812 },
-      { id: 'ganam', name: '가남읍 행정복지센터', lat: 37.202298, lng: 127.543284 },
-      { id: 'jeomdong', name: '점동면 행정복지센터', lat: 37.204556, lng: 127.674983 },
-      { id: 'sejongmyeon', name: '세종대왕면 행정복지센터', lat: 37.295183, lng: 127.551672 },
-      { id: 'heungcheon', name: '흥천면 행정복지센터', lat: 37.359624, lng: 127.525537 },
-      { id: 'geumsa', name: '금사면 행정복지센터', lat: 37.397631, lng: 127.547198 },
-      { id: 'sanbuk', name: '산북면 행정복지센터', lat: 37.411647, lng: 127.445512 },
-      { id: 'daesin', name: '대신면 행정복지센터', lat: 37.368851, lng: 127.603914 },
-      { id: 'bungnae', name: '북내면 행정복지센터', lat: 37.339618, lng: 127.669842 },
-      { id: 'gangcheon', name: '강천면 행정복지센터', lat: 37.269912, lng: 127.716185 }
+      { id: 'cityhall', name: '여주시청', roadAddr: '경기도 여주시 세종로 1', jibunAddr: '경기도 여주시 홍문동 1', lat: 37.298344, lng: 127.637518 },
+      { id: 'yeojustation', name: '여주역 (경강선)', roadAddr: '경기도 여주시 교동 403-1', jibunAddr: '경기도 여주시 교동 403-1', lat: 37.282795, lng: 127.628571 },
+      { id: 'sejongstation', name: '세종대왕릉역 (경강선)', roadAddr: '경기도 여주시 세종대왕면 신지리 407-5', jibunAddr: '경기도 여주시 세종대왕면 신지리 407-5', lat: 37.293933, lng: 127.570728 },
+      { id: 'terminal', name: '여주종합터미널', roadAddr: '경기도 여주시 세종로 85', jibunAddr: '경기도 여주시 홍문동 273-2', lat: 37.291642, lng: 127.637915 },
+      { id: 'outlet', name: '여주프리미엄아울렛', roadAddr: '경기도 여주시 명품로 360', jibunAddr: '경기도 여주시 상거동 460', lat: 37.243542, lng: 127.614828 },
+      { id: 'emart', name: '이마트 여주점', roadAddr: '경기도 여주시 여흥로 160', jibunAddr: '경기도 여주시 하동 421-3', lat: 37.292118, lng: 127.649122 },
+      { id: 'silleuksa', name: '신륵사 관광지', roadAddr: '경기도 여주시 신륵사길 73', jibunAddr: '경기도 여주시 천송동 282', lat: 37.299581, lng: 127.656241 },
+      { id: 'yeojuic', name: '여주IC (영동고속도로)', roadAddr: '경기도 여주시 점봉동 439-4', jibunAddr: '경기도 여주시 점봉동 439-4', lat: 37.260215, lng: 127.623812 },
+      { id: 'ganam', name: '가남읍 행정복지센터', roadAddr: '경기도 여주시 가남읍 태평로 28', jibunAddr: '경기도 여주시 가남읍 태평리 145-2', lat: 37.202298, lng: 127.543284 },
+      { id: 'jeomdong', name: '점동면 행정복지센터', roadAddr: '경기도 여주시 점동면 청안로 161', jibunAddr: '경기도 여주시 점동면 청안리 176-1', lat: 37.204556, lng: 127.674983 },
+      { id: 'sejongmyeon', name: '세종대왕면 행정복지센터', roadAddr: '경기도 여주시 세종대왕면 능서로 47', jibunAddr: '경기도 여주시 세종대왕면 번도리 473-1', lat: 37.295183, lng: 127.551672 },
+      { id: 'heungcheon', name: '흥천면 행정복지센터', roadAddr: '경기도 여주시 흥천면 흥천로 322', jibunAddr: '경기도 여주시 흥천면 효지리 252-1', lat: 37.359624, lng: 127.525537 },
+      { id: 'geumsa', name: '금사면 행정복지센터', roadAddr: '경기도 여주시 금사면 이여로 1278', jibunAddr: '경기도 여주시 금사면 이포리 187-1', lat: 37.397631, lng: 127.547198 },
+      { id: 'sanbuk', name: '산북면 행정복지센터', roadAddr: '경기도 여주시 산북면 광여로 1126', jibunAddr: '경기도 여주시 산북면 상품리 225-1', lat: 37.411647, lng: 127.445512 },
+      { id: 'daesin', name: '대신면 행정복지센터', roadAddr: '경기도 여주시 대신면 여양로 1957', jibunAddr: '경기도 여주시 대신면 율촌리 340-1', lat: 37.368851, lng: 127.603914 },
+      { id: 'bungnae', name: '북내면 행정복지센터', roadAddr: '경기도 여주시 북내면 여양1로 475', jibunAddr: '경기도 여주시 북내면 당우리 135-1', lat: 37.339618, lng: 127.669842 },
+      { id: 'gangcheon', name: '강천면 행정복지센터', roadAddr: '경기도 여주시 강천면 강문로 448', jibunAddr: '경기도 여주시 강천면 간매리 378-3', lat: 37.269912, lng: 127.716185 }
     ];
 
     function toast(msg) { const el = document.getElementById('toast'); el.textContent = msg; el.classList.add('show'); clearTimeout(window._tt); window._tt = setTimeout(() => el.classList.remove('show'), 3000); }
@@ -293,18 +338,16 @@
 
     const APP = {
       sb: null, driver: null, gpsTimer: null, wakeLock: null,
-      isPlaceholder(v) { return !v || v.includes('여기에_복사한'); },
       getSupabase() {
         const saved = JSON.parse(localStorage.getItem('yeoju_sb_cfg') || '{}');
-        const url = (!this.isPlaceholder(CONFIG.SUPABASE_URL) ? CONFIG.SUPABASE_URL : (saved.url || '')).trim();
-        const key = (!this.isPlaceholder(CONFIG.SUPABASE_ANON_KEY) ? CONFIG.SUPABASE_ANON_KEY : (saved.key || '')).trim();
+        const url = (CONFIG.SUPABASE_URL || saved.url || '').trim();
+        const key = (CONFIG.SUPABASE_ANON_KEY || saved.key || '').trim();
         if (!url || !key || !window.supabase) return null;
         if (!this.sb) this.sb = window.supabase.createClient(url, key);
         return this.sb;
       },
       saveSupabaseConfig() {
-        const url = document.getElementById('cfg-sb-url').value.trim();
-        const key = document.getElementById('cfg-sb-key').value.trim();
+        const url = document.getElementById('cfg-sb-url').value.trim(), key = document.getElementById('cfg-sb-key').value.trim();
         if (!url || !key) return toast('URL과 Publishable Key를 모두 입력하세요.');
         localStorage.setItem('yeoju_sb_cfg', JSON.stringify({ url, key }));
         this.sb = null;
@@ -312,8 +355,8 @@
       },
       async init() {
         const savedCfg = JSON.parse(localStorage.getItem('yeoju_sb_cfg') || '{}');
-        document.getElementById('cfg-sb-url').value = !this.isPlaceholder(CONFIG.SUPABASE_URL) ? CONFIG.SUPABASE_URL : (savedCfg.url || '');
-        document.getElementById('cfg-sb-key').value = !this.isPlaceholder(CONFIG.SUPABASE_ANON_KEY) ? CONFIG.SUPABASE_ANON_KEY : (savedCfg.key || '');
+        document.getElementById('cfg-sb-url').value = CONFIG.SUPABASE_URL || savedCfg.url || '';
+        document.getElementById('cfg-sb-key').value = CONFIG.SUPABASE_ANON_KEY || savedCfg.key || '';
         if (window.Kakao && !window.Kakao.isInitialized()) { try { window.Kakao.init(CONFIG.KAKAO_JS_KEY); } catch {} }
         const savedDriver = JSON.parse(localStorage.getItem('yeoju_driver_session') || 'null');
         if (savedDriver && savedDriver.code) {
@@ -325,7 +368,7 @@
         const sb = this.getSupabase();
         if (!sb) {
           document.getElementById('sb-config-box').style.display = 'block';
-          return toast('먼저 하단 [서버(Supabase) 연결 설정]에 Publishable Key를 입력해 주세요.');
+          return toast('Supabase 연결 정보를 확인해 주세요.');
         }
         const code = document.getElementById('login-code').value.trim();
         if (!code) return toast('기사 고유 코드를 입력하세요.');
@@ -498,7 +541,7 @@
           box.classList.add('open');
           const list = await CALC.searchPlaces(q);
           this.items[t] = list;
-          box.innerHTML = list.length ? list.map((it, i) => `<div class="suggest-item" onmousedown="event.preventDefault(); AC.pick('${t}',${i})"><div class="suggest-title">${esc(it.name)}</div><div class="suggest-sub">${esc(it.roadAddr || it.jibunAddr || '')}</div></div>`).join('') : '<div style="padding:10px;font-size:0.8rem;color:var(--muted);">검색 결과 없음</div>';
+          box.innerHTML = list.length ? list.map((it, i) => `<div class="suggest-item" onmousedown="event.preventDefault(); AC.pick('${t}',${i})"><div class="suggest-title">${esc(it.name)}</div><div class="suggest-sub">${esc(it.roadAddr !== '-' ? it.roadAddr : it.jibunAddr)}</div></div>`).join('') : '<div style="padding:10px;font-size:0.8rem;color:var(--muted);">검색 결과 없음</div>';
         }, 200);
       },
       pick(t, i) { const p = (this.items[t] || [])[i]; if (p) { this.hide(t); CALC.setPoint(t, p); } },
@@ -508,54 +551,149 @@
     };
 
     const MAP = {
-      mode: 'leaflet', pickMode: null, lMap: null, lItems: [], kMap: null, kItems: [],
+      mode: 'leaflet', pickMode: null,
+      lMap: null, lMarkers: [], lLine: null,
+      kMap: null, kMarkers: [], kOverlays: [], kLine: null,
+
       init() {
         if (window.kakao?.maps) {
           window.kakao.maps.load(() => {
             document.getElementById('leaflet-map').style.display = 'none';
             document.getElementById('kakao-map').style.display = 'block';
             this.mode = 'kakao';
-            this.kMap = new window.kakao.maps.Map(document.getElementById('kakao-map'), { center: new window.kakao.maps.LatLng(37.298344, 127.637518), level: 6 });
-            window.kakao.maps.event.addListener(this.kMap, 'click', e => { if (!this.pickMode) return; const t = this.pickMode; this.pickMode = null; CALC.setCoord(t, e.latLng.getLat(), e.latLng.getLng()); });
+            this.kMap = new window.kakao.maps.Map(document.getElementById('kakao-map'), {
+              center: new window.kakao.maps.LatLng(CONFIG.YEOJU_CENTER.lat, CONFIG.YEOJU_CENTER.lng), level: 6
+            });
+            window.kakao.maps.event.addListener(this.kMap, 'click', e => {
+              if (!this.pickMode) return;
+              const t = this.pickMode; this.setPickMode(null);
+              CALC.setCoord(t, e.latLng.getLat(), e.latLng.getLng());
+            });
             CALC.calcRoute();
           });
         } else {
-          this.lMap = L.map('leaflet-map').setView([37.298344, 127.637518], 12);
-          L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(this.lMap);
-          this.lMap.on('click', e => { if (!this.pickMode) return; const t = this.pickMode; this.pickMode = null; CALC.setCoord(t, e.latlng.lat, e.latlng.lng); });
+          this.initLeaflet();
         }
       },
-      refreshSize() { if (this.mode === 'kakao' && this.kMap) { this.kMap.relayout(); CALC.calcRoute(); } else if (this.lMap) { setTimeout(() => this.lMap.invalidateSize(), 100); } },
-      setPickMode(t) { this.pickMode = t; toast('지도에서 위치를 터치하세요.'); },
+
+      initLeaflet() {
+        if (this.lMap) return;
+        this.lMap = L.map('leaflet-map').setView([CONFIG.YEOJU_CENTER.lat, CONFIG.YEOJU_CENTER.lng], 12);
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { attribution: '&copy; OpenStreetMap' }).addTo(this.lMap);
+        this.lMap.on('click', e => {
+          if (!this.pickMode) return;
+          const t = this.pickMode; this.setPickMode(null);
+          CALC.setCoord(t, e.latlng.lat, e.latlng.lng);
+        });
+      },
+
+      refreshSize() {
+        if (this.mode === 'kakao' && this.kMap) { this.kMap.relayout(); CALC.calcRoute(); }
+        else if (this.lMap) { setTimeout(() => this.lMap.invalidateSize(), 100); }
+      },
+
+      setPickMode(t) {
+        this.pickMode = t;
+        document.querySelectorAll('[id^="btn-pick-"]').forEach(b => b.classList.remove('active'));
+        if (t) {
+          const btn = document.getElementById(`btn-pick-${t}`);
+          if (btn) btn.classList.add('active');
+          toast(`지도에서 ${CALC.getTargetLabel(t)} 위치를 터치하세요.`);
+        }
+      },
+
       draw(o, wps, d, path) {
-        const pts = [o, ...wps.filter(w => w.lat), d];
+        const activeWps = (wps || []).map((w, idx) => ({ ...w, wpIdx: idx })).filter(w => typeof w.lat === 'number' && typeof w.lng === 'number');
+        const nodes = [
+          { target: 'origin', label: '출발', bg: '#1d4ed8', pt: o },
+          ...activeWps.map((w, i) => ({ target: `wp-${w.wpIdx}`, label: `경유${i + 1}`, bg: '#d97706', pt: w })),
+          { target: 'dest', label: '도착', bg: '#dc2626', pt: d }
+        ];
+
         if (this.mode === 'kakao' && this.kMap) {
-          this.kItems.forEach(x => x.setMap(null)); this.kItems = [];
+          this.kMarkers.forEach(x => x.setMap(null));
+          this.kOverlays.forEach(x => x.setMap(null));
+          if (this.kLine) this.kLine.setMap(null);
+          this.kMarkers = []; this.kOverlays = [];
+
           const bounds = new window.kakao.maps.LatLngBounds();
-          pts.forEach(p => { const pos = new window.kakao.maps.LatLng(p.lat, p.lng); this.kItems.push(new window.kakao.maps.Marker({ map: this.kMap, position: pos })); bounds.extend(pos); });
-          const line = new window.kakao.maps.Polyline({ path: (path?.length ? path : pts.map(p=>[p.lat,p.lng])).map(c => new window.kakao.maps.LatLng(c[0], c[1])), strokeWeight: 5, strokeColor: '#1d4ed8', strokeOpacity: 0.85 });
-          line.setMap(this.kMap); this.kItems.push(line); this.kMap.setBounds(bounds);
-        } else if (this.lMap) {
-          this.lItems.forEach(x => this.lMap.removeLayer(x)); this.lItems = [];
-          pts.forEach(p => this.lItems.push(L.marker([p.lat, p.lng]).addTo(this.lMap)));
-          const line = L.polyline(path?.length ? path : pts.map(p=>[p.lat,p.lng]), { color: '#1d4ed8', weight: 5 }).addTo(this.lMap);
-          this.lItems.push(line); this.lMap.fitBounds(line.getBounds(), { padding: [25, 25] });
+          nodes.forEach(n => {
+            const pos = new window.kakao.maps.LatLng(n.pt.lat, n.pt.lng);
+            const marker = new window.kakao.maps.Marker({ map: this.kMap, position: pos, draggable: true });
+            const overlay = new window.kakao.maps.CustomOverlay({
+              map: this.kMap, position: pos, yAnchor: 2.35,
+              content: `<div style="background:${n.bg};color:#fff;font-weight:800;font-size:11px;padding:2px 7px;border-radius:999px;border:1.5px solid #fff;box-shadow:0 2px 5px rgba(0,0,0,0.3);white-space:nowrap;">${n.label}</div>`
+            });
+            window.kakao.maps.event.addListener(marker, 'dragend', () => {
+              const p = marker.getPosition();
+              CALC.setCoord(n.target, p.getLat(), p.getLng());
+            });
+            this.kMarkers.push(marker);
+            this.kOverlays.push(overlay);
+            bounds.extend(pos);
+          });
+
+          const lineCoords = (path?.length ? path : nodes.map(n => [n.pt.lat, n.pt.lng])).map(c => new window.kakao.maps.LatLng(c[0], c[1]));
+          this.kLine = new window.kakao.maps.Polyline({ path: lineCoords, strokeWeight: 5, strokeColor: '#1d4ed8', strokeOpacity: 0.88 });
+          this.kLine.setMap(this.kMap);
+          this.kMap.setBounds(bounds);
+        } else {
+          this.initLeaflet();
+          this.lMarkers.forEach(x => this.lMap.removeLayer(x));
+          if (this.lLine) this.lMap.removeLayer(this.lLine);
+          this.lMarkers = [];
+
+          nodes.forEach(n => {
+            const icon = L.divIcon({
+              html: `<div style="background:${n.bg};color:#fff;font-weight:800;font-size:11px;padding:3px 7px;border-radius:999px;border:2px solid #fff;box-shadow:0 2px 6px rgba(0,0,0,0.3);white-space:nowrap;">${n.label}</div>`,
+              className: '', iconAnchor: [20, 12]
+            });
+            const m = L.marker([n.pt.lat, n.pt.lng], { icon, draggable: true })
+              .addTo(this.lMap)
+              .on('dragend', e => {
+                const p = e.target.getLatLng();
+                CALC.setCoord(n.target, p.lat, p.lng);
+              });
+            this.lMarkers.push(m);
+          });
+
+          const coords = path?.length ? path : nodes.map(n => [n.pt.lat, n.pt.lng]);
+          this.lLine = L.polyline(coords, { color: '#1d4ed8', weight: 5, opacity: 0.85 }).addTo(this.lMap);
+          this.lMap.fitBounds(this.lLine.getBounds(), { padding: [30, 30] });
         }
       }
     };
 
     const CALC = {
-      origin: { ...YEOJU_PRESETS[0] }, waypoints: [], dest: { ...YEOJU_PRESETS[1] }, route: null, localRows: [],
+      origin: { ...YEOJU_PRESETS[0], source: '여주시 거점 프리셋' },
+      waypoints: [],
+      dest: { ...YEOJU_PRESETS[1], source: '여주시 거점 프리셋' },
+      route: null,
+      localRows: [],
+
+      getTargetLabel(t) {
+        if (t === 'origin') return '출발지';
+        if (t === 'dest') return '도착지';
+        if (t.startsWith('wp-')) return `경유지 ${Number(t.split('-')[1]) + 1}`;
+        return '지점';
+      },
+
       async init() {
-        ['preset-origin', 'preset-dest'].forEach(id => { document.getElementById(id).innerHTML = '<option value="">거점 선택...</option>' + YEOJU_PRESETS.map(p => `<option value="${p.id}">${p.name}</option>`).join(''); });
+        ['preset-origin', 'preset-dest'].forEach(id => {
+          document.getElementById(id).innerHTML = '<option value="">거점 선택...</option>' + YEOJU_PRESETS.map(p => `<option value="${p.id}">${p.name}</option>`).join('');
+        });
         this.localRows = JSON.parse(localStorage.getItem('yeoju_local_rows_v1') || '[]');
         this.renderLocalTable();
+        this.updateVerifyGrid();
+
         const s = document.createElement('script');
         s.src = `https://dapi.kakao.com/v2/maps/sdk.js?appkey=${CONFIG.KAKAO_JS_KEY}&libraries=services&autoload=false`;
-        s.onload = () => MAP.init(); s.onerror = () => MAP.init();
+        s.onload = () => MAP.init();
+        s.onerror = () => MAP.init();
         document.head.appendChild(s);
         await this.calcRoute();
       },
+
       async searchPlaces(q) {
         const res = [];
         try {
@@ -564,41 +702,177 @@
             fetch(`https://dapi.kakao.com/v2/local/search/keyword.json?query=${encodeURIComponent(q)}&x=127.637518&y=37.298344&size=10`, { headers }),
             fetch(`https://dapi.kakao.com/v2/local/search/address.json?query=${encodeURIComponent(q)}&size=5`, { headers })
           ]);
-          if (kr.status === 'fulfilled' && kr.value.ok) { (await kr.value.json()).documents?.forEach(d => res.push({ name: d.place_name, roadAddr: d.road_address_name, jibunAddr: d.address_name, lat: parseFloat(d.y), lng: parseFloat(d.x) })); }
-          if (ar.status === 'fulfilled' && ar.value.ok) { (await ar.value.json()).documents?.forEach(d => res.push({ name: d.road_address?.address_name || d.address?.address_name, roadAddr: d.road_address?.address_name, jibunAddr: d.address?.address_name, lat: parseFloat(d.y), lng: parseFloat(d.x) })); }
+          if (kr.status === 'fulfilled' && kr.value.ok) {
+            (await kr.value.json()).documents?.forEach(d => res.push({
+              name: d.place_name,
+              roadAddr: d.road_address_name || '-',
+              jibunAddr: d.address_name || '-',
+              lat: parseFloat(d.y),
+              lng: parseFloat(d.x),
+              source: '카카오 장소검색'
+            }));
+          }
+          if (ar.status === 'fulfilled' && ar.value.ok) {
+            (await ar.value.json()).documents?.forEach(d => {
+              const road = d.road_address?.address_name || '-';
+              const jibun = d.address?.address_name || '-';
+              res.push({
+                name: road !== '-' ? road : jibun,
+                roadAddr: road,
+                jibunAddr: jibun,
+                lat: parseFloat(d.y),
+                lng: parseFloat(d.x),
+                source: '카카오 주소검색'
+              });
+            });
+          }
         } catch {}
         return res;
       },
-      addWaypoint() { if (this.waypoints.length >= 5) return toast('경유지는 최대 5곳까지 가능합니다.'); this.waypoints.push({ name: '', lat: null, lng: null }); this.renderWaypoints(); },
-      removeWaypoint(i) { this.waypoints.splice(i, 1); this.renderWaypoints(); this.calcRoute(); },
-      renderWaypoints() {
-        document.getElementById('waypoints-container').innerHTML = this.waypoints.map((w, i) => `
-          <div class="route-box wp"><div style="display:flex;justify-content:space-between;align-items:center;"><span style="font-weight:800;color:#92400e;font-size:0.8rem;">경유 ${i+1}</span><button type="button" class="btn-danger-outline btn-sm" onclick="CALC.removeWaypoint(${i})">삭제</button></div>
-          <div class="input-wrap"><div class="input-row"><input type="text" id="input-wp-${i}" value="${esc(w.name)}" placeholder="경유지 건물명·주소" oninput="AC.onInput('wp-${i}', this.value)" onblur="AC.scheduleClose('wp-${i}')" /><button type="button" class="btn-outline btn-sm" onclick="AC.clear('wp-${i}')">✕</button><button type="button" class="btn-primary btn-sm" onclick="CALC.searchPoint('wp-${i}')">검색</button></div><div id="suggest-wp-${i}" class="suggest-dropdown"></div></div></div>`).join('');
+
+      addWaypoint() {
+        if (this.waypoints.length >= 5) return toast('경유지는 최대 5곳까지 가능합니다.');
+        this.waypoints.push({ name: '', roadAddr: '-', jibunAddr: '-', lat: null, lng: null, source: '' });
+        this.renderWaypoints();
+        setTimeout(() => document.getElementById(`input-wp-${this.waypoints.length - 1}`)?.focus(), 50);
       },
-      setPoint(t, pt) {
-        if (t === 'origin' || t === 'dest') { this[t] = pt; document.getElementById(`input-${t}`).value = pt.name; document.getElementById(`${t}-status`).innerHTML = `확정: <strong>${esc(pt.name)}</strong>`; }
-        else if (t.startsWith('wp-')) { this.waypoints[Number(t.split('-')[1])] = pt; this.renderWaypoints(); }
+
+      removeWaypoint(i) {
+        this.waypoints.splice(i, 1);
+        this.renderWaypoints();
+        this.updateVerifyGrid();
+        this.calcRoute();
+        toast('경유지가 삭제되었습니다.');
+      },
+
+      moveWaypoint(i, dir) {
+        const next = i + dir;
+        if (next < 0 || next >= this.waypoints.length) return;
+        [this.waypoints[i], this.waypoints[next]] = [this.waypoints[next], this.waypoints[i]];
+        this.renderWaypoints();
+        this.updateVerifyGrid();
         this.calcRoute();
       },
-      selectPreset(t, id) { const f = YEOJU_PRESETS.find(p => p.id === id); if (f) this.setPoint(t, { ...f }); },
-      async searchPoint(t) { const q = document.getElementById(`input-${t}`)?.value.trim(); if (!q) return; const list = await this.searchPlaces(q); if (list.length) this.setPoint(t, list[0]); else toast('검색 결과가 없습니다.'); },
+
+      renderWaypoints() {
+        document.getElementById('waypoints-container').innerHTML = this.waypoints.map((w, i) => {
+          const tid = `wp-${i}`;
+          const confirmed = typeof w.lat === 'number' && typeof w.lng === 'number';
+          return `
+            <div class="route-box wp">
+              <div class="route-hdr">
+                <span style="font-weight:800;color:#92400e;font-size:0.8rem;">🟡 경유 ${i + 1}</span>
+                <div style="display:flex;gap:3px;flex-wrap:wrap;align-items:center;">
+                  <button type="button" class="btn-outline btn-xs" id="btn-pick-${tid}" onclick="MAP.setPickMode('${tid}')">📌 지도찍기</button>
+                  <button type="button" class="btn-outline btn-xs" onclick="CALC.useCurrentLocation('${tid}')">📍 현위치</button>
+                  <select style="width:auto;padding:3px 5px;font-size:12px;" onchange="CALC.selectPreset('${tid}', this.value)">
+                    <option value="">거점...</option>
+                    ${YEOJU_PRESETS.map(p => `<option value="${p.id}">${esc(p.name)}</option>`).join('')}
+                  </select>
+                  ${i > 0 ? `<button type="button" class="btn-outline btn-xs" onclick="CALC.moveWaypoint(${i}, -1)" title="위로">↑</button>` : ''}
+                  ${i < this.waypoints.length - 1 ? `<button type="button" class="btn-outline btn-xs" onclick="CALC.moveWaypoint(${i}, 1)" title="아래로">↓</button>` : ''}
+                  <button type="button" class="btn-danger-outline btn-xs" onclick="CALC.removeWaypoint(${i})">삭제</button>
+                </div>
+              </div>
+              <div class="input-wrap">
+                <div class="input-row">
+                  <input type="text" id="input-${tid}" value="${esc(w.name)}" placeholder="경유지 ${i + 1} 건물명·주소 입력" oninput="AC.onInput('${tid}', this.value)" onblur="AC.scheduleClose('${tid}')" />
+                  <button type="button" class="btn-outline btn-sm" onclick="AC.clear('${tid}')">✕</button>
+                  <button type="button" class="btn-primary btn-sm" onclick="CALC.searchPoint('${tid}')">검색</button>
+                </div>
+                <div id="suggest-${tid}" class="suggest-dropdown"></div>
+              </div>
+              <div class="pt-status">${confirmed ? `확정 경유지: <strong>${esc(w.name)}</strong>` : '검색하거나 <strong>[📌 지도찍기]</strong>로 위치를 지정하세요.'}</div>
+            </div>`;
+        }).join('');
+        this.updateVerifyGrid();
+      },
+
+      setPoint(t, pt) {
+        if (t === 'origin' || t === 'dest') {
+          this[t] = pt;
+          document.getElementById(`input-${t}`).value = pt.name;
+          document.getElementById(`${t}-status`).innerHTML = `확정 위치: <strong>${esc(pt.name)}</strong>`;
+        } else if (t.startsWith('wp-')) {
+          this.waypoints[Number(t.split('-')[1])] = pt;
+          this.renderWaypoints();
+        }
+        this.updateVerifyGrid();
+        this.calcRoute();
+      },
+
+      selectPreset(t, id) {
+        const f = YEOJU_PRESETS.find(p => p.id === id);
+        if (f) this.setPoint(t, { ...f, source: '여주시 거점 프리셋' });
+      },
+
+      async searchPoint(t) {
+        const q = document.getElementById(`input-${t}`)?.value.trim();
+        if (!q) return;
+        const list = await this.searchPlaces(q);
+        if (list.length) this.setPoint(t, list[0]);
+        else toast('검색 결과가 없습니다.');
+      },
+
       async setCoord(t, lat, lng) {
         try {
           const r = await fetch(`https://dapi.kakao.com/v2/local/geo/coord2address.json?x=${lng}&y=${lat}`, { headers: { Authorization: `KakaoAK ${CONFIG.KAKAO_REST_KEY}` } });
           const doc = (await r.json()).documents?.[0];
-          this.setPoint(t, { name: doc?.road_address?.address_name || doc?.address?.address_name || `좌표(${lat.toFixed(4)},${lng.toFixed(4)})`, lat, lng });
-        } catch { this.setPoint(t, { name: `좌표(${lat.toFixed(4)},${lng.toFixed(4)})`, lat, lng }); }
+          const road = doc?.road_address?.address_name || '-';
+          const jibun = doc?.address?.address_name || '-';
+          const bName = doc?.road_address?.building_name || '';
+          const name = bName ? `${bName} (${road !== '-' ? road : jibun})` : (road !== '-' ? road : (jibun !== '-' ? jibun : `좌표(${lat.toFixed(5)}, ${lng.toFixed(5)})`));
+          this.setPoint(t, { name, roadAddr: road, jibunAddr: jibun, lat, lng, source: '지도 좌표/드래그 지정' });
+        } catch {
+          this.setPoint(t, { name: `좌표(${lat.toFixed(5)}, ${lng.toFixed(5)})`, roadAddr: '-', jibunAddr: '-', lat, lng, source: '지도 좌표 지정' });
+        }
       },
-      useCurrentLocation(t) { navigator.geolocation?.getCurrentPosition(p => this.setCoord(t, p.coords.latitude, p.coords.longitude)); },
+
+      useCurrentLocation(t) {
+        if (!navigator.geolocation) return toast('GPS 기능을 지원하지 않는 기기입니다.');
+        toast('현재 위치를 확인 중입니다...');
+        navigator.geolocation.getCurrentPosition(
+          p => this.setCoord(t, p.coords.latitude, p.coords.longitude),
+          () => toast('위치 권한을 허용해 주세요.'),
+          { enableHighAccuracy: true, timeout: 8000 }
+        );
+      },
+
       swapPoints() {
-        [this.origin, this.dest] = [this.dest, this.origin]; this.waypoints.reverse();
-        document.getElementById('input-origin').value = this.origin.name; document.getElementById('input-dest').value = this.dest.name;
-        document.getElementById('origin-status').innerHTML = `확정: <strong>${esc(this.origin.name)}</strong>`;
-        document.getElementById('dest-status').innerHTML = `확정: <strong>${esc(this.dest.name)}</strong>`;
-        this.renderWaypoints(); this.calcRoute();
+        [this.origin, this.dest] = [this.dest, this.origin];
+        this.waypoints.reverse();
+        document.getElementById('input-origin').value = this.origin.name;
+        document.getElementById('input-dest').value = this.dest.name;
+        document.getElementById('origin-status').innerHTML = `확정 위치: <strong>${esc(this.origin.name)}</strong>`;
+        document.getElementById('dest-status').innerHTML = `확정 위치: <strong>${esc(this.dest.name)}</strong>`;
+        this.renderWaypoints();
+        this.updateVerifyGrid();
+        this.calcRoute();
       },
+
+      updateVerifyGrid() {
+        const grid = document.getElementById('verify-grid');
+        if (!grid) return;
+        const activeWps = this.waypoints.filter(w => typeof w.lat === 'number' && typeof w.lng === 'number');
+        const cards = [
+          { cls: '', title: `🔵 출발지 (${this.origin.source || '기본'})`, pt: this.origin },
+          ...activeWps.map((w, i) => ({ cls: 'wp', title: `🟡 경유 ${i + 1} (${w.source || '지정'})`, pt: w })),
+          { cls: '', title: `🔴 도착지 (${this.dest.source || '기본'})`, pt: this.dest }
+        ];
+        grid.innerHTML = cards.map(c => `
+          <div class="verify-item ${c.cls}">
+            <strong>${esc(c.title)}</strong>
+            <div class="verify-line">명칭: ${esc(c.pt.name || '-')}</div>
+            <div class="verify-line">도로명: ${esc(c.pt.roadAddr || '-')}</div>
+            <div class="verify-line">지번: ${esc(c.pt.jibunAddr || '-')}</div>
+            <div class="verify-line">GPS: ${c.pt.lat.toFixed(6)}, ${c.pt.lng.toFixed(6)}</div>
+          </div>
+        `).join('');
+      },
+
       async calcRoute() {
+        const tag = document.getElementById('route-engine-tag');
+        if (tag) tag.textContent = '실도로 경로 탐색 중...';
         const wps = this.waypoints.filter(w => typeof w.lat === 'number');
         try {
           let url = `https://apis-navi.kakaomobility.com/v1/directions?origin=${this.origin.lng},${this.origin.lat}&destination=${this.dest.lng},${this.dest.lat}&priority=RECOMMEND`;
@@ -609,7 +883,8 @@
             (rt.sections || []).forEach(s => (s.roads || []).forEach(rd => { for (let i = 0; i < (rd.vertexes || []).length; i += 2) path.push([rd.vertexes[i+1], rd.vertexes[i]]); }));
             this.route = { dist: rt.summary.distance, dur: rt.summary.duration, toll: rt.summary.fare?.toll || 0, path };
             document.getElementById('cfg-manual-toll').value = this.route.toll;
-            MAP.draw(this.origin, wps, this.dest, path);
+            if (tag) tag.textContent = wps.length ? `엔진: 카카오모빌리티 (경유 ${wps.length}곳)` : '엔진: 카카오모빌리티 실도로';
+            MAP.draw(this.origin, this.waypoints, this.dest, path);
             this.renderSummary();
             return;
           }
@@ -618,28 +893,36 @@
         const oRt = (await (await fetch(`https://router.project-osrm.org/route/v1/driving/${pts.map(p=>`${p.lng},${p.lat}`).join(';')}?overview=full&geometries=geojson`)).json()).routes?.[0];
         if (oRt) {
           this.route = { dist: Math.round(oRt.distance), dur: Math.round(oRt.duration), toll: 0, path: oRt.geometry.coordinates.map(c=>[c[1],c[0]]) };
-          MAP.draw(this.origin, wps, this.dest, this.route.path);
+          if (tag) tag.textContent = wps.length ? `엔진: OSRM 실도로 (경유 ${wps.length}곳)` : '엔진: OSRM 실도로';
+          MAP.draw(this.origin, this.waypoints, this.dest, this.route.path);
           this.renderSummary();
         }
       },
+
       onManualToll(v) { if (this.route) { this.route.toll = Math.max(0, Number(v) || 0); this.renderSummary(); } },
+
       getFareInfo() {
         if (!this.route) return null;
         const baseFare = Number(document.getElementById('cfg-base-fare').value) || 0, baseDist = Number(document.getElementById('cfg-base-dist').value) || 0, rate = Number(document.getElementById('cfg-rate-km').value) || 0;
-        const km = this.route.dist / 1000, excess = Math.floor(Math.max(0, km - baseDist) * rate / 1000) * 1000, toll = this.route.toll > 0 ? Math.ceil(this.route.toll / 1000) * 1000 : 0;
-        return { km, baseFare, excess, toll, total: baseFare + excess + toll };
+        const km = this.route.dist / 1000, excess = Math.floor(Math.max(0, km - baseDist) * rate / 1000) * 1000, rawToll = this.route.toll || 0, toll = rawToll > 0 ? Math.ceil(rawToll / 1000) * 1000 : 0;
+        return { km, durMin: Math.max(1, Math.round(this.route.dur / 60)), baseFare, excess, rawToll, toll, total: baseFare + excess + toll };
       },
+
       renderSummary() {
         const f = this.getFareInfo(); if (!f) return;
         document.getElementById('res-dist').textContent = `${f.km.toFixed(2)} km`;
+        document.getElementById('res-dur').textContent = `약 ${f.durMin}분`;
         document.getElementById('res-excess').textContent = `${f.excess.toLocaleString()}원`;
         document.getElementById('res-toll').textContent = `${f.toll.toLocaleString()}원`;
+        document.getElementById('res-raw-toll').textContent = `원통행료 ${f.rawToll.toLocaleString()}원`;
         document.getElementById('res-total').textContent = `${f.total.toLocaleString()}원`;
       },
+
       formatPhone(el) {
         const d = el.value.replace(/\D/g, '').slice(0, 11);
         el.value = d.length > 7 ? `${d.slice(0,3)}-${d.slice(3,7)}-${d.slice(7)}` : (d.length > 3 ? `${d.slice(0,3)}-${d.slice(3)}` : d);
       },
+
       async pastePhone() {
         try {
           const m = (await navigator.clipboard.readText()).match(/01[016789][-.\s]?\d{3,4}[-.\s]?\d{4}/);
@@ -647,22 +930,28 @@
           else toast('클립보드에 휴대폰 번호가 없습니다.');
         } catch { toast('붙여넣기 권한을 허용하거나 입력칸을 길게 눌러 붙여넣으세요.'); }
       },
+
       buildShareText() {
         const f = this.getFareInfo(), phone = document.getElementById('calc-cust-phone').value.trim(), wps = this.waypoints.filter(w => typeof w.lat === 'number');
-        return `[여주시 요금 및 경로 안내]\n출발: ${this.origin.name}${wps.length ? `\n경유: ${wps.map(w=>w.name).join(' → ')}` : ''}\n도착: ${this.dest.name}\n거리: ${f ? f.km.toFixed(2) : 0}km\n통행료: ${f ? f.toll.toLocaleString() : 0}원\n최종요금: ${f ? f.total.toLocaleString() : 0}원${phone ? `\n손님연락처: ${phone}` : ''}\n길찾기: ${this.buildMapUrl(this.origin, wps, this.dest)}`;
+        return `[여주시 요금 및 경로 안내]\n출발: ${this.origin.name}${wps.length ? `\n경유: ${wps.map(w=>w.name).join(' → ')}` : ''}\n도착: ${this.dest.name}\n거리: ${f ? f.km.toFixed(2) : 0}km (약 ${f ? f.durMin : 0}분)\n통행료: ${f ? f.toll.toLocaleString() : 0}원\n최종요금: ${f ? f.total.toLocaleString() : 0}원${phone ? `\n손님연락처: ${phone}` : ''}\n길찾기: ${this.buildMapUrl(this.origin, wps, this.dest)}`;
       },
+
       async shareMessage() {
         const text = this.buildShareText();
         if (navigator.share) { try { await navigator.share({ title: '여주시 배차 안내', text }); } catch {} }
         else { await navigator.clipboard.writeText(text); toast('안내 문구가 복사되었습니다. 카톡에 붙여넣으세요.'); }
       },
+
       sendSMS() { location.href = `sms:${/iPhone|iPad|iPod/i.test(navigator.userAgent) ? '&' : '?'}body=${encodeURIComponent(this.buildShareText())}`; },
+
       buildMapUrl(o, wps, d) {
         let u = `https://map.kakao.com/link/from/${encodeURIComponent(o.name)},${o.lat},${o.lng}`;
         (wps || []).forEach(w => { if (w.lat) u += `/by/${encodeURIComponent(w.name)},${w.lat},${w.lng}`; });
         return `${u}/to/${encodeURIComponent(d.name)},${d.lat},${d.lng}`;
       },
+
       openKakaoMap() { window.open(this.buildMapUrl(this.origin, this.waypoints, this.dest), '_blank', 'noopener'); },
+
       launchNavi(o, wps, d) {
         if (!/Android|iPhone|iPad|iPod/i.test(navigator.userAgent)) { toast('PC에서는 카카오맵 길찾기로 연결됩니다.'); return window.open(this.buildMapUrl(o, wps, d), '_blank', 'noopener'); }
         const validWps = (wps || []).filter(w => typeof w.lat === 'number').slice(0, 3);
@@ -670,18 +959,21 @@
         if (validWps.length) opt.viaPoints = validWps.map(w => ({ name: String(w.name), x: Number(w.lng), y: Number(w.lat) }));
         try { window.Kakao.Navi.start(opt); } catch { toast('카카오내비 실행 오류'); }
       },
+
       openKakaoNavi() { this.launchNavi(this.origin, this.waypoints, this.dest); },
+
       addToLocalTable() {
         const f = this.getFareInfo(); if (!f) return;
         this.localRows.push({ o: this.origin.name, wp: this.waypoints.filter(w => w.lat).map(w => w.name).join(' → ') || '-', d: this.dest.name, km: f.km.toFixed(2), toll: f.toll, total: f.total });
         localStorage.setItem('yeoju_local_rows_v1', JSON.stringify(this.localRows));
         this.renderLocalTable(); toast('개인 요금표에 추가되었습니다.');
       },
+
       renderLocalTable() {
         document.getElementById('local-cnt').textContent = this.localRows.length;
         document.getElementById('local-table-body').innerHTML = this.localRows.map((r, i) => `<tr><td>${esc(r.o)}</td><td>${esc(r.wp)}</td><td>${esc(r.d)}</td><td>${r.km}km</td><td>${r.toll.toLocaleString()}원</td><td><strong>${r.total.toLocaleString()}원</strong></td><td><button type="button" class="btn-danger-outline btn-sm" onclick="CALC.delRow(${i})">삭제</button></td></tr>`).join('');
       },
-      delRow(i) { this.localRows.splice(i, 1); localStorage.setItem('yeoju_local_rows_v1', '[]'); localStorage.setItem('yeoju_local_rows_v1', JSON.stringify(this.localRows)); this.renderLocalTable(); },
+      delRow(i) { this.localRows.splice(i, 1); localStorage.setItem('yeoju_local_rows_v1', JSON.stringify(this.localRows)); this.renderLocalTable(); },
       clearTable() { this.localRows = []; localStorage.setItem('yeoju_local_rows_v1', '[]'); this.renderLocalTable(); },
       exportCSV() {
         if (!this.localRows.length) return toast('데이터가 없습니다.');
