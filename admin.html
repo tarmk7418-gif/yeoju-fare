@@ -2,7 +2,7 @@
 <html lang="ko">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, viewport-fit=cover" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
   <title>여주시 배차 상황실 · 관리자 페이지</title>
@@ -15,17 +15,40 @@
       --success: #059669; --danger: #dc2626; --warn: #d97706;
       --bg: #f1f5f9; --card: #ffffff; --border: #cbd5e1; --muted: #475569;
     }
-    * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
-    html, body { max-width: 100%; overflow-x: hidden; }
+    * {
+      box-sizing: border-box;
+      -webkit-tap-highlight-color: transparent;
+      -webkit-user-select: none;
+      user-select: none;
+      -webkit-touch-callout: none;
+    }
+    input, textarea {
+      -webkit-user-select: text !important;
+      user-select: text !important;
+      -webkit-touch-callout: default !important;
+    }
+    html {
+      max-width: 100%;
+      overflow-x: hidden;
+      overscroll-behavior: none;
+      background: var(--dark);
+      touch-action: pan-x pan-y;
+    }
     body {
       margin: 0;
+      max-width: 100%;
+      min-height: 100dvh;
+      overflow-x: hidden;
+      overscroll-behavior: none;
+      touch-action: pan-x pan-y;
       font-family: -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo", "Malgun Gothic", sans-serif;
       background: var(--bg);
       color: var(--dark);
       padding-bottom: calc(36px + env(safe-area-inset-bottom));
     }
     header {
-      background: var(--dark); color: #fff; padding: 12px 14px;
+      background: var(--dark); color: #fff;
+      padding: calc(11px + env(safe-area-inset-top)) 14px 11px;
       display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px;
       position: sticky; top: 0; z-index: 1000; box-shadow: 0 2px 8px rgba(0,0,0,0.18);
     }
@@ -62,7 +85,6 @@
     input[type="color"] { width: 36px; height: 34px; padding: 2px; border: 1px solid var(--border); border-radius: 6px; background: #fff; cursor: pointer; flex-shrink: 0; }
     label { display: block; font-size: 0.75rem; font-weight: 700; color: var(--muted); margin-bottom: 4px; }
 
-    /* 반응형 그리드 시스템 */
     .top-grid { display: grid; grid-template-columns: 1.05fr 0.95fr; gap: 14px; align-items: start; }
     .mid-grid { display: grid; grid-template-columns: 1fr 1.75fr; gap: 14px; align-items: start; }
     .top-grid > *, .mid-grid > * { min-width: 0; }
@@ -74,8 +96,11 @@
     .force-box { display: grid; grid-template-columns: 1fr auto; gap: 6px; }
     .grid-driver-add { display: grid; grid-template-columns: 0.75fr 1fr auto auto; gap: 6px; margin-bottom: 10px; align-items: center; }
 
-    #map-box { position: relative; width: 100%; height: 340px; border-radius: 10px; overflow: hidden; border: 1px solid var(--border); background: #e2e8f0; }
+    /* 지도 영역만 핀치 확대·축소 허용 */
+    #map-box { position: relative; width: 100%; height: 340px; border-radius: 10px; overflow: hidden; border: 1px solid var(--border); background: #e2e8f0; touch-action: auto; }
+    #map-box * { touch-action: auto; }
     #kakao-map, #leaflet-map { width: 100%; height: 100%; }
+
     .driver-chips { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 10px; }
     .d-chip { padding: 6px 10px; border-radius: 8px; border: 1.5px solid var(--border); background: #f8fafc; font-size: 0.78rem; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; }
     .d-chip.online { background: #f0fdf4; }
@@ -113,7 +138,6 @@
     .st-cancelled { background: #fee2e2; color: #991b1b; }
     .tag-forced { background: #dc2626; color: #fff; padding: 2px 6px; border-radius: 4px; font-size: 0.7rem; font-weight: 800; }
 
-    /* 모바일 전용 운행 기록 카드 리스트 */
     .mobile-record-list { display: none; flex-direction: column; gap: 8px; }
     .m-rec-card { border: 1.5px solid #cbd5e1; border-radius: 10px; padding: 11px; background: #fff; }
     .m-rec-card.trashed { border-color: #fecaca; background: #fff8f8; }
@@ -123,7 +147,6 @@
     .m-rec-actions { display: flex; gap: 6px; }
     .m-rec-actions > button { flex: 1; }
 
-    /* 모바일 하단 빠른 이동 탭 바 (PC 숨김) */
     .mobile-bottom-nav { display: none; }
 
     #toast { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%) translateY(80px); background: #0f172a; color: #fff; padding: 10px 18px; border-radius: 999px; font-size: 0.84rem; font-weight: 700; z-index: 9999; opacity: 0; transition: all 0.25s; max-width: 92vw; text-align: center; }
@@ -134,14 +157,12 @@
     }
 
     @media (max-width: 768px) {
-      body {
-        padding-bottom: calc(78px + env(safe-area-inset-bottom));
-      }
+      body { padding-bottom: calc(78px + env(safe-area-inset-bottom)); }
       input[type="text"], input[type="password"], input[type="tel"], input[type="number"], input[type="date"], select {
         font-size: 16px !important;
         padding: 9px 10px;
       }
-      header { padding: 10px 12px; }
+      header { padding: calc(10px + env(safe-area-inset-top)) 12px 10px; }
       header h1 { font-size: 0.98rem; }
       .container { padding: 0 8px; margin: 8px auto; gap: 10px; }
       .card { padding: 12px; }
@@ -161,7 +182,6 @@
       #dispatch-desktop-wrap { display: none; }
       .mobile-record-list { display: flex; }
 
-      /* 모바일 하단 탭 바 표시 */
       .mobile-bottom-nav {
         display: grid;
         grid-template-columns: repeat(4, 1fr);
@@ -236,7 +256,6 @@
     </section>
 
     <div class="top-grid">
-      <!-- 1. 신규 배차 및 강제배차 발송 -->
       <section id="sec-dispatch-form" class="card">
         <div class="card-title">
           <span>📢 신규 배차 &amp; 강제배차 발송</span>
@@ -304,7 +323,6 @@
         </div>
       </section>
 
-      <!-- 2. 실시간 기사 위치 아이콘 관제 지도 -->
       <section id="sec-live-map" class="card">
         <div class="card-title">
           <span>🗺️ 실시간 기사 위치 &amp; 경로 관제</span>
@@ -320,7 +338,6 @@
     </div>
 
     <div class="mid-grid">
-      <!-- 3. 기사 고유 코드 및 아이콘 색상 관리 -->
       <section id="sec-driver-mgr" class="card">
         <div class="card-title"><span>🚕 기사 고유 코드 · 아이콘 색상</span></div>
         <div class="grid-driver-add">
@@ -337,7 +354,6 @@
         </div>
       </section>
 
-      <!-- 4. 기간별 · 기사별 운행 기록 및 휴지통 -->
       <section id="sec-dispatch-records" class="card">
         <div class="card-title">
           <span id="record-card-heading">📋 실시간 배차 현황 &amp; 운행 기록</span>
@@ -385,7 +401,6 @@
           </div>
         </div>
 
-        <!-- PC 화면용 테이블 -->
         <div class="table-wrap" id="dispatch-desktop-wrap">
           <table>
             <thead id="dispatch-table-head">
@@ -395,12 +410,10 @@
           </table>
         </div>
 
-        <!-- 모바일 화면용 카드 리스트 -->
         <div class="mobile-record-list" id="dispatch-mobile-list"></div>
       </section>
     </div>
 
-    <!-- 모바일 하단 빠른 이동 탭 바 -->
     <nav class="mobile-bottom-nav" id="mobile-bottom-nav" aria-label="모바일 섹션 바로가기">
       <button type="button" class="m-nav-btn active" id="mnav-form" onclick="ADMIN.scrollToSection('sec-dispatch-form', 'mnav-form')">
         <span class="m-nav-ico">📢</span>
@@ -432,6 +445,33 @@
       SUPABASE_ANON_KEY: 'sb_publishable_kTviyUA-HeO4-_Us2--PWA_8yhpZ2XP',
       YEOJU_CENTER: { lat: 37.298344, lng: 127.637518 }
     };
+
+    /* 입력칸 외 선택/복사/드래그 차단 & 지도 외 확대/축소 차단 */
+    (function setupGuards() {
+      const isInput = el => el && el.closest && el.closest('input, textarea');
+      const isMap = el => el && el.closest && el.closest('#map-box');
+
+      document.addEventListener('selectstart', e => { if (!isInput(e.target)) e.preventDefault(); });
+      document.addEventListener('copy', e => { if (!isInput(e.target)) e.preventDefault(); });
+      document.addEventListener('cut', e => { if (!isInput(e.target)) e.preventDefault(); });
+      document.addEventListener('contextmenu', e => { if (!isInput(e.target)) e.preventDefault(); });
+      document.addEventListener('dragstart', e => { if (!isInput(e.target) && !isMap(e.target)) e.preventDefault(); });
+
+      ['gesturestart', 'gesturechange', 'gestureend'].forEach(evt => {
+        document.addEventListener(evt, e => { if (!isMap(e.target)) e.preventDefault(); }, { passive: false });
+      });
+      document.addEventListener('touchmove', e => {
+        if (e.touches && e.touches.length > 1 && !isMap(e.target)) e.preventDefault();
+      }, { passive: false });
+
+      let lastTouchEnd = 0;
+      document.addEventListener('touchend', e => {
+        if (e.target.closest('#map-box, button, input, select, a')) return;
+        const now = Date.now();
+        if (now - lastTouchEnd <= 300) e.preventDefault();
+        lastTouchEnd = now;
+      }, { passive: false });
+    })();
 
     const YEOJU_PRESETS = [
       { id: 'cityhall', name: '여주시청', lat: 37.298344, lng: 127.637518 },
@@ -498,9 +538,7 @@
         const headerH = document.querySelector('header')?.offsetHeight || 52;
         const top = el.getBoundingClientRect().top + window.scrollY - headerH - 8;
         window.scrollTo({ top: Math.max(0, top), behavior: 'smooth' });
-        if (secId === 'sec-live-map') {
-          setTimeout(() => ADMIN_MAP.refreshSize(), 260);
-        }
+        if (secId === 'sec-live-map') setTimeout(() => ADMIN_MAP.refreshSize(), 260);
       },
       initScrollSpy() {
         const pairs = [
@@ -518,9 +556,7 @@
             let currentNav = 'mnav-form';
             for (const [secId, navId] of pairs) {
               const el = document.getElementById(secId);
-              if (el && el.getBoundingClientRect().top <= offset) {
-                currentNav = navId;
-              }
+              if (el && el.getBoundingClientRect().top <= offset) currentNav = navId;
             }
             document.querySelectorAll('.m-nav-btn').forEach(b => b.classList.toggle('active', b.id === currentNav));
             ticking = false;
@@ -556,12 +592,8 @@
     const ADMIN_MAP = {
       mode: 'leaflet', kMap: null, lMap: null, routeOverlays: [], driverOverlays: [],
       refreshSize() {
-        if (this.mode === 'kakao' && this.kMap) {
-          this.kMap.relayout();
-          DISPATCH_FORM.calcRoute();
-        } else if (this.lMap) {
-          this.lMap.invalidateSize();
-        }
+        if (this.mode === 'kakao' && this.kMap) { this.kMap.relayout(); DISPATCH_FORM.calcRoute(); }
+        else if (this.lMap) this.lMap.invalidateSize();
       },
       loadKakaoSDK() {
         const s = document.createElement('script');
@@ -624,12 +656,7 @@
           this.driverOverlays.forEach(x => x.setMap(null)); this.driverOverlays = [];
           drivers.forEach(d => {
             if (typeof d.lat !== 'number' || typeof d.lng !== 'number') return;
-            this.driverOverlays.push(new window.kakao.maps.CustomOverlay({
-              map: this.kMap,
-              position: new window.kakao.maps.LatLng(d.lat, d.lng),
-              yAnchor: 1.0,
-              content: this.buildDriverIconHtml(d)
-            }));
+            this.driverOverlays.push(new window.kakao.maps.CustomOverlay({ map: this.kMap, position: new window.kakao.maps.LatLng(d.lat, d.lng), yAnchor: 1.0, content: this.buildDriverIconHtml(d) }));
           });
         } else if (this.lMap) {
           this.driverOverlays.forEach(x => this.lMap.removeLayer(x)); this.driverOverlays = [];
@@ -926,7 +953,6 @@
           .sort((a, b) => new Date(b.deleted_at) - new Date(a.deleted_at));
         document.getElementById('trash-count').textContent = trashedRows.length;
 
-        /* 모바일 하단 탭 바: 대기중 + 진행중 건수 배지 업데이트 */
         const activeCallCount = this.rows.filter(r => !r.deleted_at && (r.status === 'waiting' || r.status === 'accepted')).length;
         const mBadge = document.getElementById('mnav-active-badge');
         if (mBadge) {
@@ -996,7 +1022,6 @@
           return;
         }
 
-        // 일반 운행 기록 모드
         document.getElementById('dispatch-table-head').innerHTML =
           '<tr><th>번호/시각</th><th>구분</th><th>상태</th><th>담당기사</th><th>손님번호</th><th>출발 → 경유 → 도착</th><th>거리/요금</th><th>포기이력/메모</th><th>통제/휴지통</th></tr>';
 
