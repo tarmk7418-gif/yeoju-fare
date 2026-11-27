@@ -8,58 +8,73 @@
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin=""></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <style>
-    :root { --primary:#1d4ed8; --primary-light:#eff6ff; --dark:#0f172a; --success:#059669; --danger:#dc2626; --warn:#d97706; --bg:#f1f5f9; --card:#ffffff; --border:#cbd5e1; --muted:#475569; }
+    :root {
+      --primary: #1d4ed8; --primary-light: #eff6ff; --dark: #0f172a;
+      --success: #059669; --danger: #dc2626; --warn: #d97706;
+      --bg: #f1f5f9; --card: #ffffff; --border: #cbd5e1; --muted: #475569;
+    }
     * { box-sizing: border-box; }
-    body { margin:0; font-family:-apple-system,BlinkMacSystemFont,"Apple SD Gothic Neo","Malgun Gothic",sans-serif; background:var(--bg); color:var(--dark); padding-bottom:36px; }
-    header { background:var(--dark); color:#fff; padding:13px 18px; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px; position:sticky; top:0; z-index:1000; box-shadow:0 2px 8px rgba(0,0,0,0.18); }
-    header h1 { margin:0; font-size:1.1rem; }
-    .container { max-width:1440px; margin:14px auto; padding:0 14px; display:flex; flex-direction:column; gap:14px; }
-    .card { background:var(--card); border-radius:12px; border:1px solid #e2e8f0; padding:15px; box-shadow:0 2px 8px rgba(0,0,0,0.04); }
-    .card-title { margin:0 0 12px; font-size:0.98rem; font-weight:800; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px; border-bottom:1px solid #f1f5f9; padding-bottom:8px; }
-    button { font-family:inherit; cursor:pointer; border:none; border-radius:8px; font-weight:700; font-size:0.84rem; padding:8px 13px; display:inline-flex; align-items:center; justify-content:center; gap:5px; }
-    button:active { transform:scale(0.98); }
-    .btn-primary { background:var(--primary); color:#fff; }
-    .btn-danger { background:var(--danger); color:#fff; }
-    .btn-danger-outline { background:#fff; color:var(--danger); border:1px solid #fecaca; }
-    .btn-success { background:var(--success); color:#fff; }
-    .btn-warn { background:#fef3c7; color:#92400e; border:1px solid #fcd34d; }
-    .btn-outline { background:#fff; color:var(--dark); border:1px solid var(--border); }
-    .btn-outline.active { background:var(--primary-light); border-color:var(--primary); color:var(--primary); }
-    .btn-sm { padding:5px 9px; font-size:0.76rem; }
-    input, select { width:100%; padding:8px 10px; border:1px solid var(--border); border-radius:8px; font-size:0.9rem; background:#fff; outline:none; }
-    input:focus, select:focus { border-color:var(--primary); }
-    label { display:block; font-size:0.75rem; font-weight:700; color:var(--muted); margin-bottom:4px; }
-    .top-grid { display:grid; grid-template-columns:1.05fr 0.95fr; gap:14px; align-items:start; }
-    .mid-grid { display:grid; grid-template-columns:1fr 1.6fr; gap:14px; align-items:start; }
-    #map-box { position:relative; width:100%; height:340px; border-radius:10px; overflow:hidden; border:1px solid var(--border); background:#e2e8f0; }
-    #kakao-map, #leaflet-map { width:100%; height:100%; }
-    .driver-chips { display:flex; flex-wrap:wrap; gap:6px; margin-top:10px; }
-    .d-chip { padding:6px 10px; border-radius:8px; border:1px solid var(--border); background:#f8fafc; font-size:0.78rem; cursor:pointer; display:inline-flex; align-items:center; gap:5px; }
-    .d-chip.online { border-color:#10b981; background:#ecfdf5; }
-    .dot { width:8px; height:8px; border-radius:50%; background:#94a3b8; }
-    .d-chip.online .dot { background:#10b981; }
-    .suggest-wrap { position:relative; }
-    .suggest-list { position:absolute; top:calc(100% + 3px); left:0; right:0; background:#fff; border:1.5px solid var(--primary); border-radius:8px; max-height:230px; overflow-y:auto; z-index:1600; display:none; box-shadow:0 10px 24px rgba(0,0,0,0.16); }
-    .suggest-list.open { display:block; }
-    .suggest-row { padding:8px 10px; border-bottom:1px solid #f1f5f9; cursor:pointer; font-size:0.84rem; }
-    .suggest-row:hover { background:var(--primary-light); }
-    .wp-item { display:grid; grid-template-columns:1fr auto; gap:6px; margin-bottom:6px; background:#fffbeb; padding:7px; border-radius:8px; border:1px solid #fde68a; }
-    .fare-bar { display:grid; grid-template-columns:repeat(4,1fr); gap:8px; background:#f8fafc; border:1px solid #e2e8f0; border-radius:10px; padding:10px; margin:10px 0; text-align:center; }
-    .fare-bar .val { font-size:1rem; font-weight:800; margin-top:2px; }
-    .fare-bar .hi { color:var(--primary); font-size:1.1rem; }
-    .table-wrap { overflow-x:auto; }
-    table { width:100%; border-collapse:collapse; font-size:0.82rem; }
-    th, td { padding:8px 7px; border-bottom:1px solid #e2e8f0; text-align:left; vertical-align:middle; }
-    th { background:#f8fafc; color:var(--muted); white-space:nowrap; }
-    .badge { padding:3px 7px; border-radius:6px; font-size:0.72rem; font-weight:800; white-space:nowrap; display:inline-block; }
-    .st-waiting { background:#dbeafe; color:#1e40af; }
-    .st-accepted { background:#fef3c7; color:#92400e; }
-    .st-completed { background:#d1fae5; color:#065f46; }
-    .st-cancelled { background:#fee2e2; color:#991b1b; }
-    .tag-forced { background:#dc2626; color:#fff; padding:2px 6px; border-radius:4px; font-size:0.7rem; font-weight:800; }
-    #toast { position:fixed; bottom:20px; left:50%; transform:translateX(-50%) translateY(80px); background:#0f172a; color:#fff; padding:10px 18px; border-radius:999px; font-size:0.84rem; font-weight:700; z-index:9999; opacity:0; transition:all 0.25s; }
-    #toast.show { opacity:1; transform:translateX(-50%) translateY(0); }
-    @media (max-width:1024px) { .top-grid, .mid-grid { grid-template-columns:1fr; } }
+    body { margin: 0; font-family: -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo", "Malgun Gothic", sans-serif; background: var(--bg); color: var(--dark); padding-bottom: 36px; }
+    header { background: var(--dark); color: #fff; padding: 13px 18px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; position: sticky; top: 0; z-index: 1000; box-shadow: 0 2px 8px rgba(0,0,0,0.18); }
+    header h1 { margin: 0; font-size: 1.1rem; }
+    .container { max-width: 1480px; margin: 14px auto; padding: 0 14px; display: flex; flex-direction: column; gap: 14px; }
+    .card { background: var(--card); border-radius: 12px; border: 1px solid #e2e8f0; padding: 15px; box-shadow: 0 2px 8px rgba(0,0,0,0.04); }
+    .card-title { margin: 0 0 12px; font-size: 0.98rem; font-weight: 800; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px; border-bottom: 1px solid #f1f5f9; padding-bottom: 8px; }
+    button { font-family: inherit; cursor: pointer; border: none; border-radius: 8px; font-weight: 700; font-size: 0.84rem; padding: 8px 13px; display: inline-flex; align-items: center; justify-content: center; gap: 5px; }
+    button:active { transform: scale(0.98); }
+    .btn-primary { background: var(--primary); color: #fff; }
+    .btn-danger { background: var(--danger); color: #fff; }
+    .btn-danger-outline { background: #fff; color: var(--danger); border: 1px solid #fecaca; }
+    .btn-success { background: var(--success); color: #fff; }
+    .btn-warn { background: #fef3c7; color: #92400e; border: 1px solid #fcd34d; }
+    .btn-outline { background: #fff; color: var(--dark); border: 1px solid var(--border); }
+    .btn-outline.active { background: var(--primary-light); border-color: var(--primary); color: var(--primary); }
+    .btn-sm { padding: 5px 9px; font-size: 0.76rem; }
+    .btn-xs { padding: 4px 7px; font-size: 0.73rem; }
+    input[type="text"], input[type="password"], input[type="tel"], input[type="number"], input[type="date"], select {
+      width: 100%; padding: 8px 10px; border: 1px solid var(--border); border-radius: 8px; font-size: 0.88rem; background: #fff; outline: none;
+    }
+    input:focus, select:focus { border-color: var(--primary); }
+    input[type="color"] { width: 34px; height: 30px; padding: 2px; border: 1px solid var(--border); border-radius: 6px; background: #fff; cursor: pointer; }
+    label { display: block; font-size: 0.75rem; font-weight: 700; color: var(--muted); margin-bottom: 4px; }
+    .top-grid { display: grid; grid-template-columns: 1.05fr 0.95fr; gap: 14px; align-items: start; }
+    .mid-grid { display: grid; grid-template-columns: 1fr 1.75fr; gap: 14px; align-items: start; }
+    #map-box { position: relative; width: 100%; height: 350px; border-radius: 10px; overflow: hidden; border: 1px solid var(--border); background: #e2e8f0; }
+    #kakao-map, #leaflet-map { width: 100%; height: 100%; }
+    .driver-chips { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 10px; }
+    .d-chip { padding: 6px 10px; border-radius: 8px; border: 1.5px solid var(--border); background: #f8fafc; font-size: 0.78rem; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; }
+    .d-chip.online { background: #f0fdf4; }
+    .color-dot { width: 11px; height: 11px; border-radius: 50%; display: inline-block; flex-shrink: 0; border: 1.5px solid #fff; box-shadow: 0 0 0 1px rgba(0,0,0,0.2); }
+    .status-dot { width: 7px; height: 7px; border-radius: 50%; background: #94a3b8; }
+    .d-chip.online .status-dot { background: #10b981; }
+    .suggest-wrap { position: relative; }
+    .suggest-list { position: absolute; top: calc(100% + 3px); left: 0; right: 0; background: #fff; border: 1.5px solid var(--primary); border-radius: 8px; max-height: 230px; overflow-y: auto; z-index: 1600; display: none; box-shadow: 0 10px 24px rgba(0,0,0,0.16); }
+    .suggest-list.open { display: block; }
+    .suggest-row { padding: 8px 10px; border-bottom: 1px solid #f1f5f9; cursor: pointer; font-size: 0.84rem; }
+    .suggest-row:hover { background: var(--primary-light); }
+    .wp-item { display: grid; grid-template-columns: 1fr auto; gap: 6px; margin-bottom: 6px; background: #fffbeb; padding: 7px; border-radius: 8px; border: 1px solid #fde68a; }
+    .fare-bar { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 10px; padding: 10px; margin: 10px 0; text-align: center; }
+    .fare-bar .val { font-size: 1rem; font-weight: 800; margin-top: 2px; }
+    .fare-bar .hi { color: var(--primary); font-size: 1.1rem; }
+
+    /* 기간/기사 필터 및 합계 요약 바 */
+    .filter-panel { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 10px; padding: 10px; margin-bottom: 10px; display: flex; flex-direction: column; gap: 8px; }
+    .filter-row { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+    .summary-strip { background: var(--primary-light); border: 1px solid #bfdbfe; border-radius: 8px; padding: 8px 12px; font-size: 0.83rem; font-weight: 700; color: #1e3a8a; display: flex; flex-wrap: wrap; gap: 14px; align-items: center; }
+
+    .table-wrap { overflow-x: auto; }
+    table { width: 100%; border-collapse: collapse; font-size: 0.82rem; }
+    th, td { padding: 8px 7px; border-bottom: 1px solid #e2e8f0; text-align: left; vertical-align: middle; }
+    th { background: #f8fafc; color: var(--muted); white-space: nowrap; }
+    .badge { padding: 3px 7px; border-radius: 6px; font-size: 0.72rem; font-weight: 800; white-space: nowrap; display: inline-block; }
+    .st-waiting { background: #dbeafe; color: #1e40af; }
+    .st-accepted { background: #fef3c7; color: #92400e; }
+    .st-completed { background: #d1fae5; color: #065f46; }
+    .st-cancelled { background: #fee2e2; color: #991b1b; }
+    .tag-forced { background: #dc2626; color: #fff; padding: 2px 6px; border-radius: 4px; font-size: 0.7rem; font-weight: 800; }
+    #toast { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%) translateY(80px); background: #0f172a; color: #fff; padding: 10px 18px; border-radius: 999px; font-size: 0.84rem; font-weight: 700; z-index: 9999; opacity: 0; transition: all 0.25s; }
+    #toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+    @media (max-width: 1060px) { .top-grid, .mid-grid { grid-template-columns: 1fr; } }
   </style>
 </head>
 <body>
@@ -93,6 +108,7 @@
     </section>
 
     <div class="top-grid">
+      <!-- 좌측: 신규 배차 및 강제배차 발송 -->
       <section class="card">
         <div class="card-title">
           <span>📢 신규 배차 등록 &amp; 강제배차 발송</span>
@@ -160,51 +176,77 @@
         </div>
       </section>
 
+      <!-- 우측: 실시간 기사 위치 아이콘 관제 지도 -->
       <section class="card">
         <div class="card-title">
-          <span>🗺️ 실시간 기사 위치 &amp; 경로 관제 지도</span>
+          <span>🗺️ 실시간 기사 위치 아이콘 &amp; 경로 관제</span>
           <button type="button" class="btn-outline btn-sm" onclick="DRIVER_MGR.loadDrivers()">🔄 위치 갱신</button>
         </div>
         <div id="map-box">
           <div id="kakao-map" style="display:none;"></div>
           <div id="leaflet-map"></div>
         </div>
-        <div style="font-size:0.75rem; color:var(--muted); margin-top:8px;">기사 칩을 클릭하면 좌측 강제배차 대상으로 즉시 선택됩니다. (초록색: 3분 이내 위치 수신)</div>
+        <div style="font-size:0.75rem; color:var(--muted); margin-top:8px;">지도 아이콘 또는 아래 기사 칩을 클릭하면 좌측 강제배차 대상으로 즉시 선택됩니다. (초록 점: 3분 이내 접속중)</div>
         <div class="driver-chips" id="driver-chips"></div>
       </section>
     </div>
 
     <div class="mid-grid">
+      <!-- 기사 고유 코드 및 아이콘 색상 관리 -->
       <section class="card">
-        <div class="card-title"><span>🚕 기사 고유 코드 발급 · 관리</span></div>
-        <div style="display:grid; grid-template-columns:0.8fr 1fr auto; gap:6px; margin-bottom:10px;">
-          <input type="text" id="new-d-code" placeholder="코드(예: 102)" />
-          <input type="text" id="new-d-name" placeholder="기사명/차량번호" />
-          <button type="button" class="btn-success btn-sm" onclick="DRIVER_MGR.addDriver()">등록</button>
+        <div class="card-title"><span>🚕 기사 고유 코드 · 아이콘 색상 관리</span></div>
+        <div style="display:grid; grid-template-columns:0.7fr 1fr auto auto; gap:6px; margin-bottom:10px; align-items:center;">
+          <input type="text" id="new-d-code" placeholder="코드(102)" />
+          <input type="text" id="new-d-name" placeholder="기사명/차량" />
+          <input type="color" id="new-d-color" value="#1d4ed8" title="지도 아이콘 색상 선택" style="width:38px; height:35px;" />
+          <button type="button" class="btn-success btn-sm" style="height:35px;" onclick="DRIVER_MGR.addDriver()">등록</button>
         </div>
         <div class="table-wrap">
           <table>
-            <thead><tr><th>코드</th><th>기사명</th><th>상태</th><th>최근접속</th><th>관리</th></tr></thead>
+            <thead><tr><th>색상</th><th>코드</th><th>기사명</th><th>상태/접속</th><th>관리</th></tr></thead>
             <tbody id="driver-table-body"></tbody>
           </table>
         </div>
       </section>
 
+      <!-- 기간별 · 기사별 운행 기록 및 삭제 -->
       <section class="card">
         <div class="card-title">
-          <span>📋 실시간 배차 현황 &amp; 운행 기록 (<span id="disp-count">0</span>건)</span>
-          <div style="display:flex; gap:5px; flex-wrap:wrap;">
-            <button type="button" class="btn-outline btn-sm active" id="flt-all" onclick="DISPATCH_MGR.setFilter('all')">전체</button>
-            <button type="button" class="btn-outline btn-sm" id="flt-waiting" onclick="DISPATCH_MGR.setFilter('waiting')">대기중</button>
-            <button type="button" class="btn-outline btn-sm" id="flt-accepted" onclick="DISPATCH_MGR.setFilter('accepted')">진행중</button>
-            <button type="button" class="btn-outline btn-sm" id="flt-completed" onclick="DISPATCH_MGR.setFilter('completed')">완료</button>
-            <button type="button" class="btn-outline btn-sm" onclick="DISPATCH_MGR.exportCSV()">📥 CSV</button>
+          <span>📋 실시간 배차 현황 &amp; 운행 기록</span>
+          <button type="button" class="btn-outline btn-sm" onclick="DISPATCH_MGR.exportCSV()">📥 조회 결과 CSV 저장</button>
+        </div>
+
+        <div class="filter-panel">
+          <div class="filter-row">
+            <span style="font-size:0.76rem; font-weight:700; color:var(--muted);">📅 기간:</span>
+            <input type="date" id="flt-date-start" style="width:auto; padding:5px 8px; font-size:0.8rem;" onchange="DISPATCH_MGR.render()" />
+            <span style="font-size:0.8rem; color:var(--muted);">~</span>
+            <input type="date" id="flt-date-end" style="width:auto; padding:5px 8px; font-size:0.8rem;" onchange="DISPATCH_MGR.render()" />
+            <button type="button" class="btn-outline btn-xs" onclick="DISPATCH_MGR.setDatePreset('today')">오늘</button>
+            <button type="button" class="btn-outline btn-xs" onclick="DISPATCH_MGR.setDatePreset('month')">이번 달</button>
+            <button type="button" class="btn-outline btn-xs" onclick="DISPATCH_MGR.setDatePreset('all')">전체 기간</button>
+          </div>
+          <div class="filter-row">
+            <span style="font-size:0.76rem; font-weight:700; color:var(--muted);">🚕 기사:</span>
+            <select id="flt-driver" style="width:auto; min-width:145px; padding:5px 8px; font-size:0.8rem;" onchange="DISPATCH_MGR.render()">
+              <option value="all">전체 기사</option>
+            </select>
+            <span style="font-size:0.76rem; font-weight:700; color:var(--muted); margin-left:4px;">📌 상태:</span>
+            <button type="button" class="btn-outline btn-xs active" id="flt-all" onclick="DISPATCH_MGR.setFilter('all')">전체</button>
+            <button type="button" class="btn-outline btn-xs" id="flt-waiting" onclick="DISPATCH_MGR.setFilter('waiting')">대기중</button>
+            <button type="button" class="btn-outline btn-xs" id="flt-accepted" onclick="DISPATCH_MGR.setFilter('accepted')">진행중</button>
+            <button type="button" class="btn-outline btn-xs" id="flt-completed" onclick="DISPATCH_MGR.setFilter('completed')">완료</button>
+            <button type="button" class="btn-outline btn-xs" id="flt-cancelled" onclick="DISPATCH_MGR.setFilter('cancelled')">취소</button>
+          </div>
+          <div class="summary-strip" id="dispatch-summary-strip">
+            조회 결과: 0건 | 합계 요금: 0원
           </div>
         </div>
+
         <div class="table-wrap">
           <table>
             <thead>
-              <tr><th>번호/시각</th><th>구분</th><th>상태</th><th>담당기사</th><th>손님번호</th><th>출발 → 경유 → 도착</th><th>거리/요금</th><th>포기이력/메모</th><th>통제</th></tr>
+              <tr><th>번호/시각</th><th>구분</th><th>상태</th><th>담당기사</th><th>손님번호</th><th>출발 → 경유 → 도착</th><th>거리/요금</th><th>포기이력/메모</th><th>통제/삭제</th></tr>
             </thead>
             <tbody id="dispatch-table-body"></tbody>
           </table>
@@ -244,8 +286,16 @@
       { id: 'gangcheon', name: '강천면 행정복지센터', lat: 37.269912, lng: 127.716185 }
     ];
 
+    const DEFAULT_COLORS = ['#059669', '#1d4ed8', '#d97706', '#7c3aed', '#db2777', '#0891b2', '#dc2626'];
+
     function toast(msg) { const el = document.getElementById('toast'); el.textContent = msg; el.classList.add('show'); clearTimeout(window._at); window._at = setTimeout(() => el.classList.remove('show'), 3000); }
     function esc(s) { return String(s || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+    function toLocalYMD(dateObj) {
+      const y = dateObj.getFullYear();
+      const m = String(dateObj.getMonth() + 1).padStart(2, '0');
+      const d = String(dateObj.getDate()).padStart(2, '0');
+      return `${y}-${m}-${d}`;
+    }
 
     const ADMIN = {
       sb: null,
@@ -339,19 +389,39 @@
           this.routeOverlays.push(line); this.lMap.fitBounds(line.getBounds(), { padding: [30, 30] });
         }
       },
+      buildDriverIconHtml(d) {
+        const color = esc(d.marker_color || '#059669');
+        const isOnline = d.last_seen && (Date.now() - new Date(d.last_seen).getTime() < 180000);
+        const dotColor = isOnline ? '#22c55e' : '#94a3b8';
+        return `
+          <div onclick="DRIVER_MGR.selectForForce('${esc(d.code)}')" style="cursor:pointer;display:flex;flex-direction:column;align-items:center;user-select:none;">
+            <div style="background:${color};color:#fff;font-size:11px;font-weight:800;padding:3px 8px;border-radius:999px;border:2px solid #fff;box-shadow:0 2px 6px rgba(0,0,0,0.35);white-space:nowrap;display:flex;align-items:center;gap:4px;">
+              <span style="width:7px;height:7px;border-radius:50%;background:${dotColor};border:1px solid #fff;"></span>
+              <span>${esc(d.name)}(${esc(d.code)})</span>
+            </div>
+            <div style="width:32px;height:32px;border-radius:50%;background:${color};border:2.5px solid #fff;box-shadow:0 3px 8px rgba(0,0,0,0.38);display:flex;align-items:center;justify-content:center;margin-top:2px;">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="#ffffff"><path d="M18.92 6.01C18.72 5.42 18.16 5 17.5 5H15V3H9v2H6.5c-.66 0-1.21.42-1.42 1.01L3 12v8c0 .55.45 1 1 1h1c.55 0 1-.45 1-1v-1h12v1c0 .55.45 1 1 1h1c.55 0 1-.45 1-1v-8l-2.08-5.99zM6.5 16c-.83 0-1.5-.67-1.5-1.5S5.67 13 6.5 13s1.5.67 1.5 1.5S7.33 16 6.5 16zm11 0c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5zM5 11l1.5-4.5h11L19 11H5z"/></svg>
+            </div>
+            <div style="width:0;height:0;border-left:6px solid transparent;border-right:6px solid transparent;border-top:8px solid ${color};margin-top:-1px;"></div>
+          </div>`;
+      },
       drawDrivers(drivers) {
         if (this.mode === 'kakao' && this.kMap) {
           this.driverOverlays.forEach(x => x.setMap(null)); this.driverOverlays = [];
           drivers.forEach(d => {
             if (typeof d.lat !== 'number' || typeof d.lng !== 'number') return;
-            const isOnline = d.last_seen && (Date.now() - new Date(d.last_seen).getTime() < 180000);
-            this.driverOverlays.push(new window.kakao.maps.CustomOverlay({ map: this.kMap, position: new window.kakao.maps.LatLng(d.lat, d.lng), yAnchor: 1.2, content: `<div onclick="DRIVER_MGR.selectForForce('${esc(d.code)}')" style="cursor:pointer;background:${isOnline ? '#059669' : '#64748b'};color:#fff;font-size:11px;font-weight:800;padding:4px 8px;border-radius:8px;border:2px solid #fff;box-shadow:0 2px 6px rgba(0,0,0,0.35);white-space:nowrap;">🚕 ${esc(d.name)}(${esc(d.code)})</div>` }));
+            this.driverOverlays.push(new window.kakao.maps.CustomOverlay({
+              map: this.kMap,
+              position: new window.kakao.maps.LatLng(d.lat, d.lng),
+              yAnchor: 1.0,
+              content: this.buildDriverIconHtml(d)
+            }));
           });
         } else if (this.lMap) {
           this.driverOverlays.forEach(x => this.lMap.removeLayer(x)); this.driverOverlays = [];
           drivers.forEach(d => {
             if (typeof d.lat !== 'number' || typeof d.lng !== 'number') return;
-            const icon = L.divIcon({ html: `<div style="background:#059669;color:#fff;font-size:11px;font-weight:800;padding:3px 7px;border-radius:6px;white-space:nowrap;">🚕 ${esc(d.name)}</div>`, className: '' });
+            const icon = L.divIcon({ html: this.buildDriverIconHtml(d), className: '', iconSize: [110, 62], iconAnchor: [55, 62] });
             this.driverOverlays.push(L.marker([d.lat, d.lng], { icon }).addTo(this.lMap));
           });
         }
@@ -486,69 +556,216 @@
         const sb = ADMIN.getSupabase(); if (!sb) return;
         const { data } = await sb.from('yeoju_drivers').select('*').order('code', { ascending: true });
         this.drivers = data || [];
-        this.render(); this.renderMapDrivers();
+        this.render();
+        this.renderMapDrivers();
+        DISPATCH_MGR.syncDriverFilterOptions();
       },
       render() {
         const sel = document.getElementById('force-driver-select'), prev = sel.value;
         sel.innerHTML = '<option value="">강제배차 기사 선택...</option>' + this.drivers.filter(d => d.active).map(d => `<option value="${esc(d.code)}">${esc(d.name)} (${esc(d.code)})</option>`).join('');
         if (prev) sel.value = prev;
+
         document.getElementById('driver-chips').innerHTML = this.drivers.filter(d => d.active).map(d => {
           const isOnline = d.last_seen && (Date.now() - new Date(d.last_seen).getTime() < 180000);
           const seenTxt = d.last_seen ? new Date(d.last_seen).toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit' }) : '미접속';
-          return `<div class="d-chip ${isOnline ? 'online' : ''}" onclick="DRIVER_MGR.selectForForce('${esc(d.code)}')"><span class="dot"></span><strong>${esc(d.name)}</strong>(${esc(d.code)}) · ${seenTxt}</div>`;
+          const color = esc(d.marker_color || '#059669');
+          return `<div class="d-chip ${isOnline ? 'online' : ''}" style="border-color:${color};" onclick="DRIVER_MGR.selectForForce('${esc(d.code)}')">
+            <span class="color-dot" style="background:${color};"></span>
+            <span class="status-dot"></span>
+            <strong>${esc(d.name)}</strong>(${esc(d.code)}) · ${seenTxt}
+          </div>`;
         }).join('');
+
         document.getElementById('driver-table-body').innerHTML = this.drivers.map(d => {
           const seen = d.last_seen ? new Date(d.last_seen).toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit' }) : '-';
-          return `<tr><td><strong>${esc(d.code)}</strong></td><td>${esc(d.name)}</td><td>${d.active ? '<span style="color:var(--success);font-weight:800;">사용중</span>' : '<span style="color:var(--danger);">정지</span>'}</td><td>${seen}</td><td><div style="display:flex;gap:4px;"><button type="button" class="btn-outline btn-sm" onclick="DRIVER_MGR.toggleActive('${esc(d.code)}', ${d.active})">${d.active ? '정지' : '해제'}</button><button type="button" class="btn-danger-outline btn-sm" onclick="DRIVER_MGR.deleteDriver('${esc(d.code)}')">삭제</button></div></td></tr>`;
+          const color = esc(d.marker_color || '#059669');
+          return `<tr>
+            <td><input type="color" value="${color}" title="아이콘 색상 변경" onchange="DRIVER_MGR.updateColor('${esc(d.code)}', this.value)" /></td>
+            <td><strong>${esc(d.code)}</strong></td>
+            <td>${esc(d.name)}</td>
+            <td>${d.active ? '<span style="color:var(--success);font-weight:800;">사용중</span>' : '<span style="color:var(--danger);">정지</span>'}<br/><span style="font-size:0.72rem;color:var(--muted);">${seen}</span></td>
+            <td><div style="display:flex;gap:4px;">
+              <button type="button" class="btn-outline btn-xs" onclick="DRIVER_MGR.toggleActive('${esc(d.code)}', ${d.active})">${d.active ? '정지' : '해제'}</button>
+              <button type="button" class="btn-danger-outline btn-xs" onclick="DRIVER_MGR.deleteDriver('${esc(d.code)}')">삭제</button>
+            </div></td>
+          </tr>`;
         }).join('');
       },
       renderMapDrivers() { ADMIN_MAP.drawDrivers(this.drivers.filter(d => d.active)); },
       selectForForce(code) { document.getElementById('force-driver-select').value = code; toast(`강제배차 대상 선택됨: 코드 ${code}`); },
       async addDriver() {
-        const sb = ADMIN.getSupabase(), code = document.getElementById('new-d-code').value.trim(), name = document.getElementById('new-d-name').value.trim();
+        const sb = ADMIN.getSupabase();
+        const code = document.getElementById('new-d-code').value.trim();
+        const name = document.getElementById('new-d-name').value.trim();
+        const color = document.getElementById('new-d-color').value || '#059669';
         if (!code || !name) return toast('고유 코드와 기사명을 입력하세요.');
-        const { error } = await sb.from('yeoju_drivers').upsert([{ code, name, active: true }]);
+        const { error } = await sb.from('yeoju_drivers').upsert([{ code, name, marker_color: color, active: true }]);
         if (error) return toast(`등록 실패: ${error.message}`);
-        document.getElementById('new-d-code').value = ''; document.getElementById('new-d-name').value = '';
+        document.getElementById('new-d-code').value = '';
+        document.getElementById('new-d-name').value = '';
+        const nextIdx = (this.drivers.length + 1) % DEFAULT_COLORS.length;
+        document.getElementById('new-d-color').value = DEFAULT_COLORS[nextIdx];
         toast(`기사 [${name} (${code})] 등록 완료`);
         await this.loadDrivers();
+      },
+      async updateColor(code, color) {
+        const sb = ADMIN.getSupabase();
+        const { error } = await sb.from('yeoju_drivers').update({ marker_color: color }).eq('code', code);
+        if (error) return toast(`색상 저장 오류 (SQL 1줄 실행 확인): ${error.message}`);
+        const target = this.drivers.find(d => d.code === code);
+        if (target) target.marker_color = color;
+        this.render();
+        this.renderMapDrivers();
+        toast(`기사(${code}) 아이콘 색상이 변경되었습니다.`);
       },
       async toggleActive(code, cur) { await ADMIN.getSupabase().from('yeoju_drivers').update({ active: !cur }).eq('code', code); await this.loadDrivers(); },
       async deleteDriver(code) { if (!confirm(`기사 코드 [${code}]를 삭제하시겠습니까?`)) return; await ADMIN.getSupabase().from('yeoju_drivers').delete().eq('code', code); await this.loadDrivers(); }
     };
 
     const DISPATCH_MGR = {
-      rows: [], filter: 'all',
+      rows: [],
+      filter: 'all',
+
       async loadAll() {
         const sb = ADMIN.getSupabase(); if (!sb) return;
-        const { data } = await sb.from('yeoju_dispatches').select('*').order('created_at', { ascending: false }).limit(200);
+        const { data } = await sb.from('yeoju_dispatches').select('*').order('created_at', { ascending: false }).limit(500);
         this.rows = data || [];
+        this.syncDriverFilterOptions();
         this.render();
       },
-      setFilter(f) { this.filter = f; ['all', 'waiting', 'accepted', 'completed'].forEach(k => document.getElementById(`flt-${k}`).classList.toggle('active', k === f)); this.render(); },
+
+      syncDriverFilterOptions() {
+        const sel = document.getElementById('flt-driver');
+        if (!sel) return;
+        const prev = sel.value || 'all';
+        const map = new Map();
+        DRIVER_MGR.drivers.forEach(d => map.set(d.code, `${d.name} (${d.code})`));
+        this.rows.forEach(r => {
+          if (r.driver_code && !map.has(r.driver_code)) {
+            map.set(r.driver_code, `${r.driver_name || '기사'} (${r.driver_code})`);
+          }
+        });
+        sel.innerHTML = '<option value="all">전체 기사</option>' +
+          Array.from(map.entries()).map(([code, label]) => `<option value="${esc(code)}">${esc(label)}</option>`).join('');
+        sel.value = map.has(prev) ? prev : 'all';
+      },
+
+      setFilter(f) {
+        this.filter = f;
+        ['all', 'waiting', 'accepted', 'completed', 'cancelled'].forEach(k => {
+          document.getElementById(`flt-${k}`)?.classList.toggle('active', k === f);
+        });
+        this.render();
+      },
+
+      setDatePreset(preset) {
+        const startEl = document.getElementById('flt-date-start');
+        const endEl = document.getElementById('flt-date-end');
+        const now = new Date();
+        if (preset === 'today') {
+          const today = toLocalYMD(now);
+          startEl.value = today;
+          endEl.value = today;
+        } else if (preset === 'month') {
+          const firstDay = new Date(now.getFullYear(), now.getMonth(), 1);
+          startEl.value = toLocalYMD(firstDay);
+          endEl.value = toLocalYMD(now);
+        } else {
+          startEl.value = '';
+          endEl.value = '';
+        }
+        this.render();
+      },
+
+      getFilteredRows() {
+        const startVal = document.getElementById('flt-date-start')?.value || '';
+        const endVal = document.getElementById('flt-date-end')?.value || '';
+        const driverVal = document.getElementById('flt-driver')?.value || 'all';
+
+        return this.rows.filter(r => {
+          if (this.filter !== 'all' && r.status !== this.filter) return false;
+          if (driverVal !== 'all' && r.driver_code !== driverVal) return false;
+          if (startVal || endVal) {
+            const rowYMD = toLocalYMD(new Date(r.created_at));
+            if (startVal && rowYMD < startVal) return false;
+            if (endVal && rowYMD > endVal) return false;
+          }
+          return true;
+        });
+      },
+
       render() {
-        const list = this.filter === 'all' ? this.rows : this.rows.filter(r => r.status === this.filter);
-        document.getElementById('disp-count').textContent = list.length;
+        const list = this.getFilteredRows();
+        const totalFareSum = list.reduce((acc, r) => acc + (r.total_fare || 0), 0);
+        const completedList = list.filter(r => r.status === 'completed');
+        const completedFareSum = completedList.reduce((acc, r) => acc + (r.total_fare || 0), 0);
+
+        document.getElementById('dispatch-summary-strip').innerHTML = `
+          <span>조회 결과: <strong>${list.length}건</strong></span>
+          <span>조회 합계 요금: <strong>${totalFareSum.toLocaleString()}원</strong></span>
+          <span style="color:#059669;">완료 건수: <strong>${completedList.length}건 (${completedFareSum.toLocaleString()}원)</strong></span>
+        `;
+
         const stLabel = { waiting: ['대기중', 'st-waiting'], accepted: ['진행중', 'st-accepted'], completed: ['완료', 'st-completed'], cancelled: ['취소됨', 'st-cancelled'] };
+        if (!list.length) {
+          document.getElementById('dispatch-table-body').innerHTML = '<tr><td colspan="9" style="text-align:center;padding:24px;color:var(--muted);">선택한 조건에 해당하는 운행 기록이 없습니다.</td></tr>';
+          return;
+        }
+
         document.getElementById('dispatch-table-body').innerHTML = list.map(r => {
-          const [txt, cls] = stLabel[r.status] || [r.status, ''], wps = Array.isArray(r.waypoints) ? r.waypoints : [];
+          const [txt, cls] = stLabel[r.status] || [r.status, ''];
+          const wps = Array.isArray(r.waypoints) ? r.waypoints : [];
           const routeStr = `${r.origin_name}${wps.length ? ` → [경유:${wps.map(w=>w.name).join(',')}]` : ''} → ${r.dest_name}`;
           const time = new Date(r.created_at).toLocaleString('ko-KR', { month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' });
           const canCancel = r.status === 'waiting' || r.status === 'accepted';
-          return `<tr><td><strong>#${r.id}</strong><br/><span style="font-size:0.74rem;color:var(--muted);">${time}</span></td><td>${r.dispatch_type === 'forced' ? '<span class="tag-forced">강제</span>' : '일반'}</td><td><span class="badge ${cls}">${txt}</span></td><td>${r.driver_name ? `<strong>${esc(r.driver_name)}</strong>(${esc(r.driver_code)})` : '-'}</td><td>${esc(r.customer_phone || '-')}</td><td style="max-width:250px;word-break:keep-all;">${esc(routeStr)}</td><td style="white-space:nowrap;">${(r.distance_meters/1000).toFixed(2)}km<br/><strong style="color:var(--primary);">${(r.total_fare||0).toLocaleString()}원</strong></td><td style="font-size:0.76rem;max-width:160px;">${r.note ? `<div>메모: ${esc(r.note)}</div>` : ''}${r.forfeit_log ? `<div style="color:#b45309;">포기: ${esc(r.forfeit_log)}</div>` : ''}</td><td>${canCancel ? `<button type="button" class="btn-danger-outline btn-sm" onclick="DISPATCH_MGR.cancelDispatch(${r.id})">배차취소</button>` : '-'}</td></tr>`;
+          return `<tr>
+            <td><strong>#${r.id}</strong><br/><span style="font-size:0.74rem;color:var(--muted);">${time}</span></td>
+            <td>${r.dispatch_type === 'forced' ? '<span class="tag-forced">강제</span>' : '일반'}</td>
+            <td><span class="badge ${cls}">${txt}</span></td>
+            <td>${r.driver_name ? `<strong>${esc(r.driver_name)}</strong>(${esc(r.driver_code)})` : '-'}</td>
+            <td>${esc(r.customer_phone || '-')}</td>
+            <td style="max-width:250px;word-break:keep-all;">${esc(routeStr)}</td>
+            <td style="white-space:nowrap;">${(r.distance_meters/1000).toFixed(2)}km<br/><strong style="color:var(--primary);">${(r.total_fare||0).toLocaleString()}원</strong></td>
+            <td style="font-size:0.76rem;max-width:160px;">${r.note ? `<div>메모: ${esc(r.note)}</div>` : ''}${r.forfeit_log ? `<div style="color:#b45309;">포기: ${esc(r.forfeit_log)}</div>` : ''}</td>
+            <td>
+              <div style="display:flex;gap:4px;flex-wrap:wrap;">
+                ${canCancel ? `<button type="button" class="btn-warn btn-xs" onclick="DISPATCH_MGR.cancelDispatch(${r.id})">취소</button>` : ''}
+                <button type="button" class="btn-danger-outline btn-xs" onclick="DISPATCH_MGR.deleteDispatch(${r.id})">삭제</button>
+              </div>
+            </td>
+          </tr>`;
         }).join('');
       },
+
       async cancelDispatch(id) {
         if (!confirm(`#${id} 배차를 강제 취소하시겠습니까?`)) return;
         await ADMIN.getSupabase().from('yeoju_dispatches').update({ status: 'cancelled', updated_at: new Date().toISOString() }).eq('id', id);
         toast(`#${id} 배차가 취소되었습니다.`);
         await this.loadAll();
       },
+
+      async deleteDispatch(id) {
+        if (!confirm(`#${id} 운행 기록을 영구 삭제하시겠습니까?\n삭제된 기록은 복구할 수 없습니다.`)) return;
+        const { error } = await ADMIN.getSupabase().from('yeoju_dispatches').delete().eq('id', id);
+        if (error) return toast(`삭제 오류: ${error.message}`);
+        toast(`#${id} 운행 기록이 삭제되었습니다.`);
+        await this.loadAll();
+      },
+
       exportCSV() {
-        if (!this.rows.length) return toast('내보낼 데이터가 없습니다.');
+        const list = this.getFilteredRows();
+        if (!list.length) return toast('내보낼 데이터가 없습니다.');
         const h = ['번호', '접수일시', '구분', '상태', '기사코드', '기사명', '손님번호', '출발지', '도착지', '거리(km)', '통행료', '최종요금', '메모', '포기이력'];
-        const csv = [h.join(','), ...this.rows.map(r => [r.id, `"${new Date(r.created_at).toLocaleString('ko-KR')}"`, r.dispatch_type, r.status, `"${r.driver_code||''}"`, `"${r.driver_name||''}"`, `"${r.customer_phone||''}"`, `"${r.origin_name}"`, `"${r.dest_name}"`, (r.distance_meters/1000).toFixed(2), r.applied_toll, r.total_fare, `"${(r.note||'').replace(/"/g,'""')}"`, `"${(r.forfeit_log||'').replace(/"/g,'""')}"`].join(','))];
-        const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob(['\uFEFF' + csv.join('\n')], { type: 'text/csv;charset=utf-8;' })); a.download = `여주시_배차관제기록_${new Date().toISOString().slice(0,10)}.csv`; a.click();
+        const csv = [h.join(','), ...list.map(r => [
+          r.id, `"${new Date(r.created_at).toLocaleString('ko-KR')}"`, r.dispatch_type, r.status,
+          `"${r.driver_code||''}"`, `"${r.driver_name||''}"`, `"${r.customer_phone||''}"`,
+          `"${r.origin_name}"`, `"${r.dest_name}"`, (r.distance_meters/1000).toFixed(2),
+          r.applied_toll, r.total_fare, `"${(r.note||'').replace(/"/g,'""')}"`, `"${(r.forfeit_log||'').replace(/"/g,'""')}"`
+        ].join(','))];
+        const a = document.createElement('a');
+        a.href = URL.createObjectURL(new Blob(['\uFEFF' + csv.join('\n')], { type: 'text/csv;charset=utf-8;' }));
+        a.download = `여주시_운행기록_${new Date().toISOString().slice(0,10)}.csv`;
+        a.click();
       }
     };
 
