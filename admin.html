@@ -123,6 +123,9 @@
     .m-rec-actions { display: flex; gap: 6px; }
     .m-rec-actions > button { flex: 1; }
 
+    /* 모바일 하단 빠른 이동 탭 바 (PC 숨김) */
+    .mobile-bottom-nav { display: none; }
+
     #toast { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%) translateY(80px); background: #0f172a; color: #fff; padding: 10px 18px; border-radius: 999px; font-size: 0.84rem; font-weight: 700; z-index: 9999; opacity: 0; transition: all 0.25s; max-width: 92vw; text-align: center; }
     #toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
 
@@ -131,7 +134,9 @@
     }
 
     @media (max-width: 768px) {
-      /* iOS Safari 입력창 자동 확대 방지 */
+      body {
+        padding-bottom: calc(78px + env(safe-area-inset-bottom));
+      }
       input[type="text"], input[type="password"], input[type="tel"], input[type="number"], input[type="date"], select {
         font-size: 16px !important;
         padding: 9px 10px;
@@ -153,9 +158,50 @@
       #map-box { height: 250px; }
       #driver-table th, #driver-table td { padding: 7px 4px; font-size: 0.78rem; }
 
-      /* 모바일에서는 9열 표 대신 카드 리스트로 표시 */
       #dispatch-desktop-wrap { display: none; }
       .mobile-record-list { display: flex; }
+
+      /* 모바일 하단 탭 바 표시 */
+      .mobile-bottom-nav {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        background: #ffffff;
+        border-top: 1px solid #cbd5e1;
+        box-shadow: 0 -3px 12px rgba(15, 23, 42, 0.12);
+        z-index: 1300;
+        padding: 5px 6px calc(5px + env(safe-area-inset-bottom));
+        gap: 4px;
+      }
+      .m-nav-btn {
+        background: transparent;
+        color: var(--muted);
+        flex-direction: column;
+        gap: 2px;
+        padding: 6px 2px;
+        border-radius: 8px;
+        font-size: 0.74rem;
+        font-weight: 800;
+        position: relative;
+      }
+      .m-nav-btn .m-nav-ico { font-size: 1.08rem; line-height: 1.1; }
+      .m-nav-btn.active { background: var(--primary-light); color: var(--primary); }
+      .m-nav-badge {
+        position: absolute;
+        top: 3px;
+        right: 12%;
+        background: var(--danger);
+        color: #fff;
+        font-size: 0.64rem;
+        font-weight: 800;
+        padding: 1px 5px;
+        border-radius: 999px;
+        line-height: 1.2;
+      }
+      #toast { bottom: calc(74px + env(safe-area-inset-bottom)); }
     }
   </style>
 </head>
@@ -190,8 +236,8 @@
     </section>
 
     <div class="top-grid">
-      <!-- 좌측: 신규 배차 및 강제배차 발송 -->
-      <section class="card">
+      <!-- 1. 신규 배차 및 강제배차 발송 -->
+      <section id="sec-dispatch-form" class="card">
         <div class="card-title">
           <span>📢 신규 배차 &amp; 강제배차 발송</span>
           <div style="display:flex; gap:5px;">
@@ -258,8 +304,8 @@
         </div>
       </section>
 
-      <!-- 우측: 실시간 기사 위치 아이콘 관제 지도 -->
-      <section class="card">
+      <!-- 2. 실시간 기사 위치 아이콘 관제 지도 -->
+      <section id="sec-live-map" class="card">
         <div class="card-title">
           <span>🗺️ 실시간 기사 위치 &amp; 경로 관제</span>
           <button type="button" class="btn-outline btn-xs" onclick="DRIVER_MGR.loadDrivers()">🔄 위치 갱신</button>
@@ -274,8 +320,8 @@
     </div>
 
     <div class="mid-grid">
-      <!-- 기사 고유 코드 및 아이콘 색상 관리 -->
-      <section class="card">
+      <!-- 3. 기사 고유 코드 및 아이콘 색상 관리 -->
+      <section id="sec-driver-mgr" class="card">
         <div class="card-title"><span>🚕 기사 고유 코드 · 아이콘 색상</span></div>
         <div class="grid-driver-add">
           <input type="text" id="new-d-code" placeholder="코드(102)" />
@@ -291,8 +337,8 @@
         </div>
       </section>
 
-      <!-- 기간별 · 기사별 운행 기록 및 휴지통 -->
-      <section class="card">
+      <!-- 4. 기간별 · 기사별 운행 기록 및 휴지통 -->
+      <section id="sec-dispatch-records" class="card">
         <div class="card-title">
           <span id="record-card-heading">📋 실시간 배차 현황 &amp; 운행 기록</span>
           <div style="display:flex; gap:6px; flex-wrap:wrap;">
@@ -301,7 +347,6 @@
           </div>
         </div>
 
-        <!-- 일반 조회 필터 패널 -->
         <div class="filter-panel" id="normal-filter-panel">
           <div class="filter-row">
             <div class="date-range-box">
@@ -332,7 +377,6 @@
           </div>
         </div>
 
-        <!-- 휴지통 안내 배너 -->
         <div class="trash-banner" id="trash-banner" style="display:none;">
           <span>🗑️ 휴지통 — [↩ 복원] 시 원래 상태와 날짜로 즉시 복구됩니다.</span>
           <div style="display:flex; gap:6px;">
@@ -355,6 +399,27 @@
         <div class="mobile-record-list" id="dispatch-mobile-list"></div>
       </section>
     </div>
+
+    <!-- 모바일 하단 빠른 이동 탭 바 -->
+    <nav class="mobile-bottom-nav" id="mobile-bottom-nav" aria-label="모바일 섹션 바로가기">
+      <button type="button" class="m-nav-btn active" id="mnav-form" onclick="ADMIN.scrollToSection('sec-dispatch-form', 'mnav-form')">
+        <span class="m-nav-ico">📢</span>
+        <span>배차발송</span>
+      </button>
+      <button type="button" class="m-nav-btn" id="mnav-map" onclick="ADMIN.scrollToSection('sec-live-map', 'mnav-map')">
+        <span class="m-nav-ico">🗺️</span>
+        <span>지도</span>
+      </button>
+      <button type="button" class="m-nav-btn" id="mnav-records" onclick="ADMIN.scrollToSection('sec-dispatch-records', 'mnav-records')">
+        <span class="m-nav-ico">📋</span>
+        <span>운행기록</span>
+        <span class="m-nav-badge" id="mnav-active-badge" style="display:none;">0</span>
+      </button>
+      <button type="button" class="m-nav-btn" id="mnav-drivers" onclick="ADMIN.scrollToSection('sec-driver-mgr', 'mnav-drivers')">
+        <span class="m-nav-ico">🚕</span>
+        <span>기사관리</span>
+      </button>
+    </nav>
   </main>
 
   <div id="toast"></div>
@@ -424,11 +489,50 @@
         toast('설정이 저장되었습니다.');
         this.connectRealtime();
       },
+      scrollToSection(secId, navId) {
+        const el = document.getElementById(secId);
+        if (!el) return;
+        document.querySelectorAll('.m-nav-btn').forEach(b => b.classList.remove('active'));
+        const btn = document.getElementById(navId);
+        if (btn) btn.classList.add('active');
+        const headerH = document.querySelector('header')?.offsetHeight || 52;
+        const top = el.getBoundingClientRect().top + window.scrollY - headerH - 8;
+        window.scrollTo({ top: Math.max(0, top), behavior: 'smooth' });
+        if (secId === 'sec-live-map') {
+          setTimeout(() => ADMIN_MAP.refreshSize(), 260);
+        }
+      },
+      initScrollSpy() {
+        const pairs = [
+          ['sec-dispatch-form', 'mnav-form'],
+          ['sec-live-map', 'mnav-map'],
+          ['sec-driver-mgr', 'mnav-drivers'],
+          ['sec-dispatch-records', 'mnav-records']
+        ];
+        let ticking = false;
+        window.addEventListener('scroll', () => {
+          if (ticking || window.innerWidth > 768) return;
+          ticking = true;
+          requestAnimationFrame(() => {
+            const offset = (document.querySelector('header')?.offsetHeight || 52) + 85;
+            let currentNav = 'mnav-form';
+            for (const [secId, navId] of pairs) {
+              const el = document.getElementById(secId);
+              if (el && el.getBoundingClientRect().top <= offset) {
+                currentNav = navId;
+              }
+            }
+            document.querySelectorAll('.m-nav-btn').forEach(b => b.classList.toggle('active', b.id === currentNav));
+            ticking = false;
+          });
+        }, { passive: true });
+      },
       async boot() {
         const saved = JSON.parse(localStorage.getItem('yeoju_sb_cfg') || '{}');
         document.getElementById('sb-url').value = CONFIG.SUPABASE_URL || saved.url || '';
         document.getElementById('sb-key').value = CONFIG.SUPABASE_ANON_KEY || saved.key || '';
         ['preset-origin', 'preset-dest'].forEach(id => { document.getElementById(id).innerHTML = '<option value="">거점선택</option>' + YEOJU_PRESETS.map(p => `<option value="${p.id}">${p.name}</option>`).join(''); });
+        this.initScrollSpy();
         ADMIN_MAP.loadKakaoSDK();
         await DISPATCH_FORM.calcRoute();
         await this.connectRealtime();
@@ -451,6 +555,14 @@
 
     const ADMIN_MAP = {
       mode: 'leaflet', kMap: null, lMap: null, routeOverlays: [], driverOverlays: [],
+      refreshSize() {
+        if (this.mode === 'kakao' && this.kMap) {
+          this.kMap.relayout();
+          DISPATCH_FORM.calcRoute();
+        } else if (this.lMap) {
+          this.lMap.invalidateSize();
+        }
+      },
       loadKakaoSDK() {
         const s = document.createElement('script');
         s.src = `https://dapi.kakao.com/v2/maps/sdk.js?appkey=${CONFIG.KAKAO_JS_KEY}&libraries=services&autoload=false`;
@@ -813,6 +925,14 @@
         const trashedRows = this.rows.filter(r => Boolean(r.deleted_at))
           .sort((a, b) => new Date(b.deleted_at) - new Date(a.deleted_at));
         document.getElementById('trash-count').textContent = trashedRows.length;
+
+        /* 모바일 하단 탭 바: 대기중 + 진행중 건수 배지 업데이트 */
+        const activeCallCount = this.rows.filter(r => !r.deleted_at && (r.status === 'waiting' || r.status === 'accepted')).length;
+        const mBadge = document.getElementById('mnav-active-badge');
+        if (mBadge) {
+          mBadge.textContent = activeCallCount;
+          mBadge.style.display = activeCallCount > 0 ? 'inline-block' : 'none';
+        }
 
         const stLabel = { waiting: ['대기중', 'st-waiting'], accepted: ['진행중', 'st-accepted'], completed: ['완료', 'st-completed'], cancelled: ['취소됨', 'st-cancelled'] };
         const mobileBox = document.getElementById('dispatch-mobile-list');
