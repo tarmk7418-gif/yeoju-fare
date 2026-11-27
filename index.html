@@ -13,87 +13,73 @@
   <script src="https://t1.kakaocdn.net/kakao_js_sdk/2.7.4/kakao.min.js" crossorigin="anonymous"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <style>
-    :root {
-      --primary: #1d4ed8; --primary-dark: #1e3a8a; --primary-light: #eff6ff;
-      --kakao-yellow: #fee500; --kakao-brown: #191919; --navi-bg: #0f172a; --navi-text: #fde047;
-      --success: #059669; --danger: #dc2626; --warn: #d97706;
-      --bg: #f1f5f9; --card: #ffffff; --text: #0f172a; --muted: #475569; --border: #cbd5e1;
-    }
+    :root { --primary:#1d4ed8; --primary-dark:#1e3a8a; --primary-light:#eff6ff; --kakao-yellow:#fee500; --kakao-brown:#191919; --navi-bg:#0f172a; --navi-text:#fde047; --success:#059669; --danger:#dc2626; --bg:#f1f5f9; --card:#ffffff; --text:#0f172a; --muted:#475569; --border:#cbd5e1; }
     * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
-    body { margin: 0; font-family: -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo", "Malgun Gothic", sans-serif; background: var(--bg); color: var(--text); padding-bottom: calc(28px + env(safe-area-inset-bottom)); }
-    header { background: linear-gradient(135deg, var(--primary-dark), var(--primary)); color: #fff; padding: 12px 16px; position: sticky; top: 0; z-index: 1000; box-shadow: 0 2px 8px rgba(0,0,0,0.16); }
-    .header-inner { max-width: 1100px; margin: 0 auto; display: flex; justify-content: space-between; align-items: center; gap: 8px; flex-wrap: wrap; }
-    .header-title h1 { margin: 0; font-size: 1.08rem; }
-    .header-title p { margin: 2px 0 0; font-size: 0.75rem; opacity: 0.9; }
-    .header-right { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
-    .pill { font-size: 0.74rem; font-weight: 700; padding: 4px 10px; border-radius: 999px; background: rgba(255,255,255,0.2); color: #fff; }
-    .pill.live { background: #10b981; }
-    .container { max-width: 1100px; margin: 12px auto; padding: 0 12px; }
-    .card { background: var(--card); border-radius: 12px; border: 1px solid #e2e8f0; box-shadow: 0 2px 8px rgba(15,23,42,0.05); padding: 15px; margin-bottom: 12px; }
-    button { font-family: inherit; cursor: pointer; border: none; border-radius: 8px; font-weight: 700; font-size: 0.85rem; padding: 9px 13px; display: inline-flex; align-items: center; justify-content: center; gap: 5px; }
-    button:active { transform: scale(0.98); }
-    .btn-primary { background: var(--primary); color: #fff; }
-    .btn-success { background: var(--success); color: #fff; }
-    .btn-danger { background: var(--danger); color: #fff; }
-    .btn-danger-outline { background: #fff; color: var(--danger); border: 1px solid #fecaca; }
-    .btn-warn { background: #fef3c7; color: #92400e; border: 1px solid #fcd34d; }
-    .btn-kakao { background: var(--kakao-yellow); color: var(--kakao-brown); }
-    .btn-navi { background: var(--navi-bg); color: var(--navi-text); }
-    .btn-outline { background: #fff; color: var(--text); border: 1px solid var(--border); }
-    .btn-sm { padding: 6px 10px; font-size: 0.78rem; }
-    input, select { width: 100%; padding: 9px 11px; border: 1px solid var(--border); border-radius: 8px; font-size: 16px; background: #fff; outline: none; }
-    input:focus, select:focus { border-color: var(--primary); }
-    label { display: block; font-size: 0.76rem; font-weight: 700; color: var(--muted); margin-bottom: 4px; }
-
-    /* 로그인 화면 */
-    .login-box { max-width: 420px; margin: 36px auto; text-align: center; }
-    .login-box h2 { margin: 0 0 6px; font-size: 1.25rem; }
-    .login-box p { margin: 0 0 18px; font-size: 0.84rem; color: var(--muted); }
-
-    /* 상단 4개 탭 */
-    .tab-bar { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; background: #e2e8f0; padding: 5px; border-radius: 12px; margin-bottom: 12px; position: sticky; top: 56px; z-index: 900; }
-    .tab-btn { background: transparent; color: var(--muted); padding: 9px 6px; border-radius: 8px; font-size: 0.82rem; position: relative; }
-    .tab-btn.active { background: #fff; color: var(--primary); box-shadow: 0 1px 4px rgba(0,0,0,0.1); }
-    .tab-badge { background: var(--danger); color: #fff; font-size: 0.7rem; padding: 1px 6px; border-radius: 999px; margin-left: 3px; }
-
-    /* 배차 카드 */
-    .dispatch-card { border: 1.5px solid #cbd5e1; border-radius: 12px; padding: 14px; margin-bottom: 10px; background: #fff; }
-    .dispatch-card.forced { border-color: #f59e0b; background: #fffbeb; }
-    .dc-top { display: flex; justify-content: space-between; align-items: center; gap: 6px; margin-bottom: 8px; flex-wrap: wrap; }
-    .tag-forced { background: #dc2626; color: #fff; font-size: 0.72rem; font-weight: 800; padding: 3px 8px; border-radius: 6px; }
-    .tag-normal { background: #dbeafe; color: #1e40af; font-size: 0.72rem; font-weight: 800; padding: 3px 8px; border-radius: 6px; }
-    .dc-route { font-size: 0.94rem; font-weight: 700; margin: 6px 0; line-height: 1.45; }
-    .dc-wp { font-size: 0.82rem; color: #b45309; font-weight: 700; margin: 3px 0; }
-    .dc-meta { display: flex; flex-wrap: wrap; gap: 10px; font-size: 0.82rem; color: var(--muted); margin: 8px 0; padding: 8px; background: #f8fafc; border-radius: 8px; }
-    .dc-fare { font-size: 1.05rem; font-weight: 800; color: var(--primary); }
-    .dc-actions { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 10px; }
-    .dc-actions > * { flex: 1; min-width: 110px; }
-
-    /* 요금 계산기 스타일 */
-    .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
-    .route-box { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 10px; padding: 10px; margin-bottom: 9px; position: relative; }
-    .route-box.wp { background: #fffbeb; border-color: #fde68a; }
-    .input-wrap { position: relative; margin-top: 6px; }
-    .input-row { display: grid; grid-template-columns: 1fr auto auto; gap: 5px; }
-    .suggest-dropdown { position: absolute; top: calc(100% + 4px); left: 0; right: 0; background: #fff; border: 1.5px solid #3b82f6; border-radius: 10px; box-shadow: 0 10px 24px rgba(0,0,0,0.16); max-height: 250px; overflow-y: auto; z-index: 1500; display: none; }
-    .suggest-dropdown.open { display: block; }
-    .suggest-item { padding: 9px 11px; border-bottom: 1px solid #f1f5f9; cursor: pointer; }
-    .suggest-item:hover { background: var(--primary-light); }
-    .suggest-title { font-weight: 700; font-size: 0.88rem; }
-    .suggest-sub { font-size: 0.74rem; color: var(--muted); }
-    #map-wrapper { width: 100%; height: 270px; border-radius: 10px; overflow: hidden; border: 1px solid var(--border); margin: 8px 0; }
-    #kakao-map, #leaflet-map { width: 100%; height: 100%; }
-    .stat-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; margin-top: 8px; }
-    .stat-box { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 8px; text-align: center; }
-    .stat-box.hi { background: var(--primary-light); border-color: #93c5fd; }
-    .stat-val { font-size: 0.96rem; font-weight: 800; }
-    .stat-box.hi .stat-val { color: var(--primary); }
-    table { width: 100%; border-collapse: collapse; font-size: 0.82rem; margin-top: 8px; }
-    th, td { padding: 8px 6px; border-bottom: 1px solid #e2e8f0; text-align: left; }
-    th { background: #f8fafc; color: var(--muted); }
-    #toast { position: fixed; bottom: 22px; left: 50%; transform: translateX(-50%) translateY(80px); background: #0f172a; color: #fff; padding: 10px 18px; border-radius: 999px; font-size: 0.84rem; font-weight: 700; z-index: 9999; opacity: 0; transition: all 0.25s; max-width: 92vw; text-align: center; }
-    #toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
-    @media (max-width: 760px) { .grid-2 { grid-template-columns: 1fr; } .stat-grid { grid-template-columns: repeat(2, 1fr); } }
+    body { margin:0; font-family:-apple-system,BlinkMacSystemFont,"Apple SD Gothic Neo","Malgun Gothic",sans-serif; background:var(--bg); color:var(--text); padding-bottom:calc(28px + env(safe-area-inset-bottom)); }
+    header { background:linear-gradient(135deg,var(--primary-dark),var(--primary)); color:#fff; padding:12px 16px; position:sticky; top:0; z-index:1000; box-shadow:0 2px 8px rgba(0,0,0,0.16); }
+    .header-inner { max-width:1100px; margin:0 auto; display:flex; justify-content:space-between; align-items:center; gap:8px; flex-wrap:wrap; }
+    .header-title h1 { margin:0; font-size:1.08rem; }
+    .header-title p { margin:2px 0 0; font-size:0.75rem; opacity:0.9; }
+    .header-right { display:flex; align-items:center; gap:6px; flex-wrap:wrap; }
+    .pill { font-size:0.74rem; font-weight:700; padding:4px 10px; border-radius:999px; background:rgba(255,255,255,0.2); color:#fff; }
+    .pill.live { background:#10b981; }
+    .container { max-width:1100px; margin:12px auto; padding:0 12px; }
+    .card { background:var(--card); border-radius:12px; border:1px solid #e2e8f0; box-shadow:0 2px 8px rgba(15,23,42,0.05); padding:15px; margin-bottom:12px; }
+    button { font-family:inherit; cursor:pointer; border:none; border-radius:8px; font-weight:700; font-size:0.85rem; padding:9px 13px; display:inline-flex; align-items:center; justify-content:center; gap:5px; }
+    button:active { transform:scale(0.98); }
+    .btn-primary { background:var(--primary); color:#fff; }
+    .btn-success { background:var(--success); color:#fff; }
+    .btn-danger-outline { background:#fff; color:var(--danger); border:1px solid #fecaca; }
+    .btn-warn { background:#fef3c7; color:#92400e; border:1px solid #fcd34d; }
+    .btn-kakao { background:var(--kakao-yellow); color:var(--kakao-brown); }
+    .btn-navi { background:var(--navi-bg); color:var(--navi-text); }
+    .btn-outline { background:#fff; color:var(--text); border:1px solid var(--border); }
+    .btn-sm { padding:6px 10px; font-size:0.78rem; }
+    input, select { width:100%; padding:9px 11px; border:1px solid var(--border); border-radius:8px; font-size:16px; background:#fff; outline:none; }
+    input:focus, select:focus { border-color:var(--primary); }
+    label { display:block; font-size:0.76rem; font-weight:700; color:var(--muted); margin-bottom:4px; }
+    .login-box { max-width:420px; margin:36px auto; text-align:center; }
+    .login-box h2 { margin:0 0 6px; font-size:1.25rem; }
+    .login-box p { margin:0 0 18px; font-size:0.84rem; color:var(--muted); }
+    .tab-bar { display:grid; grid-template-columns:repeat(4,1fr); gap:6px; background:#e2e8f0; padding:5px; border-radius:12px; margin-bottom:12px; position:sticky; top:56px; z-index:900; }
+    .tab-btn { background:transparent; color:var(--muted); padding:9px 6px; border-radius:8px; font-size:0.82rem; }
+    .tab-btn.active { background:#fff; color:var(--primary); box-shadow:0 1px 4px rgba(0,0,0,0.1); }
+    .tab-badge { background:var(--danger); color:#fff; font-size:0.7rem; padding:1px 6px; border-radius:999px; margin-left:3px; }
+    .dispatch-card { border:1.5px solid #cbd5e1; border-radius:12px; padding:14px; margin-bottom:10px; background:#fff; }
+    .dispatch-card.forced { border-color:#f59e0b; background:#fffbeb; }
+    .dc-top { display:flex; justify-content:space-between; align-items:center; gap:6px; margin-bottom:8px; flex-wrap:wrap; }
+    .tag-forced { background:#dc2626; color:#fff; font-size:0.72rem; font-weight:800; padding:3px 8px; border-radius:6px; }
+    .tag-normal { background:#dbeafe; color:#1e40af; font-size:0.72rem; font-weight:800; padding:3px 8px; border-radius:6px; }
+    .dc-route { font-size:0.94rem; font-weight:700; margin:6px 0; line-height:1.45; }
+    .dc-wp { font-size:0.82rem; color:#b45309; font-weight:700; margin:3px 0; }
+    .dc-meta { display:flex; flex-wrap:wrap; gap:10px; font-size:0.82rem; color:var(--muted); margin:8px 0; padding:8px; background:#f8fafc; border-radius:8px; }
+    .dc-fare { font-size:1.05rem; font-weight:800; color:var(--primary); }
+    .dc-actions { display:flex; flex-wrap:wrap; gap:6px; margin-top:10px; }
+    .dc-actions > * { flex:1; min-width:110px; }
+    .grid-2 { display:grid; grid-template-columns:1fr 1fr; gap:12px; }
+    .route-box { background:#f8fafc; border:1px solid #e2e8f0; border-radius:10px; padding:10px; margin-bottom:9px; position:relative; }
+    .route-box.wp { background:#fffbeb; border-color:#fde68a; }
+    .input-wrap { position:relative; margin-top:6px; }
+    .input-row { display:grid; grid-template-columns:1fr auto auto; gap:5px; }
+    .suggest-dropdown { position:absolute; top:calc(100% + 4px); left:0; right:0; background:#fff; border:1.5px solid #3b82f6; border-radius:10px; box-shadow:0 10px 24px rgba(0,0,0,0.16); max-height:250px; overflow-y:auto; z-index:1500; display:none; }
+    .suggest-dropdown.open { display:block; }
+    .suggest-item { padding:9px 11px; border-bottom:1px solid #f1f5f9; cursor:pointer; }
+    .suggest-item:hover { background:var(--primary-light); }
+    .suggest-title { font-weight:700; font-size:0.88rem; }
+    .suggest-sub { font-size:0.74rem; color:var(--muted); }
+    #map-wrapper { width:100%; height:270px; border-radius:10px; overflow:hidden; border:1px solid var(--border); margin:8px 0; }
+    #kakao-map, #leaflet-map { width:100%; height:100%; }
+    .stat-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:6px; margin-top:8px; }
+    .stat-box { background:#f8fafc; border:1px solid #e2e8f0; border-radius:8px; padding:8px; text-align:center; }
+    .stat-box.hi { background:var(--primary-light); border-color:#93c5fd; }
+    .stat-val { font-size:0.96rem; font-weight:800; }
+    .stat-box.hi .stat-val { color:var(--primary); }
+    table { width:100%; border-collapse:collapse; font-size:0.82rem; margin-top:8px; }
+    th, td { padding:8px 6px; border-bottom:1px solid #e2e8f0; text-align:left; }
+    th { background:#f8fafc; color:var(--muted); }
+    #toast { position:fixed; bottom:22px; left:50%; transform:translateX(-50%) translateY(80px); background:#0f172a; color:#fff; padding:10px 18px; border-radius:999px; font-size:0.84rem; font-weight:700; z-index:9999; opacity:0; transition:all 0.25s; max-width:92vw; text-align:center; }
+    #toast.show { opacity:1; transform:translateX(-50%) translateY(0); }
+    @media (max-width:760px) { .grid-2 { grid-template-columns:1fr; } .stat-grid { grid-template-columns:repeat(2,1fr); } }
   </style>
 </head>
 <body>
@@ -112,7 +98,6 @@
   </header>
 
   <main class="container">
-    <!-- 1. 기사 고유 코드 로그인 섹션 -->
     <section id="login-view" class="card login-box">
       <h2>🚕 기사 고유 코드 로그인</h2>
       <p>관리자(상황실)에서 발급받은 본인 고유 코드를 입력하세요.</p>
@@ -126,15 +111,14 @@
         <button type="button" class="btn-outline btn-sm" style="width:100%;" onclick="document.getElementById('sb-config-box').style.display = document.getElementById('sb-config-box').style.display === 'none' ? 'block' : 'none'">⚙️ 서버(Supabase) 연결 설정</button>
         <div id="sb-config-box" style="display:none; margin-top:10px;">
           <label>Supabase Project URL</label>
-          <input type="text" id="cfg-sb-url" placeholder="https://xxxx.supabase.co" style="margin-bottom:8px;" />
-          <label>Supabase Anon Public Key</label>
-          <input type="password" id="cfg-sb-key" placeholder="eyJhbGci..." style="margin-bottom:8px;" />
+          <input type="text" id="cfg-sb-url" style="margin-bottom:8px;" />
+          <label>Supabase Publishable Key</label>
+          <input type="password" id="cfg-sb-key" placeholder="sb_publishable_..." style="margin-bottom:8px;" />
           <button type="button" class="btn-success btn-sm" style="width:100%;" onclick="APP.saveSupabaseConfig()">연결 정보 저장</button>
         </div>
       </div>
     </section>
 
-    <!-- 2. 로그인 후 메인 4개 탭 화면 -->
     <div id="main-view" style="display:none;">
       <div class="tab-bar">
         <button type="button" class="tab-btn active" id="tab-btn-waiting" onclick="APP.switchTab('waiting')">📢 배차 대기 <span class="tab-badge" id="cnt-waiting">0</span></button>
@@ -143,7 +127,6 @@
         <button type="button" class="tab-btn" id="tab-btn-calc" onclick="APP.switchTab('calc')">🧮 요금 계산기</button>
       </div>
 
-      <!-- 탭 1: 배차 대기 (직접 골라가기) -->
       <section id="tab-waiting">
         <div class="card" style="padding:11px 14px; display:flex; justify-content:space-between; align-items:center;">
           <span style="font-size:0.84rem; font-weight:700;">원하는 콜을 선택해 [배차 잡기]를 누르세요.</span>
@@ -152,18 +135,15 @@
         <div id="list-waiting"></div>
       </section>
 
-      <!-- 탭 2: 진행중 (내 배차 + 강제배차 + 포기 가능) -->
       <section id="tab-active" style="display:none;">
         <div id="list-active"></div>
       </section>
 
-      <!-- 탭 3: 완료 내역 -->
       <section id="tab-done" style="display:none;">
         <div class="card" id="done-summary" style="font-weight:700; font-size:0.9rem;"></div>
         <div id="list-done"></div>
       </section>
 
-      <!-- 탭 4: 여주시 요금 계산기 -->
       <section id="tab-calc" style="display:none;">
         <div class="grid-2">
           <div class="card">
@@ -215,7 +195,6 @@
               <div id="dest-status" style="font-size:0.76rem; margin-top:5px;">확정: <strong>여주역 (경강선)</strong></div>
             </div>
 
-            <!-- 손님 번호 입력 및 카톡/문자 발송 -->
             <div style="background:#eff6ff; border:1px solid #bfdbfe; border-radius:10px; padding:10px; margin-bottom:10px;">
               <label for="calc-cust-phone">📞 손님 전화번호 (카톡·문자 안내 포함용)</label>
               <div style="display:grid; grid-template-columns:1fr auto; gap:6px; margin-bottom:8px;">
@@ -228,7 +207,6 @@
               </div>
             </div>
 
-            <!-- 요금 기준 -->
             <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px;">
               <div><label>기본요금(원)</label><input type="number" id="cfg-base-fare" value="4000" step="100" onchange="CALC.renderSummary()" /></div>
               <div><label>기본 포함 거리(km)</label><input type="number" id="cfg-base-dist" value="2.0" step="0.1" onchange="CALC.renderSummary()" /></div>
@@ -283,8 +261,8 @@
     const CONFIG = {
       KAKAO_JS_KEY: '348aec403735e7af2a661c30ce11e8e5',
       KAKAO_REST_KEY: '8753d03a528d0664dfdaaca2a11ce75e',
-      SUPABASE_URL: '',      // 여기에 Supabase Project URL을 넣으면 자동 연결됩니다
-      SUPABASE_ANON_KEY: '', // 여기에 Supabase Anon Public Key를 넣으면 자동 연결됩니다
+      SUPABASE_URL: 'https://uoayezajeeadhmofgfrd.supabase.co',
+      SUPABASE_ANON_KEY: '여기에_복사한_sb_publishable_전체키_붙여넣기',
       YEOJU_CENTER: { lat: 37.298344, lng: 127.637518 }
     };
 
@@ -308,84 +286,55 @@
       { id: 'gangcheon', name: '강천면 행정복지센터', lat: 37.269912, lng: 127.716185 }
     ];
 
-    function toast(msg) {
-      const el = document.getElementById('toast');
-      el.textContent = msg; el.classList.add('show');
-      clearTimeout(window._tt); window._tt = setTimeout(() => el.classList.remove('show'), 3000);
-    }
+    function toast(msg) { const el = document.getElementById('toast'); el.textContent = msg; el.classList.add('show'); clearTimeout(window._tt); window._tt = setTimeout(() => el.classList.remove('show'), 3000); }
     function esc(s) { return String(s || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
-    function beep() {
-      try {
-        const ctx = new (window.AudioContext || window.webkitAudioContext)();
-        const o = ctx.createOscillator(), g = ctx.createGain();
-        o.type = 'sine'; o.frequency.setValueAtTime(880, ctx.currentTime);
-        g.gain.setValueAtTime(0.15, ctx.currentTime);
-        o.connect(g); g.connect(ctx.destination);
-        o.start(); o.stop(ctx.currentTime + 0.25);
-      } catch {}
-    }
-    function maskPhone(p) {
-      const d = String(p || '').replace(/\D/g, '');
-      if (d.length === 11) return `${d.slice(0,3)}-****-${d.slice(7)}`;
-      return p || '번호없음';
-    }
+    function beep() { try { const ctx = new (window.AudioContext || window.webkitAudioContext)(), o = ctx.createOscillator(), g = ctx.createGain(); o.type = 'sine'; o.frequency.setValueAtTime(880, ctx.currentTime); g.gain.setValueAtTime(0.15, ctx.currentTime); o.connect(g); g.connect(ctx.destination); o.start(); o.stop(ctx.currentTime + 0.25); } catch {} }
+    function maskPhone(p) { const d = String(p || '').replace(/\D/g, ''); return d.length === 11 ? `${d.slice(0,3)}-****-${d.slice(7)}` : (p || '번호없음'); }
 
     const APP = {
-      sb: null,
-      driver: null,
-      gpsTimer: null,
-      wakeLock: null,
-
+      sb: null, driver: null, gpsTimer: null, wakeLock: null,
+      isPlaceholder(v) { return !v || v.includes('여기에_복사한'); },
       getSupabase() {
         const saved = JSON.parse(localStorage.getItem('yeoju_sb_cfg') || '{}');
-        const url = (CONFIG.SUPABASE_URL || saved.url || '').trim();
-        const key = (CONFIG.SUPABASE_ANON_KEY || saved.key || '').trim();
+        const url = (!this.isPlaceholder(CONFIG.SUPABASE_URL) ? CONFIG.SUPABASE_URL : (saved.url || '')).trim();
+        const key = (!this.isPlaceholder(CONFIG.SUPABASE_ANON_KEY) ? CONFIG.SUPABASE_ANON_KEY : (saved.key || '')).trim();
         if (!url || !key || !window.supabase) return null;
         if (!this.sb) this.sb = window.supabase.createClient(url, key);
         return this.sb;
       },
-
       saveSupabaseConfig() {
         const url = document.getElementById('cfg-sb-url').value.trim();
         const key = document.getElementById('cfg-sb-key').value.trim();
-        if (!url || !key) return toast('URL과 Anon Key를 모두 입력하세요.');
+        if (!url || !key) return toast('URL과 Publishable Key를 모두 입력하세요.');
         localStorage.setItem('yeoju_sb_cfg', JSON.stringify({ url, key }));
         this.sb = null;
         toast('서버 연결 정보가 저장되었습니다.');
       },
-
       async init() {
         const savedCfg = JSON.parse(localStorage.getItem('yeoju_sb_cfg') || '{}');
-        document.getElementById('cfg-sb-url').value = CONFIG.SUPABASE_URL || savedCfg.url || '';
-        document.getElementById('cfg-sb-key').value = CONFIG.SUPABASE_ANON_KEY || savedCfg.key || '';
-
-        if (window.Kakao && !window.Kakao.isInitialized()) {
-          try { window.Kakao.init(CONFIG.KAKAO_JS_KEY); } catch {}
-        }
-
+        document.getElementById('cfg-sb-url').value = !this.isPlaceholder(CONFIG.SUPABASE_URL) ? CONFIG.SUPABASE_URL : (savedCfg.url || '');
+        document.getElementById('cfg-sb-key').value = !this.isPlaceholder(CONFIG.SUPABASE_ANON_KEY) ? CONFIG.SUPABASE_ANON_KEY : (savedCfg.key || '');
+        if (window.Kakao && !window.Kakao.isInitialized()) { try { window.Kakao.init(CONFIG.KAKAO_JS_KEY); } catch {} }
         const savedDriver = JSON.parse(localStorage.getItem('yeoju_driver_session') || 'null');
         if (savedDriver && savedDriver.code) {
           document.getElementById('login-code').value = savedDriver.code;
           await this.login(true);
         }
       },
-
       async login(silent = false) {
         const sb = this.getSupabase();
         if (!sb) {
           document.getElementById('sb-config-box').style.display = 'block';
-          return toast('먼저 하단 [서버(Supabase) 연결 설정]을 입력해 주세요.');
+          return toast('먼저 하단 [서버(Supabase) 연결 설정]에 Publishable Key를 입력해 주세요.');
         }
         const code = document.getElementById('login-code').value.trim();
         if (!code) return toast('기사 고유 코드를 입력하세요.');
-
         const { data, error } = await sb.from('yeoju_drivers').select('*').eq('code', code).eq('active', true).maybeSingle();
         if (error || !data) {
           localStorage.removeItem('yeoju_driver_session');
           if (!silent) toast('유효하지 않거나 정지된 고유 코드입니다.');
           return;
         }
-
         this.driver = data;
         localStorage.setItem('yeoju_driver_session', JSON.stringify(data));
         document.getElementById('login-view').style.display = 'none';
@@ -393,13 +342,11 @@
         document.getElementById('header-controls').style.display = 'flex';
         document.getElementById('driver-badge').textContent = `${data.name} (${data.code})`;
         document.getElementById('header-sub').textContent = '실시간 배차 수신 및 GPS 위치 공유 중';
-
         this.startGpsTracking();
         await DISPATCH.init();
         await CALC.init();
         if (!silent) toast(`${data.name} 기사님 환영합니다.`);
       },
-
       logout() {
         if (!confirm('로그아웃 하시겠습니까?')) return;
         localStorage.removeItem('yeoju_driver_session');
@@ -409,45 +356,27 @@
         document.getElementById('header-controls').style.display = 'none';
         document.getElementById('login-view').style.display = 'block';
       },
-
       startGpsTracking() {
         const sendLoc = () => {
           if (!this.driver || !navigator.geolocation) return;
           navigator.geolocation.getCurrentPosition(async (pos) => {
             const sb = this.getSupabase();
             if (!sb || !this.driver) return;
-            await sb.from('yeoju_drivers').update({
-              lat: pos.coords.latitude,
-              lng: pos.coords.longitude,
-              last_seen: new Date().toISOString()
-            }).eq('code', this.driver.code);
+            await sb.from('yeoju_drivers').update({ lat: pos.coords.latitude, lng: pos.coords.longitude, last_seen: new Date().toISOString() }).eq('code', this.driver.code);
           }, () => {}, { enableHighAccuracy: true, timeout: 8000 });
         };
         sendLoc();
         clearInterval(this.gpsTimer);
         this.gpsTimer = setInterval(sendLoc, 15000);
       },
-
       async toggleWakeLock() {
         const btn = document.getElementById('btn-wakelock');
-        if (this.wakeLock) {
-          await this.wakeLock.release();
-          this.wakeLock = null;
-          btn.textContent = '☀️ 화면켜짐 유지';
-          toast('화면 꺼짐 방지가 해제되었습니다.');
-          return;
-        }
+        if (this.wakeLock) { await this.wakeLock.release(); this.wakeLock = null; btn.textContent = '☀️ 화면켜짐 유지'; return toast('화면 꺼짐 방지가 해제되었습니다.'); }
         try {
-          if ('wakeLock' in navigator) {
-            this.wakeLock = await navigator.wakeLock.request('screen');
-            btn.textContent = '🔆 화면유지 ON';
-            toast('배차 대기 중 화면이 꺼지지 않도록 유지합니다.');
-          } else {
-            toast('이 브라우저는 화면 유지 기능을 지원하지 않습니다.');
-          }
+          if ('wakeLock' in navigator) { this.wakeLock = await navigator.wakeLock.request('screen'); btn.textContent = '🔆 화면유지 ON'; toast('배차 대기 중 화면이 꺼지지 않도록 유지합니다.'); }
+          else toast('이 브라우저는 화면 유지 기능을 지원하지 않습니다.');
         } catch { toast('화면 유지 권한을 허용할 수 없습니다.'); }
       },
-
       switchTab(name) {
         ['waiting', 'active', 'done', 'calc'].forEach(t => {
           document.getElementById(`tab-${t}`).style.display = t === name ? 'block' : 'none';
@@ -458,9 +387,7 @@
     };
 
     const DISPATCH = {
-      rows: [],
-      channel: null,
-
+      rows: [], channel: null,
       async init() {
         await this.loadAll();
         const sb = APP.getSupabase();
@@ -468,19 +395,13 @@
         this.channel = sb.channel('driver-dispatches')
           .on('postgres_changes', { event: '*', schema: 'public', table: 'yeoju_dispatches' }, (payload) => {
             const n = payload.new || {};
-            if (payload.eventType === 'INSERT' && n.status === 'waiting') {
-              beep(); toast(`📢 새 대기 배차 도착: ${n.origin_name} → ${n.dest_name}`);
-            } else if (n.driver_code === APP.driver?.code && n.dispatch_type === 'forced' && n.status === 'accepted') {
-              beep(); toast(`🚨 강제배차가 배정되었습니다! (${n.origin_name} → ${n.dest_name})`);
-              APP.switchTab('active');
-            } else if (payload.eventType === 'UPDATE' && n.status === 'cancelled' && payload.old?.driver_code === APP.driver?.code) {
-              beep(); toast('⚠️ 관리자에 의해 배차가 취소되었습니다.');
-            }
+            if (payload.eventType === 'INSERT' && n.status === 'waiting') { beep(); toast(`📢 새 대기 배차 도착: ${n.origin_name} → ${n.dest_name}`); }
+            else if (n.driver_code === APP.driver?.code && n.dispatch_type === 'forced' && n.status === 'accepted') { beep(); toast(`🚨 강제배차가 배정되었습니다! (${n.origin_name} → ${n.dest_name})`); APP.switchTab('active'); }
+            else if (payload.eventType === 'UPDATE' && n.status === 'cancelled' && payload.old?.driver_code === APP.driver?.code) { beep(); toast('⚠️ 관리자에 의해 배차가 취소되었습니다.'); }
             this.loadAll();
           })
           .subscribe();
       },
-
       async loadAll() {
         const sb = APP.getSupabase();
         if (!sb || !APP.driver) return;
@@ -488,35 +409,25 @@
         this.rows = data || [];
         this.render();
       },
-
       render() {
         const me = APP.driver.code;
         const waiting = this.rows.filter(r => r.status === 'waiting');
         const active = this.rows.filter(r => r.status === 'accepted' && r.driver_code === me);
         const done = this.rows.filter(r => r.status === 'completed' && r.driver_code === me);
-
         document.getElementById('cnt-waiting').textContent = waiting.length;
         document.getElementById('cnt-active').textContent = active.length;
-
-        document.getElementById('list-waiting').innerHTML = waiting.length ? waiting.map(r => this.cardHtml(r, 'waiting')).join('')
-          : '<div class="card" style="text-align:center;color:var(--muted);padding:28px;">현재 대기 중인 배차가 없습니다.</div>';
-
-        document.getElementById('list-active').innerHTML = active.length ? active.map(r => this.cardHtml(r, 'active')).join('')
-          : '<div class="card" style="text-align:center;color:var(--muted);padding:28px;">진행 중인 배차가 없습니다.</div>';
-
+        document.getElementById('list-waiting').innerHTML = waiting.length ? waiting.map(r => this.cardHtml(r, 'waiting')).join('') : '<div class="card" style="text-align:center;color:var(--muted);padding:28px;">현재 대기 중인 배차가 없습니다.</div>';
+        document.getElementById('list-active').innerHTML = active.length ? active.map(r => this.cardHtml(r, 'active')).join('') : '<div class="card" style="text-align:center;color:var(--muted);padding:28px;">진행 중인 배차가 없습니다.</div>';
         const sumFare = done.reduce((acc, r) => acc + (r.total_fare || 0), 0);
         document.getElementById('done-summary').textContent = `총 완료: ${done.length}건 / 누적 요금 합계: ${sumFare.toLocaleString()}원`;
-        document.getElementById('list-done').innerHTML = done.length ? done.map(r => this.cardHtml(r, 'done')).join('')
-          : '<div class="card" style="text-align:center;color:var(--muted);padding:28px;">완료된 운행 내역이 없습니다.</div>';
+        document.getElementById('list-done').innerHTML = done.length ? done.map(r => this.cardHtml(r, 'done')).join('') : '<div class="card" style="text-align:center;color:var(--muted);padding:28px;">완료된 운행 내역이 없습니다.</div>';
       },
-
       cardHtml(r, mode) {
         const wps = Array.isArray(r.waypoints) ? r.waypoints : [];
         const wpText = wps.length ? `경유: ${wps.map(w => w.name).join(' → ')}` : '';
         const km = (r.distance_meters / 1000).toFixed(2);
         const timeStr = new Date(r.created_at).toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit' });
         const typeTag = r.dispatch_type === 'forced' ? '<span class="tag-forced">🚨 강제배차</span>' : '<span class="tag-normal">일반배차</span>';
-
         let btns = '';
         if (mode === 'waiting') {
           btns = `<button type="button" class="btn-primary" onclick="DISPATCH.acceptCall(${r.id})">⚡ 배차 잡기</button>`;
@@ -526,91 +437,54 @@
             <button type="button" class="btn-navi" onclick="DISPATCH.openNavi(${r.id})">🧭 카카오내비</button>
             <button type="button" class="btn-kakao" onclick="DISPATCH.openMap(${r.id})">🗺️ 카카오맵</button>
             <button type="button" class="btn-primary" onclick="DISPATCH.completeCall(${r.id})">✅ 운행 완료</button>
-            <button type="button" class="btn-danger-outline" onclick="DISPATCH.forfeitCall(${r.id})">↩ 배차 포기</button>
-          `;
+            <button type="button" class="btn-danger-outline" onclick="DISPATCH.forfeitCall(${r.id})">↩ 배차 포기</button>`;
         }
-
         return `<div class="dispatch-card ${r.dispatch_type === 'forced' ? 'forced' : ''}">
-          <div class="dc-top">
-            <div>${typeTag} <span style="font-size:0.76rem;color:var(--muted);margin-left:4px;">#${r.id} · ${timeStr}</span></div>
-            <div class="dc-fare">${(r.total_fare || 0).toLocaleString()}원</div>
-          </div>
+          <div class="dc-top"><div>${typeTag} <span style="font-size:0.76rem;color:var(--muted);margin-left:4px;">#${r.id} · ${timeStr}</span></div><div class="dc-fare">${(r.total_fare || 0).toLocaleString()}원</div></div>
           <div class="dc-route">🔵 ${esc(r.origin_name)}<br/>🔴 ${esc(r.dest_name)}</div>
           ${wpText ? `<div class="dc-wp">🟡 ${esc(wpText)}</div>` : ''}
-          <div class="dc-meta">
-            <span>거리: <strong>${km}km</strong></span>
-            <span>통행료: <strong>${(r.applied_toll || 0).toLocaleString()}원</strong></span>
-            <span>손님: <strong>${mode === 'waiting' ? esc(maskPhone(r.customer_phone)) : esc(r.customer_phone || '미입력')}</strong></span>
-            ${r.note ? `<span>메모: <strong>${esc(r.note)}</strong></span>` : ''}
-          </div>
+          <div class="dc-meta"><span>거리: <strong>${km}km</strong></span><span>통행료: <strong>${(r.applied_toll || 0).toLocaleString()}원</strong></span><span>손님: <strong>${mode === 'waiting' ? esc(maskPhone(r.customer_phone)) : esc(r.customer_phone || '미입력')}</strong></span>${r.note ? `<span>메모: <strong>${esc(r.note)}</strong></span>` : ''}</div>
           ${r.forfeit_log ? `<div style="font-size:0.74rem;color:#b45309;">⚠️ 이전 포기 이력: ${esc(r.forfeit_log)}</div>` : ''}
           ${btns ? `<div class="dc-actions">${btns}</div>` : ''}
         </div>`;
       },
-
       async acceptCall(id) {
         const sb = APP.getSupabase();
-        const { data, error } = await sb.from('yeoju_dispatches')
-          .update({ status: 'accepted', driver_code: APP.driver.code, driver_name: APP.driver.name, updated_at: new Date().toISOString() })
-          .eq('id', id).eq('status', 'waiting').select();
-        if (error || !data || !data.length) {
-          toast('이미 다른 기사가 배차를 잡았거나 취소된 건입니다.');
-          return this.loadAll();
-        }
+        const { data, error } = await sb.from('yeoju_dispatches').update({ status: 'accepted', driver_code: APP.driver.code, driver_name: APP.driver.name, updated_at: new Date().toISOString() }).eq('id', id).eq('status', 'waiting').select();
+        if (error || !data || !data.length) { toast('이미 다른 기사가 배차를 잡았거나 취소된 건입니다.'); return this.loadAll(); }
         toast('배차를 잡았습니다! [진행중] 탭으로 이동합니다.');
         await this.loadAll();
         APP.switchTab('active');
       },
-
-      /* 일반배차 및 강제배차 모두 기사 포기 가능 */
       async forfeitCall(id) {
         const row = this.rows.find(x => x.id === id);
         if (!row) return;
-        const msg = row.dispatch_type === 'forced'
-          ? '관리자가 지정한 [강제배차] 건입니다. 정말 배차를 포기하고 대기 목록으로 되돌리시겠습니까?'
-          : '이 배차를 포기하고 대기 목록으로 되돌리시겠습니까?';
+        const msg = row.dispatch_type === 'forced' ? '관리자가 지정한 [강제배차] 건입니다. 정말 배차를 포기하고 대기 목록으로 되돌리시겠습니까?' : '이 배차를 포기하고 대기 목록으로 되돌리시겠습니까?';
         if (!confirm(msg)) return;
-
         const sb = APP.getSupabase();
         const logEntry = `${APP.driver.name}(${APP.driver.code}) ${new Date().toLocaleTimeString('ko-KR',{hour:'2-digit',minute:'2-digit'})} 포기`;
         const nextLog = row.forfeit_log ? `${row.forfeit_log} / ${logEntry}` : logEntry;
-
-        await sb.from('yeoju_dispatches').update({
-          status: 'waiting',
-          dispatch_type: 'normal',
-          driver_code: null,
-          driver_name: null,
-          forfeit_log: nextLog,
-          updated_at: new Date().toISOString()
-        }).eq('id', id).eq('driver_code', APP.driver.code);
-
+        await sb.from('yeoju_dispatches').update({ status: 'waiting', dispatch_type: 'normal', driver_code: null, driver_name: null, forfeit_log: nextLog, updated_at: new Date().toISOString() }).eq('id', id).eq('driver_code', APP.driver.code);
         toast('배차를 포기했습니다. 대기 목록으로 복귀되었습니다.');
         await this.loadAll();
         APP.switchTab('waiting');
       },
-
       async completeCall(id) {
         if (!confirm('운행 완료 처리하시겠습니까?')) return;
-        const sb = APP.getSupabase();
-        await sb.from('yeoju_dispatches').update({ status: 'completed', updated_at: new Date().toISOString() }).eq('id', id);
+        await APP.getSupabase().from('yeoju_dispatches').update({ status: 'completed', updated_at: new Date().toISOString() }).eq('id', id);
         toast('운행 완료 처리되었습니다.');
         await this.loadAll();
       },
-
       openNavi(id) {
         const r = this.rows.find(x => x.id === id);
-        if (!r) return;
-        CALC.launchNavi({ name: r.origin_name, lat: r.origin_lat, lng: r.origin_lng }, r.waypoints || [], { name: r.dest_name, lat: r.dest_lat, lng: r.dest_lng });
+        if (r) CALC.launchNavi({ name: r.origin_name, lat: r.origin_lat, lng: r.origin_lng }, r.waypoints || [], { name: r.dest_name, lat: r.dest_lat, lng: r.dest_lng });
       },
-
       openMap(id) {
         const r = this.rows.find(x => x.id === id);
-        if (!r) return;
-        window.open(CALC.buildMapUrl({ name: r.origin_name, lat: r.origin_lat, lng: r.origin_lng }, r.waypoints || [], { name: r.dest_name, lat: r.dest_lat, lng: r.dest_lng }), '_blank', 'noopener');
+        if (r) window.open(CALC.buildMapUrl({ name: r.origin_name, lat: r.origin_lat, lng: r.origin_lng }, r.waypoints || [], { name: r.dest_name, lat: r.dest_lat, lng: r.dest_lng }), '_blank', 'noopener');
       }
     };
 
-    /* ================= 기존 여주시 요금 계산기 모듈 ================= */
     const AC = {
       timers: {}, items: {},
       onInput(t, v) {
@@ -624,15 +498,10 @@
           box.classList.add('open');
           const list = await CALC.searchPlaces(q);
           this.items[t] = list;
-          box.innerHTML = list.length ? list.map((it, i) => `<div class="suggest-item" onmousedown="event.preventDefault(); AC.pick('${t}',${i})"><div class="suggest-title">${esc(it.name)}</div><div class="suggest-sub">${esc(it.roadAddr || it.jibunAddr || '')}</div></div>`).join('')
-            : '<div style="padding:10px;font-size:0.8rem;color:var(--muted);">검색 결과 없음</div>';
+          box.innerHTML = list.length ? list.map((it, i) => `<div class="suggest-item" onmousedown="event.preventDefault(); AC.pick('${t}',${i})"><div class="suggest-title">${esc(it.name)}</div><div class="suggest-sub">${esc(it.roadAddr || it.jibunAddr || '')}</div></div>`).join('') : '<div style="padding:10px;font-size:0.8rem;color:var(--muted);">검색 결과 없음</div>';
         }, 200);
       },
-      pick(t, i) {
-        const p = (this.items[t] || [])[i];
-        if (!p) return;
-        this.hide(t); CALC.setPoint(t, p);
-      },
+      pick(t, i) { const p = (this.items[t] || [])[i]; if (p) { this.hide(t); CALC.setPoint(t, p); } },
       clear(t) { const el = document.getElementById(`input-${t}`); if (el) { el.value = ''; el.focus(); } this.hide(t); },
       scheduleClose(t) { setTimeout(() => this.hide(t), 200); },
       hide(t) { const b = document.getElementById(`suggest-${t}`); if (b) b.classList.remove('open'); }
@@ -647,11 +516,7 @@
             document.getElementById('kakao-map').style.display = 'block';
             this.mode = 'kakao';
             this.kMap = new window.kakao.maps.Map(document.getElementById('kakao-map'), { center: new window.kakao.maps.LatLng(37.298344, 127.637518), level: 6 });
-            window.kakao.maps.event.addListener(this.kMap, 'click', e => {
-              if (!this.pickMode) return;
-              const t = this.pickMode; this.pickMode = null;
-              CALC.setCoord(t, e.latLng.getLat(), e.latLng.getLng());
-            });
+            window.kakao.maps.event.addListener(this.kMap, 'click', e => { if (!this.pickMode) return; const t = this.pickMode; this.pickMode = null; CALC.setCoord(t, e.latLng.getLat(), e.latLng.getLng()); });
             CALC.calcRoute();
           });
         } else {
@@ -660,24 +525,16 @@
           this.lMap.on('click', e => { if (!this.pickMode) return; const t = this.pickMode; this.pickMode = null; CALC.setCoord(t, e.latlng.lat, e.latlng.lng); });
         }
       },
-      refreshSize() {
-        if (this.mode === 'kakao' && this.kMap) { this.kMap.relayout(); CALC.calcRoute(); }
-        else if (this.lMap) { setTimeout(() => this.lMap.invalidateSize(), 100); }
-      },
+      refreshSize() { if (this.mode === 'kakao' && this.kMap) { this.kMap.relayout(); CALC.calcRoute(); } else if (this.lMap) { setTimeout(() => this.lMap.invalidateSize(), 100); } },
       setPickMode(t) { this.pickMode = t; toast('지도에서 위치를 터치하세요.'); },
       draw(o, wps, d, path) {
         const pts = [o, ...wps.filter(w => w.lat), d];
         if (this.mode === 'kakao' && this.kMap) {
           this.kItems.forEach(x => x.setMap(null)); this.kItems = [];
           const bounds = new window.kakao.maps.LatLngBounds();
-          pts.forEach(p => {
-            const pos = new window.kakao.maps.LatLng(p.lat, p.lng);
-            this.kItems.push(new window.kakao.maps.Marker({ map: this.kMap, position: pos }));
-            bounds.extend(pos);
-          });
+          pts.forEach(p => { const pos = new window.kakao.maps.LatLng(p.lat, p.lng); this.kItems.push(new window.kakao.maps.Marker({ map: this.kMap, position: pos })); bounds.extend(pos); });
           const line = new window.kakao.maps.Polyline({ path: (path?.length ? path : pts.map(p=>[p.lat,p.lng])).map(c => new window.kakao.maps.LatLng(c[0], c[1])), strokeWeight: 5, strokeColor: '#1d4ed8', strokeOpacity: 0.85 });
-          line.setMap(this.kMap); this.kItems.push(line);
-          this.kMap.setBounds(bounds);
+          line.setMap(this.kMap); this.kItems.push(line); this.kMap.setBounds(bounds);
         } else if (this.lMap) {
           this.lItems.forEach(x => this.lMap.removeLayer(x)); this.lItems = [];
           pts.forEach(p => this.lItems.push(L.marker([p.lat, p.lng]).addTo(this.lMap)));
@@ -688,28 +545,17 @@
     };
 
     const CALC = {
-      origin: { ...YEOJU_PRESETS[0] },
-      waypoints: [],
-      dest: { ...YEOJU_PRESETS[1] },
-      route: null,
-      localRows: [],
-
+      origin: { ...YEOJU_PRESETS[0] }, waypoints: [], dest: { ...YEOJU_PRESETS[1] }, route: null, localRows: [],
       async init() {
-        ['preset-origin', 'preset-dest'].forEach(id => {
-          const s = document.getElementById(id);
-          s.innerHTML = '<option value="">거점 선택...</option>' + YEOJU_PRESETS.map(p => `<option value="${p.id}">${p.name}</option>`).join('');
-        });
+        ['preset-origin', 'preset-dest'].forEach(id => { document.getElementById(id).innerHTML = '<option value="">거점 선택...</option>' + YEOJU_PRESETS.map(p => `<option value="${p.id}">${p.name}</option>`).join(''); });
         this.localRows = JSON.parse(localStorage.getItem('yeoju_local_rows_v1') || '[]');
         this.renderLocalTable();
-
         const s = document.createElement('script');
         s.src = `https://dapi.kakao.com/v2/maps/sdk.js?appkey=${CONFIG.KAKAO_JS_KEY}&libraries=services&autoload=false`;
-        s.onload = () => MAP.init();
-        s.onerror = () => MAP.init();
+        s.onload = () => MAP.init(); s.onerror = () => MAP.init();
         document.head.appendChild(s);
         await this.calcRoute();
       },
-
       async searchPlaces(q) {
         const res = [];
         try {
@@ -718,105 +564,49 @@
             fetch(`https://dapi.kakao.com/v2/local/search/keyword.json?query=${encodeURIComponent(q)}&x=127.637518&y=37.298344&size=10`, { headers }),
             fetch(`https://dapi.kakao.com/v2/local/search/address.json?query=${encodeURIComponent(q)}&size=5`, { headers })
           ]);
-          if (kr.status === 'fulfilled' && kr.value.ok) {
-            const kd = await kr.value.json();
-            (kd.documents || []).forEach(d => res.push({ name: d.place_name, roadAddr: d.road_address_name, jibunAddr: d.address_name, lat: parseFloat(d.y), lng: parseFloat(d.x) }));
-          }
-          if (ar.status === 'fulfilled' && ar.value.ok) {
-            const ad = await ar.value.json();
-            (ad.documents || []).forEach(d => res.push({ name: d.road_address?.address_name || d.address?.address_name, roadAddr: d.road_address?.address_name, jibunAddr: d.address?.address_name, lat: parseFloat(d.y), lng: parseFloat(d.x) }));
-          }
+          if (kr.status === 'fulfilled' && kr.value.ok) { (await kr.value.json()).documents?.forEach(d => res.push({ name: d.place_name, roadAddr: d.road_address_name, jibunAddr: d.address_name, lat: parseFloat(d.y), lng: parseFloat(d.x) })); }
+          if (ar.status === 'fulfilled' && ar.value.ok) { (await ar.value.json()).documents?.forEach(d => res.push({ name: d.road_address?.address_name || d.address?.address_name, roadAddr: d.road_address?.address_name, jibunAddr: d.address?.address_name, lat: parseFloat(d.y), lng: parseFloat(d.x) })); }
         } catch {}
         return res;
       },
-
-      addWaypoint() {
-        if (this.waypoints.length >= 5) return toast('경유지는 최대 5곳까지 가능합니다.');
-        this.waypoints.push({ name: '', lat: null, lng: null });
-        this.renderWaypoints();
-      },
+      addWaypoint() { if (this.waypoints.length >= 5) return toast('경유지는 최대 5곳까지 가능합니다.'); this.waypoints.push({ name: '', lat: null, lng: null }); this.renderWaypoints(); },
       removeWaypoint(i) { this.waypoints.splice(i, 1); this.renderWaypoints(); this.calcRoute(); },
       renderWaypoints() {
         document.getElementById('waypoints-container').innerHTML = this.waypoints.map((w, i) => `
-          <div class="route-box wp">
-            <div style="display:flex;justify-content:space-between;align-items:center;">
-              <span style="font-weight:800;color:#92400e;font-size:0.8rem;">경유 ${i+1}</span>
-              <button type="button" class="btn-danger-outline btn-sm" onclick="CALC.removeWaypoint(${i})">삭제</button>
-            </div>
-            <div class="input-wrap">
-              <div class="input-row">
-                <input type="text" id="input-wp-${i}" value="${esc(w.name)}" placeholder="경유지 건물명·주소" oninput="AC.onInput('wp-${i}', this.value)" onblur="AC.scheduleClose('wp-${i}')" />
-                <button type="button" class="btn-outline btn-sm" onclick="AC.clear('wp-${i}')">✕</button>
-                <button type="button" class="btn-primary btn-sm" onclick="CALC.searchPoint('wp-${i}')">검색</button>
-              </div>
-              <div id="suggest-wp-${i}" class="suggest-dropdown"></div>
-            </div>
-          </div>`).join('');
+          <div class="route-box wp"><div style="display:flex;justify-content:space-between;align-items:center;"><span style="font-weight:800;color:#92400e;font-size:0.8rem;">경유 ${i+1}</span><button type="button" class="btn-danger-outline btn-sm" onclick="CALC.removeWaypoint(${i})">삭제</button></div>
+          <div class="input-wrap"><div class="input-row"><input type="text" id="input-wp-${i}" value="${esc(w.name)}" placeholder="경유지 건물명·주소" oninput="AC.onInput('wp-${i}', this.value)" onblur="AC.scheduleClose('wp-${i}')" /><button type="button" class="btn-outline btn-sm" onclick="AC.clear('wp-${i}')">✕</button><button type="button" class="btn-primary btn-sm" onclick="CALC.searchPoint('wp-${i}')">검색</button></div><div id="suggest-wp-${i}" class="suggest-dropdown"></div></div></div>`).join('');
       },
-
       setPoint(t, pt) {
-        if (t === 'origin' || t === 'dest') {
-          this[t] = pt;
-          document.getElementById(`input-${t}`).value = pt.name;
-          document.getElementById(`${t}-status`).innerHTML = `확정: <strong>${esc(pt.name)}</strong>`;
-        } else if (t.startsWith('wp-')) {
-          const idx = Number(t.split('-')[1]);
-          this.waypoints[idx] = pt;
-          this.renderWaypoints();
-        }
+        if (t === 'origin' || t === 'dest') { this[t] = pt; document.getElementById(`input-${t}`).value = pt.name; document.getElementById(`${t}-status`).innerHTML = `확정: <strong>${esc(pt.name)}</strong>`; }
+        else if (t.startsWith('wp-')) { this.waypoints[Number(t.split('-')[1])] = pt; this.renderWaypoints(); }
         this.calcRoute();
       },
-
-      selectPreset(t, id) {
-        const f = YEOJU_PRESETS.find(p => p.id === id);
-        if (f) this.setPoint(t, { ...f });
-      },
-
-      async searchPoint(t) {
-        const q = document.getElementById(`input-${t}`)?.value.trim();
-        if (!q) return;
-        const list = await this.searchPlaces(q);
-        if (list.length) this.setPoint(t, list[0]);
-        else toast('검색 결과가 없습니다.');
-      },
-
+      selectPreset(t, id) { const f = YEOJU_PRESETS.find(p => p.id === id); if (f) this.setPoint(t, { ...f }); },
+      async searchPoint(t) { const q = document.getElementById(`input-${t}`)?.value.trim(); if (!q) return; const list = await this.searchPlaces(q); if (list.length) this.setPoint(t, list[0]); else toast('검색 결과가 없습니다.'); },
       async setCoord(t, lat, lng) {
         try {
           const r = await fetch(`https://dapi.kakao.com/v2/local/geo/coord2address.json?x=${lng}&y=${lat}`, { headers: { Authorization: `KakaoAK ${CONFIG.KAKAO_REST_KEY}` } });
-          const d = await r.json();
-          const doc = d.documents?.[0];
-          const name = doc?.road_address?.address_name || doc?.address?.address_name || `좌표(${lat.toFixed(4)},${lng.toFixed(4)})`;
-          this.setPoint(t, { name, lat, lng });
+          const doc = (await r.json()).documents?.[0];
+          this.setPoint(t, { name: doc?.road_address?.address_name || doc?.address?.address_name || `좌표(${lat.toFixed(4)},${lng.toFixed(4)})`, lat, lng });
         } catch { this.setPoint(t, { name: `좌표(${lat.toFixed(4)},${lng.toFixed(4)})`, lat, lng }); }
       },
-
-      useCurrentLocation(t) {
-        navigator.geolocation?.getCurrentPosition(p => this.setCoord(t, p.coords.latitude, p.coords.longitude));
-      },
-
+      useCurrentLocation(t) { navigator.geolocation?.getCurrentPosition(p => this.setCoord(t, p.coords.latitude, p.coords.longitude)); },
       swapPoints() {
-        [this.origin, this.dest] = [this.dest, this.origin];
-        this.waypoints.reverse();
-        document.getElementById('input-origin').value = this.origin.name;
-        document.getElementById('input-dest').value = this.dest.name;
+        [this.origin, this.dest] = [this.dest, this.origin]; this.waypoints.reverse();
+        document.getElementById('input-origin').value = this.origin.name; document.getElementById('input-dest').value = this.dest.name;
         document.getElementById('origin-status').innerHTML = `확정: <strong>${esc(this.origin.name)}</strong>`;
         document.getElementById('dest-status').innerHTML = `확정: <strong>${esc(this.dest.name)}</strong>`;
         this.renderWaypoints(); this.calcRoute();
       },
-
       async calcRoute() {
         const wps = this.waypoints.filter(w => typeof w.lat === 'number');
         try {
           let url = `https://apis-navi.kakaomobility.com/v1/directions?origin=${this.origin.lng},${this.origin.lat}&destination=${this.dest.lng},${this.dest.lat}&priority=RECOMMEND`;
           if (wps.length) url += `&waypoints=${encodeURIComponent(wps.map(w => `${w.lng},${w.lat}`).join('|'))}`;
-          const res = await fetch(url, { headers: { Authorization: `KakaoAK ${CONFIG.KAKAO_REST_KEY}` } });
-          const data = await res.json();
-          const rt = data.routes?.[0];
+          const rt = (await (await fetch(url, { headers: { Authorization: `KakaoAK ${CONFIG.KAKAO_REST_KEY}` } })).json()).routes?.[0];
           if (rt && rt.result_code === 0) {
             const path = [];
-            (rt.sections || []).forEach(s => (s.roads || []).forEach(rd => {
-              for (let i = 0; i < (rd.vertexes || []).length; i += 2) path.push([rd.vertexes[i+1], rd.vertexes[i]]);
-            }));
+            (rt.sections || []).forEach(s => (s.roads || []).forEach(rd => { for (let i = 0; i < (rd.vertexes || []).length; i += 2) path.push([rd.vertexes[i+1], rd.vertexes[i]]); }));
             this.route = { dist: rt.summary.distance, dur: rt.summary.duration, toll: rt.summary.fare?.toll || 0, path };
             document.getElementById('cfg-manual-toll').value = this.route.toll;
             MAP.draw(this.origin, wps, this.dest, path);
@@ -825,115 +615,73 @@
           }
         } catch {}
         const pts = [this.origin, ...wps, this.dest];
-        const oRes = await fetch(`https://router.project-osrm.org/route/v1/driving/${pts.map(p=>`${p.lng},${p.lat}`).join(';')}?overview=full&geometries=geojson`);
-        const oData = await oRes.json();
-        const oRt = oData.routes?.[0];
+        const oRt = (await (await fetch(`https://router.project-osrm.org/route/v1/driving/${pts.map(p=>`${p.lng},${p.lat}`).join(';')}?overview=full&geometries=geojson`)).json()).routes?.[0];
         if (oRt) {
           this.route = { dist: Math.round(oRt.distance), dur: Math.round(oRt.duration), toll: 0, path: oRt.geometry.coordinates.map(c=>[c[1],c[0]]) };
           MAP.draw(this.origin, wps, this.dest, this.route.path);
           this.renderSummary();
         }
       },
-
       onManualToll(v) { if (this.route) { this.route.toll = Math.max(0, Number(v) || 0); this.renderSummary(); } },
-
       getFareInfo() {
         if (!this.route) return null;
-        const baseFare = Number(document.getElementById('cfg-base-fare').value) || 0;
-        const baseDist = Number(document.getElementById('cfg-base-dist').value) || 0;
-        const rate = Number(document.getElementById('cfg-rate-km').value) || 0;
-        const km = this.route.dist / 1000;
-        const excess = Math.floor(Math.max(0, km - baseDist) * rate / 1000) * 1000;
-        const toll = this.route.toll > 0 ? Math.ceil(this.route.toll / 1000) * 1000 : 0;
+        const baseFare = Number(document.getElementById('cfg-base-fare').value) || 0, baseDist = Number(document.getElementById('cfg-base-dist').value) || 0, rate = Number(document.getElementById('cfg-rate-km').value) || 0;
+        const km = this.route.dist / 1000, excess = Math.floor(Math.max(0, km - baseDist) * rate / 1000) * 1000, toll = this.route.toll > 0 ? Math.ceil(this.route.toll / 1000) * 1000 : 0;
         return { km, baseFare, excess, toll, total: baseFare + excess + toll };
       },
-
       renderSummary() {
-        const f = this.getFareInfo();
-        if (!f) return;
+        const f = this.getFareInfo(); if (!f) return;
         document.getElementById('res-dist').textContent = `${f.km.toFixed(2)} km`;
         document.getElementById('res-excess').textContent = `${f.excess.toLocaleString()}원`;
         document.getElementById('res-toll').textContent = `${f.toll.toLocaleString()}원`;
         document.getElementById('res-total').textContent = `${f.total.toLocaleString()}원`;
       },
-
       formatPhone(el) {
         const d = el.value.replace(/\D/g, '').slice(0, 11);
-        if (d.length > 7) el.value = `${d.slice(0,3)}-${d.slice(3,7)}-${d.slice(7)}`;
-        else if (d.length > 3) el.value = `${d.slice(0,3)}-${d.slice(3)}`;
-        else el.value = d;
+        el.value = d.length > 7 ? `${d.slice(0,3)}-${d.slice(3,7)}-${d.slice(7)}` : (d.length > 3 ? `${d.slice(0,3)}-${d.slice(3)}` : d);
       },
-
       async pastePhone() {
         try {
-          const txt = await navigator.clipboard.readText();
-          const m = txt.match(/01[016789][-.\s]?\d{3,4}[-.\s]?\d{4}/);
-          if (m) {
-            const el = document.getElementById('calc-cust-phone');
-            el.value = m[0]; this.formatPhone(el);
-            toast(`번호 입력됨: ${el.value}`);
-          } else toast('클립보드에 휴대폰 번호가 없습니다.');
+          const m = (await navigator.clipboard.readText()).match(/01[016789][-.\s]?\d{3,4}[-.\s]?\d{4}/);
+          if (m) { const el = document.getElementById('calc-cust-phone'); el.value = m[0]; this.formatPhone(el); toast(`번호 입력됨: ${el.value}`); }
+          else toast('클립보드에 휴대폰 번호가 없습니다.');
         } catch { toast('붙여넣기 권한을 허용하거나 입력칸을 길게 눌러 붙여넣으세요.'); }
       },
-
       buildShareText() {
-        const f = this.getFareInfo();
-        const phone = document.getElementById('calc-cust-phone').value.trim();
-        const wps = this.waypoints.filter(w => typeof w.lat === 'number');
-        const mapUrl = this.buildMapUrl(this.origin, wps, this.dest);
-        return `[여주시 요금 및 경로 안내]\n출발: ${this.origin.name}${wps.length ? `\n경유: ${wps.map(w=>w.name).join(' → ')}` : ''}\n도착: ${this.dest.name}\n거리: ${f ? f.km.toFixed(2) : 0}km\n통행료: ${f ? f.toll.toLocaleString() : 0}원\n최종요금: ${f ? f.total.toLocaleString() : 0}원${phone ? `\n손님연락처: ${phone}` : ''}\n길찾기: ${mapUrl}`;
+        const f = this.getFareInfo(), phone = document.getElementById('calc-cust-phone').value.trim(), wps = this.waypoints.filter(w => typeof w.lat === 'number');
+        return `[여주시 요금 및 경로 안내]\n출발: ${this.origin.name}${wps.length ? `\n경유: ${wps.map(w=>w.name).join(' → ')}` : ''}\n도착: ${this.dest.name}\n거리: ${f ? f.km.toFixed(2) : 0}km\n통행료: ${f ? f.toll.toLocaleString() : 0}원\n최종요금: ${f ? f.total.toLocaleString() : 0}원${phone ? `\n손님연락처: ${phone}` : ''}\n길찾기: ${this.buildMapUrl(this.origin, wps, this.dest)}`;
       },
-
       async shareMessage() {
         const text = this.buildShareText();
         if (navigator.share) { try { await navigator.share({ title: '여주시 배차 안내', text }); } catch {} }
         else { await navigator.clipboard.writeText(text); toast('안내 문구가 복사되었습니다. 카톡에 붙여넣으세요.'); }
       },
-
-      sendSMS() {
-        const text = this.buildShareText();
-        const sep = /iPhone|iPad|iPod/i.test(navigator.userAgent) ? '&' : '?';
-        location.href = `sms:${sep}body=${encodeURIComponent(text)}`;
-      },
-
+      sendSMS() { location.href = `sms:${/iPhone|iPad|iPod/i.test(navigator.userAgent) ? '&' : '?'}body=${encodeURIComponent(this.buildShareText())}`; },
       buildMapUrl(o, wps, d) {
         let u = `https://map.kakao.com/link/from/${encodeURIComponent(o.name)},${o.lat},${o.lng}`;
         (wps || []).forEach(w => { if (w.lat) u += `/by/${encodeURIComponent(w.name)},${w.lat},${w.lng}`; });
         return `${u}/to/${encodeURIComponent(d.name)},${d.lat},${d.lng}`;
       },
-
       openKakaoMap() { window.open(this.buildMapUrl(this.origin, this.waypoints, this.dest), '_blank', 'noopener'); },
-
       launchNavi(o, wps, d) {
-        if (!/Android|iPhone|iPad|iPod/i.test(navigator.userAgent)) {
-          toast('PC에서는 카카오맵 길찾기로 연결됩니다.');
-          return window.open(this.buildMapUrl(o, wps, d), '_blank', 'noopener');
-        }
+        if (!/Android|iPhone|iPad|iPod/i.test(navigator.userAgent)) { toast('PC에서는 카카오맵 길찾기로 연결됩니다.'); return window.open(this.buildMapUrl(o, wps, d), '_blank', 'noopener'); }
         const validWps = (wps || []).filter(w => typeof w.lat === 'number').slice(0, 3);
         const opt = { name: String(d.name), x: Number(d.lng), y: Number(d.lat), coordType: 'wgs84' };
         if (validWps.length) opt.viaPoints = validWps.map(w => ({ name: String(w.name), x: Number(w.lng), y: Number(w.lat) }));
-        try { window.Kakao.Navi.start(opt); } catch (e) { toast('카카오내비 실행 오류'); }
+        try { window.Kakao.Navi.start(opt); } catch { toast('카카오내비 실행 오류'); }
       },
-
       openKakaoNavi() { this.launchNavi(this.origin, this.waypoints, this.dest); },
-
       addToLocalTable() {
-        const f = this.getFareInfo();
-        if (!f) return;
-        const wps = this.waypoints.filter(w => w.lat).map(w => w.name).join(' → ') || '-';
-        this.localRows.push({ o: this.origin.name, wp: wps, d: this.dest.name, km: f.km.toFixed(2), toll: f.toll, total: f.total });
+        const f = this.getFareInfo(); if (!f) return;
+        this.localRows.push({ o: this.origin.name, wp: this.waypoints.filter(w => w.lat).map(w => w.name).join(' → ') || '-', d: this.dest.name, km: f.km.toFixed(2), toll: f.toll, total: f.total });
         localStorage.setItem('yeoju_local_rows_v1', JSON.stringify(this.localRows));
-        this.renderLocalTable();
-        toast('개인 요금표에 추가되었습니다.');
+        this.renderLocalTable(); toast('개인 요금표에 추가되었습니다.');
       },
-
       renderLocalTable() {
         document.getElementById('local-cnt').textContent = this.localRows.length;
-        document.getElementById('local-table-body').innerHTML = this.localRows.map((r, i) => `
-          <tr><td>${esc(r.o)}</td><td>${esc(r.wp)}</td><td>${esc(r.d)}</td><td>${r.km}km</td><td>${r.toll.toLocaleString()}원</td><td><strong>${r.total.toLocaleString()}원</strong></td>
-          <td><button type="button" class="btn-danger-outline btn-sm" onclick="CALC.delRow(${i})">삭제</button></td></tr>`).join('');
+        document.getElementById('local-table-body').innerHTML = this.localRows.map((r, i) => `<tr><td>${esc(r.o)}</td><td>${esc(r.wp)}</td><td>${esc(r.d)}</td><td>${r.km}km</td><td>${r.toll.toLocaleString()}원</td><td><strong>${r.total.toLocaleString()}원</strong></td><td><button type="button" class="btn-danger-outline btn-sm" onclick="CALC.delRow(${i})">삭제</button></td></tr>`).join('');
       },
-      delRow(i) { this.localRows.splice(i, 1); localStorage.setItem('yeoju_local_rows_v1', JSON.stringify(this.localRows)); this.renderLocalTable(); },
+      delRow(i) { this.localRows.splice(i, 1); localStorage.setItem('yeoju_local_rows_v1', '[]'); localStorage.setItem('yeoju_local_rows_v1', JSON.stringify(this.localRows)); this.renderLocalTable(); },
       clearTable() { this.localRows = []; localStorage.setItem('yeoju_local_rows_v1', '[]'); this.renderLocalTable(); },
       exportCSV() {
         if (!this.localRows.length) return toast('데이터가 없습니다.');
