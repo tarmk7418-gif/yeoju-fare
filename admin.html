@@ -6,9 +6,9 @@
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
   <title>여주시 배차 상황실 · 관리자 페이지</title>
-  <link rel="stylesheet" href="[https://unpkg.com/leaflet@1.9.4/dist/leaflet.css](https://unpkg.com/leaflet@1.9.4/dist/leaflet.css)" crossorigin="" />
-  <script src="[https://unpkg.com/leaflet@1.9.4/dist/leaflet.js](https://unpkg.com/leaflet@1.9.4/dist/leaflet.js)" crossorigin=""></script>
-  <script src="[https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2](https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2)"></script>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin="" />
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin=""></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <style>
     :root {
       --primary: #1d4ed8; --primary-light: #eff6ff; --dark: #0f172a;
@@ -18,19 +18,14 @@
     * {
       box-sizing: border-box;
       -webkit-tap-highlight-color: transparent;
+      -webkit-user-select: none;
+      user-select: none;
+      -webkit-touch-callout: none;
     }
-    /* 모바일 터치 기기에서만 입력칸 외 선택·복사 차단 (PC는 마우스 드래그 허용) */
-    @media (pointer: coarse) and (hover: none) {
-      * {
-        -webkit-user-select: none;
-        user-select: none;
-        -webkit-touch-callout: none;
-      }
-      input, textarea {
-        -webkit-user-select: text !important;
-        user-select: text !important;
-        -webkit-touch-callout: default !important;
-      }
+    input, textarea {
+      -webkit-user-select: text !important;
+      user-select: text !important;
+      -webkit-touch-callout: default !important;
     }
     html {
       max-width: 100%;
@@ -346,6 +341,7 @@
 
     <div class="mid-grid">
       <div style="display:flex; flex-direction:column; gap:12px; min-width:0;">
+        <!-- 기사 고유 코드 및 아이콘 색상 관리 -->
         <section id="sec-driver-mgr" class="card">
           <div class="card-title"><span>🚕 기사 고유 코드 · 아이콘 색상</span></div>
           <div class="grid-driver-add">
@@ -362,6 +358,7 @@
           </div>
         </section>
 
+        <!-- 기사별 완료 건수 및 매출 합계 정산표 -->
         <section id="sec-driver-settlement" class="card">
           <div class="card-title">
             <div>
@@ -389,6 +386,7 @@
         </section>
       </div>
 
+      <!-- 기간별 · 기사별 운행 기록 및 휴지통 -->
       <section id="sec-dispatch-records" class="card">
         <div class="card-title">
           <span id="record-card-heading">📋 실시간 배차 현황 &amp; 운행 기록</span>
@@ -476,34 +474,21 @@
     const CONFIG = {
       KAKAO_JS_KEY: '348aec403735e7af2a661c30ce11e8e5',
       KAKAO_REST_KEY: '8753d03a528d0664dfdaaca2a11ce75e',
-      SUPABASE_URL: '[https://uoayezajeeadhmofgfrd.supabase.co](https://uoayezajeeadhmofgfrd.supabase.co)',
+      SUPABASE_URL: 'https://uoayezajeeadhmofgfrd.supabase.co',
       SUPABASE_ANON_KEY: 'sb_publishable_kTviyUA-HeO4-_Us2--PWA_8yhpZ2XP',
       YEOJU_CENTER: { lat: 37.298344, lng: 127.637518 }
     };
 
-    /* 모바일 터치 기기에서만 입력칸 외 선택/복사 차단 & 지도 외 확대/축소 차단 (PC는 마우스 드래그 허용) */
+    /* 입력칸 외 선택/복사/드래그 차단 & 지도 외 확대/축소 차단 */
     (function setupGuards() {
-      const isTouchDevice = () => window.matchMedia && window.matchMedia('(pointer: coarse) and (hover: none)').matches;
       const isInput = el => el && el.closest && el.closest('input, textarea');
       const isMap = el => el && el.closest && el.closest('#map-box');
 
-      document.addEventListener('selectstart', e => {
-        if (isTouchDevice() && !isInput(e.target)) e.preventDefault();
-      });
-      document.addEventListener('copy', e => {
-        if (isTouchDevice() && !isInput(e.target)) e.preventDefault();
-      });
-      document.addEventListener('cut', e => {
-        if (isTouchDevice() && !isInput(e.target)) e.preventDefault();
-      });
-      document.addEventListener('contextmenu', e => {
-        if (isTouchDevice() && !isInput(e.target)) e.preventDefault();
-      });
-      document.addEventListener('dragstart', e => {
-        if (!isInput(e.target) && !isMap(e.target) && (e.target.tagName === 'IMG' || e.target.tagName === 'A')) {
-          e.preventDefault();
-        }
-      });
+      document.addEventListener('selectstart', e => { if (!isInput(e.target)) e.preventDefault(); });
+      document.addEventListener('copy', e => { if (!isInput(e.target)) e.preventDefault(); });
+      document.addEventListener('cut', e => { if (!isInput(e.target)) e.preventDefault(); });
+      document.addEventListener('contextmenu', e => { if (!isInput(e.target)) e.preventDefault(); });
+      document.addEventListener('dragstart', e => { if (!isInput(e.target) && !isMap(e.target)) e.preventDefault(); });
 
       ['gesturestart', 'gesturechange', 'gestureend'].forEach(evt => {
         document.addEventListener(evt, e => { if (!isMap(e.target)) e.preventDefault(); }, { passive: false });
@@ -514,7 +499,7 @@
 
       let lastTouchEnd = 0;
       document.addEventListener('touchend', e => {
-        if (e.target.closest('#map-wrapper, button, input, select, a')) return;
+        if (e.target.closest('#map-box, button, input, select, a')) return;
         const now = Date.now();
         if (now - lastTouchEnd <= 300) e.preventDefault();
         lastTouchEnd = now;
@@ -645,7 +630,7 @@
       },
       loadKakaoSDK() {
         const s = document.createElement('script');
-        s.src = `[https://dapi.kakao.com/v2/maps/sdk.js?appkey=$](https://dapi.kakao.com/v2/maps/sdk.js?appkey=$){CONFIG.KAKAO_JS_KEY}&libraries=services&autoload=false`;
+        s.src = `https://dapi.kakao.com/v2/maps/sdk.js?appkey=${CONFIG.KAKAO_JS_KEY}&libraries=services&autoload=false`;
         s.onload = () => {
           if (window.kakao?.maps) {
             window.kakao.maps.load(() => {
@@ -741,8 +726,8 @@
           try {
             const headers = { Authorization: `KakaoAK ${CONFIG.KAKAO_REST_KEY}` };
             const [kr, ar] = await Promise.allSettled([
-              fetch(`[https://dapi.kakao.com/v2/local/search/keyword.json?query=$](https://dapi.kakao.com/v2/local/search/keyword.json?query=$){encodeURIComponent(q)}&x=127.637518&y=37.298344&size=8`, { headers }),
-              fetch(`[https://dapi.kakao.com/v2/local/search/address.json?query=$](https://dapi.kakao.com/v2/local/search/address.json?query=$){encodeURIComponent(q)}&size=4`, { headers })
+              fetch(`https://dapi.kakao.com/v2/local/search/keyword.json?query=${encodeURIComponent(q)}&x=127.637518&y=37.298344&size=8`, { headers }),
+              fetch(`https://dapi.kakao.com/v2/local/search/address.json?query=${encodeURIComponent(q)}&size=4`, { headers })
             ]);
             if (kr.status === 'fulfilled' && kr.value.ok) { (await kr.value.json()).documents?.forEach(d => res.push({ name: d.place_name, sub: d.road_address_name || d.address_name, lat: parseFloat(d.y), lng: parseFloat(d.x) })); }
             if (ar.status === 'fulfilled' && ar.value.ok) { (await ar.value.json()).documents?.forEach(d => res.push({ name: d.road_address?.address_name || d.address?.address_name, sub: d.address?.address_name || '', lat: parseFloat(d.y), lng: parseFloat(d.x) })); }
@@ -774,7 +759,7 @@
       async calcRoute() {
         const wps = this.waypoints.filter(w => typeof w.lat === 'number');
         try {
-          let url = `[https://apis-navi.kakaomobility.com/v1/directions?origin=$](https://apis-navi.kakaomobility.com/v1/directions?origin=$){this.origin.lng},${this.origin.lat}&destination=${this.dest.lng},${this.dest.lat}&priority=RECOMMEND`;
+          let url = `https://apis-navi.kakaomobility.com/v1/directions?origin=${this.origin.lng},${this.origin.lat}&destination=${this.dest.lng},${this.dest.lat}&priority=RECOMMEND`;
           if (wps.length) url += `&waypoints=${encodeURIComponent(wps.map(w => `${w.lng},${w.lat}`).join('|'))}`;
           const rt = (await (await fetch(url, { headers: { Authorization: `KakaoAK ${CONFIG.KAKAO_REST_KEY}` } })).json()).routes?.[0];
           if (rt && rt.result_code === 0) {
@@ -788,7 +773,7 @@
           }
         } catch {}
         const pts = [this.origin, ...wps, this.dest];
-        const oRt = (await (await fetch(`[https://router.project-osrm.org/route/v1/driving/$](https://router.project-osrm.org/route/v1/driving/$){pts.map(p=>`${p.lng},${p.lat}`).join(';')}?overview=full&geometries=geojson`)).json()).routes?.[0];
+        const oRt = (await (await fetch(`https://router.project-osrm.org/route/v1/driving/${pts.map(p=>`${p.lng},${p.lat}`).join(';')}?overview=full&geometries=geojson`)).json()).routes?.[0];
         if (oRt) {
           this.route = { dist: Math.round(oRt.distance), dur: Math.round(oRt.duration), toll: 0, path: oRt.geometry.coordinates.map(c=>[c[1],c[0]]) };
           ADMIN_MAP.drawRoute(this.origin, wps, this.dest, this.route.path);
@@ -1003,6 +988,7 @@
         });
       },
 
+      /* 선택한 기간 동안 기사별 완료 건수 및 매출 정산 데이터 계산 */
       getSettlementStats() {
         const periodRows = this.getPeriodRows();
         const statsMap = new Map();
