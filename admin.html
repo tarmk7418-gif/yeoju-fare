@@ -86,7 +86,7 @@
       <div class="card-title">⚙️ Supabase 서버 및 관리자 비밀번호 설정</div>
       <div style="display:grid; grid-template-columns:1.2fr 1.2fr 0.7fr auto; gap:8px; align-items:end;">
         <div><label>Supabase Project URL</label><input type="text" id="sb-url" /></div>
-        <div><label>Supabase Publishable Key</label><input type="password" id="sb-key" placeholder="sb_publishable_..." /></div>
+        <div><label>Supabase Publishable Key</label><input type="password" id="sb-key" /></div>
         <div><label>관리자 비밀번호 변경</label><input type="text" id="new-pin" placeholder="새 비밀번호" /></div>
         <button type="button" class="btn-success" onclick="ADMIN.saveSetup()">저장 및 연결</button>
       </div>
@@ -220,7 +220,7 @@
       KAKAO_JS_KEY: '348aec403735e7af2a661c30ce11e8e5',
       KAKAO_REST_KEY: '8753d03a528d0664dfdaaca2a11ce75e',
       SUPABASE_URL: 'https://uoayezajeeadhmofgfrd.supabase.co',
-      SUPABASE_ANON_KEY: '여기에_복사한_sb_publishable_전체키_붙여넣기',
+      SUPABASE_ANON_KEY: 'sb_publishable_kTviyUA-HeO4-_Us2--PWA_8yhpZ2XP',
       YEOJU_CENTER: { lat: 37.298344, lng: 127.637518 }
     };
 
@@ -249,11 +249,10 @@
 
     const ADMIN = {
       sb: null,
-      isPlaceholder(v) { return !v || v.includes('여기에_복사한'); },
       getSupabase() {
         const saved = JSON.parse(localStorage.getItem('yeoju_sb_cfg') || '{}');
-        const url = (!this.isPlaceholder(CONFIG.SUPABASE_URL) ? CONFIG.SUPABASE_URL : (saved.url || '')).trim();
-        const key = (!this.isPlaceholder(CONFIG.SUPABASE_ANON_KEY) ? CONFIG.SUPABASE_ANON_KEY : (saved.key || '')).trim();
+        const url = (CONFIG.SUPABASE_URL || saved.url || '').trim();
+        const key = (CONFIG.SUPABASE_ANON_KEY || saved.key || '').trim();
         if (!url || !key || !window.supabase) return null;
         if (!this.sb) this.sb = window.supabase.createClient(url, key);
         return this.sb;
@@ -275,8 +274,8 @@
       },
       async boot() {
         const saved = JSON.parse(localStorage.getItem('yeoju_sb_cfg') || '{}');
-        document.getElementById('sb-url').value = !this.isPlaceholder(CONFIG.SUPABASE_URL) ? CONFIG.SUPABASE_URL : (saved.url || '');
-        document.getElementById('sb-key').value = !this.isPlaceholder(CONFIG.SUPABASE_ANON_KEY) ? CONFIG.SUPABASE_ANON_KEY : (saved.key || '');
+        document.getElementById('sb-url').value = CONFIG.SUPABASE_URL || saved.url || '';
+        document.getElementById('sb-key').value = CONFIG.SUPABASE_ANON_KEY || saved.key || '';
         ['preset-origin', 'preset-dest'].forEach(id => { document.getElementById(id).innerHTML = '<option value="">거점선택</option>' + YEOJU_PRESETS.map(p => `<option value="${p.id}">${p.name}</option>`).join(''); });
         ADMIN_MAP.loadKakaoSDK();
         await DISPATCH_FORM.calcRoute();
@@ -284,7 +283,7 @@
       },
       async connectRealtime() {
         const sb = this.getSupabase(), st = document.getElementById('conn-status');
-        if (!sb) { st.textContent = '⚠️ Publishable Key 입력 필요'; document.getElementById('setup-panel').style.display = 'block'; return; }
+        if (!sb) { st.textContent = '⚠️ 서버 연결 실패'; document.getElementById('setup-panel').style.display = 'block'; return; }
         st.textContent = '🟢 실시간 관제 연결됨';
         await DRIVER_MGR.loadDrivers();
         await DISPATCH_MGR.loadAll();
@@ -453,7 +452,7 @@
       },
       async submit(type) {
         const sb = ADMIN.getSupabase();
-        if (!sb) return toast('먼저 Supabase Publishable Key 설정을 완료해 주세요.');
+        if (!sb) return toast('먼저 Supabase 연결 설정을 완료해 주세요.');
         if (!this.route) await this.calcRoute();
         let driverCode = null, driverName = null, status = 'waiting';
         if (type === 'forced') {
