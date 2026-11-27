@@ -438,6 +438,12 @@
         this.channel = sb.channel('driver-dispatches')
           .on('postgres_changes', { event: '*', schema: 'public', table: 'yeoju_dispatches' }, (payload) => {
             const n = payload.new || {};
+            if (n.deleted_at) {
+              if (payload.old?.driver_code === APP.driver?.code && !payload.old?.deleted_at) {
+                beep(); toast('⚠️ 관리자에 의해 배차가 제외되었습니다.');
+              }
+              return this.loadAll();
+            }
             if (payload.eventType === 'INSERT' && n.status === 'waiting') { beep(); toast(`📢 새 대기 배차 도착: ${n.origin_name} → ${n.dest_name}`); }
             else if (n.driver_code === APP.driver?.code && n.dispatch_type === 'forced' && n.status === 'accepted') { beep(); toast(`🚨 강제배차가 배정되었습니다! (${n.origin_name} → ${n.dest_name})`); APP.switchTab('active'); }
             else if (payload.eventType === 'UPDATE' && n.status === 'cancelled' && payload.old?.driver_code === APP.driver?.code) { beep(); toast('⚠️ 관리자에 의해 배차가 취소되었습니다.'); }
@@ -448,15 +454,16 @@
       async loadAll() {
         const sb = APP.getSupabase();
         if (!sb || !APP.driver) return;
-        const { data } = await sb.from('yeoju_dispatches').select('*').order('created_at', { ascending: false }).limit(100);
+        const { data } = await sb.from('yeoju_dispatches').select('*').is('deleted_at', null).order('created_at', { ascending: false }).limit(100);
         this.rows = data || [];
         this.render();
       },
       render() {
         const me = APP.driver.code;
-        const waiting = this.rows.filter(r => r.status === 'waiting');
-        const active = this.rows.filter(r => r.status === 'accepted' && r.driver_code === me);
-        const done = this.rows.filter(r => r.status === 'completed' && r.driver_code === me);
+        const visibleRows = this.rows.filter(r => !r.deleted_at);
+        const waiting = visibleRows.filter(r => r.status === 'waiting');
+        const active = visibleRows.filter(r => r.status === 'accepted' && r.driver_code === me);
+        const done = visibleRows.filter(r => r.status === 'completed' && r.driver_code === me);
         document.getElementById('cnt-waiting').textContent = waiting.length;
         document.getElementById('cnt-active').textContent = active.length;
         document.getElementById('list-waiting').innerHTML = waiting.length ? waiting.map(r => this.cardHtml(r, 'waiting')).join('') : '<div class="card" style="text-align:center;color:var(--muted);padding:28px;">현재 대기 중인 배차가 없습니다.</div>';
@@ -493,7 +500,7 @@
       },
       async acceptCall(id) {
         const sb = APP.getSupabase();
-        const { data, error } = await sb.from('yeoju_dispatches').update({ status: 'accepted', driver_code: APP.driver.code, driver_name: APP.driver.name, updated_at: new Date().toISOString() }).eq('id', id).eq('status', 'waiting').select();
+        const { data, error } = await sb.from('yeoju_dispatches').update({ status: 'accepted', driver_code: APP.driver.code, driver_name: APP.driver.name, updated_at: new Date().toISOString() }).eq('id', id).eq('status', 'waiting').is('deleted_at', null).select();
         if (error || !data || !data.length) { toast('이미 다른 기사가 배차를 잡았거나 취소된 건입니다.'); return this.loadAll(); }
         toast('배차를 잡았습니다! [진행중] 탭으로 이동합니다.');
         await this.loadAll();
