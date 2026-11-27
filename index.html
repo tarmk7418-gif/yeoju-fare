@@ -21,78 +21,30 @@
     }
     * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
     html, body {
-      margin: 0;
-      padding: 0;
-      width: 100%;
-      max-width: 100%;
-      min-height: 100dvh;
-      background: var(--bg);
-      color: var(--text);
+      margin: 0; padding: 0; width: 100%; max-width: 100%; min-height: 100dvh;
+      background: var(--bg); color: var(--text);
       font-family: -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo", "Malgun Gothic", sans-serif;
-      -webkit-user-select: text;
-      user-select: text;
+      -webkit-user-select: text; user-select: text;
     }
-    body {
-      overflow-x: hidden;
-      padding-bottom: calc(32px + env(safe-area-inset-bottom));
-    }
-    button, .tab-btn {
-      -webkit-user-select: none;
-      user-select: none;
-    }
+    body { overflow-x: hidden; padding-bottom: calc(32px + env(safe-area-inset-bottom)); }
+    button, .tab-btn { -webkit-user-select: none; user-select: none; }
     header {
       background: linear-gradient(135deg, var(--primary-dark), var(--primary));
-      color: #fff;
-      padding: calc(11px + env(safe-area-inset-top)) 14px 11px;
-      position: sticky;
-      top: 0;
-      z-index: 1000;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.16);
+      color: #fff; padding: calc(11px + env(safe-area-inset-top)) 14px 11px;
+      position: sticky; top: 0; z-index: 1000; box-shadow: 0 2px 8px rgba(0,0,0,0.16);
     }
-    .header-inner {
-      max-width: 980px;
-      margin: 0 auto;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      gap: 6px;
-      flex-wrap: wrap;
-    }
+    .header-inner { max-width: 980px; margin: 0 auto; display: flex; justify-content: space-between; align-items: center; gap: 6px; flex-wrap: wrap; }
     .header-title h1 { margin: 0; font-size: 1.02rem; }
     .header-title p { margin: 2px 0 0; font-size: 0.74rem; opacity: 0.9; }
     .header-right { display: flex; align-items: center; gap: 5px; flex-wrap: wrap; }
     .pill { font-size: 0.73rem; font-weight: 700; padding: 4px 9px; border-radius: 999px; background: rgba(255,255,255,0.2); color: #fff; white-space: nowrap; }
     .pill.live { background: #10b981; }
 
-    .container {
-      width: 100%;
-      max-width: 980px;
-      margin: 10px auto;
-      padding: 0 10px;
-    }
-    .card {
-      width: 100%;
-      background: var(--card);
-      border-radius: 12px;
-      border: 1px solid #e2e8f0;
-      box-shadow: 0 2px 8px rgba(15,23,42,0.05);
-      padding: 13px;
-      margin-bottom: 10px;
-      min-width: 0;
-    }
+    .container { width: 100%; max-width: 980px; margin: 10px auto; padding: 0 10px; }
+    .card { width: 100%; background: var(--card); border-radius: 12px; border: 1px solid #e2e8f0; box-shadow: 0 2px 8px rgba(15,23,42,0.05); padding: 13px; margin-bottom: 10px; min-width: 0; }
     button {
-      font-family: inherit;
-      cursor: pointer;
-      border: none;
-      border-radius: 8px;
-      font-weight: 700;
-      font-size: 0.84rem;
-      padding: 9px 12px;
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      gap: 4px;
-      line-height: 1.2;
+      font-family: inherit; cursor: pointer; border: none; border-radius: 8px; font-weight: 700;
+      font-size: 0.84rem; padding: 9px 12px; display: inline-flex; align-items: center; justify-content: center; gap: 4px; line-height: 1.2;
     }
     button:disabled { opacity: 0.65; cursor: not-allowed; }
     button:active:not(:disabled) { transform: scale(0.98); }
@@ -108,98 +60,32 @@
     .btn-xs { padding: 5px 7px; font-size: 0.73rem; }
 
     input, select {
-      width: 100%;
-      min-width: 0;
-      max-width: 100%;
-      padding: 9px 10px;
-      border: 1px solid var(--border);
-      border-radius: 8px;
-      font-size: 16px;
-      background: #fff;
-      color: var(--text);
-      outline: none;
+      width: 100%; min-width: 0; max-width: 100%; padding: 9px 10px; border: 1px solid var(--border);
+      border-radius: 8px; font-size: 16px; background: #fff; color: var(--text); outline: none;
     }
     input:focus, select:focus { border-color: var(--primary); }
     label { display: block; font-size: 0.77rem; font-weight: 700; color: var(--muted); margin-bottom: 4px; }
 
-    /* 로그인 화면 규격 */
-    .login-box {
-      max-width: 420px;
-      margin: 24px auto;
-      text-align: center;
-      padding: 20px 16px;
-    }
+    .login-box { max-width: 420px; margin: 24px auto; text-align: center; padding: 20px 16px; }
     .login-box h2 { margin: 0 0 6px; font-size: 1.18rem; }
     .login-box p { margin: 0 0 16px; font-size: 0.84rem; color: var(--muted); }
-    .remember-row {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      margin: 10px 0 14px;
-      text-align: left;
-      cursor: pointer;
-      font-size: 0.84rem;
-      font-weight: 700;
-      color: var(--text);
-    }
-    .remember-row input[type="checkbox"] {
-      width: 18px;
-      height: 18px;
-      margin: 0;
-      cursor: pointer;
-      accent-color: var(--primary);
-      flex-shrink: 0;
-    }
+    .remember-row { display: flex; align-items: center; gap: 8px; margin: 10px 0 14px; text-align: left; cursor: pointer; font-size: 0.84rem; font-weight: 700; color: var(--text); }
+    .remember-row input[type="checkbox"] { width: 18px; height: 18px; margin: 0; cursor: pointer; accent-color: var(--primary); flex-shrink: 0; }
     .login-error {
-      display: none;
-      margin-top: 12px;
-      padding: 10px 12px;
-      border-radius: 8px;
-      background: #fef2f2;
-      border: 1px solid #fecaca;
-      color: #b91c1c;
-      font-size: 0.81rem;
-      font-weight: 700;
-      text-align: left;
-      line-height: 1.45;
-      word-break: keep-all;
+      display: none; margin-top: 12px; padding: 10px 12px; border-radius: 8px;
+      background: #fef2f2; border: 1px solid #fecaca; color: #b91c1c;
+      font-size: 0.81rem; font-weight: 700; text-align: left; line-height: 1.45; word-break: keep-all;
     }
 
-    /* 상단 탭바 규격 */
     .tab-bar {
-      display: grid;
-      grid-template-columns: repeat(4, minmax(0, 1fr));
-      gap: 4px;
-      background: #e2e8f0;
-      padding: 4px;
-      border-radius: 12px;
-      margin-bottom: 10px;
-      position: sticky;
-      top: 52px;
-      z-index: 900;
+      display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 4px; background: #e2e8f0;
+      padding: 4px; border-radius: 12px; margin-bottom: 10px; position: sticky; top: 52px; z-index: 900;
     }
-    .tab-btn {
-      background: transparent;
-      color: var(--muted);
-      padding: 9px 2px;
-      border-radius: 8px;
-      font-size: 0.79rem;
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-    }
+    .tab-btn { background: transparent; color: var(--muted); padding: 9px 2px; border-radius: 8px; font-size: 0.79rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
     .tab-btn.active { background: #fff; color: var(--primary); box-shadow: 0 1px 4px rgba(0,0,0,0.1); }
     .tab-badge { background: var(--danger); color: #fff; font-size: 0.67rem; padding: 1px 5px; border-radius: 999px; margin-left: 2px; }
 
-    /* 배차 카드 규격 */
-    .dispatch-card {
-      border: 1.5px solid #cbd5e1;
-      border-radius: 12px;
-      padding: 13px;
-      margin-bottom: 10px;
-      background: #fff;
-      min-width: 0;
-    }
+    .dispatch-card { border: 1.5px solid #cbd5e1; border-radius: 12px; padding: 13px; margin-bottom: 10px; background: #fff; min-width: 0; }
     .dispatch-card.forced { border-color: #f59e0b; background: #fffbeb; }
     .dispatch-card.overdue { border-color: #ef4444; background: #fef2f2; }
     .dc-top { display: flex; justify-content: space-between; align-items: center; gap: 6px; margin-bottom: 8px; flex-wrap: wrap; }
@@ -209,29 +95,10 @@
     .tag-overdue { background: #dc2626; color: #fff; font-size: 0.71rem; font-weight: 800; padding: 3px 8px; border-radius: 6px; }
     .dc-route { font-size: 0.94rem; font-weight: 700; margin: 6px 0; line-height: 1.5; word-break: keep-all; }
     .dc-wp { font-size: 0.82rem; color: #b45309; font-weight: 700; margin: 4px 0; word-break: keep-all; }
-    .dc-meta {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 8px 12px;
-      font-size: 0.81rem;
-      color: var(--muted);
-      margin: 8px 0;
-      padding: 8px 10px;
-      background: #f8fafc;
-      border-radius: 8px;
-    }
+    .dc-meta { display: flex; flex-wrap: wrap; gap: 8px 12px; font-size: 0.81rem; color: var(--muted); margin: 8px 0; padding: 8px 10px; background: #f8fafc; border-radius: 8px; }
     .eta-box {
-      background: #eff6ff;
-      border: 1px solid #bfdbfe;
-      border-radius: 10px;
-      padding: 9px 11px;
-      margin: 8px 0;
-      display: flex;
-      flex-wrap: wrap;
-      justify-content: space-between;
-      align-items: center;
-      gap: 8px;
-      font-size: 0.82rem;
+      background: #eff6ff; border: 1px solid #bfdbfe; border-radius: 10px; padding: 9px 11px; margin: 8px 0;
+      display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 8px; font-size: 0.82rem;
     }
     .eta-box.picked { background: #ecfdf5; border-color: #a7f3d0; }
     .eta-box.overdue { background: #fee2e2; border-color: #fca5a5; }
@@ -239,85 +106,22 @@
     .elapsed-val.overdue { color: #dc2626; }
     .dc-fare { font-size: 1.06rem; font-weight: 800; color: var(--primary); }
 
-    /* 배차 버튼 2열 균등 규격 */
-    .dc-actions {
-      display: grid;
-      grid-template-columns: repeat(2, minmax(0, 1fr));
-      gap: 6px;
-      margin-top: 10px;
-    }
-    .dc-actions a {
-      display: block;
-      width: 100%;
-      text-decoration: none;
-    }
-    .dc-actions button {
-      width: 100%;
-      min-height: 40px;
-    }
-    .dc-actions .btn-span-full {
-      grid-column: 1 / -1;
-      min-height: 44px;
-      font-size: 0.92rem;
-    }
+    .dc-actions { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 6px; margin-top: 10px; }
+    .dc-actions a { display: block; width: 100%; text-decoration: none; }
+    .dc-actions button { width: 100%; min-height: 40px; }
+    .dc-actions .btn-span-full { grid-column: 1 / -1; min-height: 44px; font-size: 0.92rem; }
 
-    /* 요금계산기 2단/1단 규격 */
     .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; align-items: start; }
     .grid-2 > * { min-width: 0; }
-    .route-box {
-      background: #f8fafc;
-      border: 1px solid #e2e8f0;
-      border-radius: 10px;
-      padding: 10px;
-      margin-bottom: 9px;
-      position: relative;
-      min-width: 0;
-    }
+    .route-box { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 10px; padding: 10px; margin-bottom: 9px; position: relative; min-width: 0; }
     .route-box.wp { background: #fffbeb; border-color: #fde68a; }
-    .route-hdr {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      gap: 5px;
-      flex-wrap: wrap;
-    }
-    .route-hdr-tools {
-      display: flex;
-      align-items: center;
-      gap: 4px;
-      flex-wrap: wrap;
-      max-width: 100%;
-    }
-    .preset-select {
-      width: auto;
-      max-width: 132px;
-      padding: 4px 6px;
-      font-size: 13px;
-      overflow: hidden;
-      text-overflow: ellipsis;
-    }
+    .route-hdr { display: flex; justify-content: space-between; align-items: center; gap: 5px; flex-wrap: wrap; }
+    .route-hdr-tools { display: flex; align-items: center; gap: 4px; flex-wrap: wrap; max-width: 100%; }
+    .preset-select { width: auto; max-width: 132px; padding: 4px 6px; font-size: 13px; overflow: hidden; text-overflow: ellipsis; }
     .input-wrap { position: relative; margin-top: 6px; min-width: 0; }
-    .input-row {
-      display: grid;
-      grid-template-columns: minmax(0, 1fr) 36px 54px;
-      gap: 5px;
-      align-items: center;
-    }
+    .input-row { display: grid; grid-template-columns: minmax(0, 1fr) 36px 54px; gap: 5px; align-items: center; }
     .input-row button { padding: 9px 4px; }
-    .suggest-dropdown {
-      position: absolute;
-      top: calc(100% + 4px);
-      left: 0;
-      right: 0;
-      background: #fff;
-      border: 1.5px solid #3b82f6;
-      border-radius: 10px;
-      box-shadow: 0 10px 24px rgba(0,0,0,0.16);
-      max-height: 250px;
-      overflow-y: auto;
-      z-index: 1500;
-      display: none;
-    }
+    .suggest-dropdown { position: absolute; top: calc(100% + 4px); left: 0; right: 0; background: #fff; border: 1.5px solid #3b82f6; border-radius: 10px; box-shadow: 0 10px 24px rgba(0,0,0,0.16); max-height: 250px; overflow-y: auto; z-index: 1500; display: none; }
     .suggest-dropdown.open { display: block; }
     .suggest-item { padding: 9px 11px; border-bottom: 1px solid #f1f5f9; cursor: pointer; }
     .suggest-item:hover { background: var(--primary-light); }
@@ -325,14 +129,7 @@
     .suggest-sub { font-size: 0.74rem; color: var(--muted); }
     .pt-status { font-size: 0.76rem; margin-top: 6px; padding: 5px 8px; border-radius: 6px; background: #fff; border: 1px solid #e2e8f0; word-break: keep-all; }
 
-    #map-wrapper {
-      width: 100%;
-      height: 300px;
-      border-radius: 10px;
-      overflow: hidden;
-      border: 1px solid var(--border);
-      margin: 8px 0;
-    }
+    #map-wrapper { width: 100%; height: 300px; border-radius: 10px; overflow: hidden; border: 1px solid var(--border); margin: 8px 0; }
     #kakao-map, #leaflet-map { width: 100%; height: 100%; }
 
     .stat-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 6px; margin-top: 8px; }
@@ -353,24 +150,7 @@
     th, td { padding: 8px 6px; border-bottom: 1px solid #e2e8f0; text-align: left; }
     th { background: #f8fafc; color: var(--muted); white-space: nowrap; }
 
-    #toast {
-      position: fixed;
-      bottom: 22px;
-      left: 50%;
-      transform: translateX(-50%) translateY(80px);
-      background: #0f172a;
-      color: #fff;
-      padding: 10px 18px;
-      border-radius: 999px;
-      font-size: 0.84rem;
-      font-weight: 700;
-      z-index: 9999;
-      opacity: 0;
-      transition: all 0.25s;
-      max-width: 92vw;
-      text-align: center;
-      pointer-events: none;
-    }
+    #toast { position: fixed; bottom: 22px; left: 50%; transform: translateX(-50%) translateY(80px); background: #0f172a; color: #fff; padding: 10px 18px; border-radius: 999px; font-size: 0.84rem; font-weight: 700; z-index: 9999; opacity: 0; transition: all 0.25s; max-width: 92vw; text-align: center; pointer-events: none; }
     #toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
 
     @media (max-width: 780px) {
@@ -604,15 +384,9 @@
     const notifiedOverdueIds = new Set();
     let audioCtx = null;
 
-    function safeStorageGet(k, fallback = '') {
-      try { return localStorage.getItem(k) ?? fallback; } catch { return fallback; }
-    }
-    function safeStorageSet(k, v) {
-      try { localStorage.setItem(k, v); } catch {}
-    }
-    function safeStorageRemove(k) {
-      try { localStorage.removeItem(k); } catch {}
-    }
+    function safeStorageGet(k, fallback = '') { try { return localStorage.getItem(k) ?? fallback; } catch { return fallback; } }
+    function safeStorageSet(k, v) { try { localStorage.setItem(k, v); } catch {} }
+    function safeStorageRemove(k) { try { localStorage.removeItem(k); } catch {} }
 
     function unlockAudio() {
       try {
@@ -628,15 +402,11 @@
         if (!audioCtx) return;
         const now = audioCtx.currentTime;
         [0, 0.24].forEach(offset => {
-          const o = audioCtx.createOscillator();
-          const g = audioCtx.createGain();
-          o.type = 'sawtooth';
-          o.frequency.setValueAtTime(960, now + offset);
+          const o = audioCtx.createOscillator(), g = audioCtx.createGain();
+          o.type = 'sawtooth'; o.frequency.setValueAtTime(960, now + offset);
           g.gain.setValueAtTime(0.14, now + offset);
-          o.connect(g);
-          g.connect(audioCtx.destination);
-          o.start(now + offset);
-          o.stop(now + offset + 0.16);
+          o.connect(g); g.connect(audioCtx.destination);
+          o.start(now + offset); o.stop(now + offset + 0.16);
         });
       } catch {}
     }
@@ -644,8 +414,7 @@
     function toast(msg) {
       const el = document.getElementById('toast');
       if (!el) return;
-      el.textContent = msg;
-      el.classList.add('show');
+      el.textContent = msg; el.classList.add('show');
       clearTimeout(window._tt);
       window._tt = setTimeout(() => el.classList.remove('show'), 3200);
     }
@@ -656,12 +425,9 @@
       const h = Math.floor(safe / 3600), m = Math.floor((safe % 3600) / 60), s = safe % 60;
       return h > 0 ? `${h}:${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}` : `${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
     }
-    function formatClock(ms) {
-      return new Date(ms).toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit' });
-    }
+    function formatClock(ms) { return new Date(ms).toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit' }); }
     function haversineMeters(lat1, lng1, lat2, lng2) {
-      const R = 6371000;
-      const toRad = d => d * Math.PI / 180;
+      const R = 6371000, toRad = d => d * Math.PI / 180;
       const dLat = toRad(lat2 - lat1), dLng = toRad(lng2 - lng1);
       const a = Math.sin(dLat/2)**2 + Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) * Math.sin(dLng/2)**2;
       return 2 * R * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
@@ -681,13 +447,8 @@
       showLoginError(msg) {
         const box = document.getElementById('login-error-box');
         if (!box) return;
-        if (!msg) {
-          box.style.display = 'none';
-          box.textContent = '';
-        } else {
-          box.style.display = 'block';
-          box.textContent = msg;
-        }
+        box.style.display = msg ? 'block' : 'none';
+        box.textContent = msg || '';
       },
       syncHeaderOffset() {
         const hdr = document.getElementById('app-header'), tab = document.getElementById('main-tab-bar');
@@ -722,13 +483,11 @@
           codeInput?.focus();
           return;
         }
-
         const sb = this.getSupabase();
         if (!sb) {
           this.showLoginError('서버 연결 라이브러리를 불러오지 못했습니다. 새로고침 후 다시 시도해 주세요.');
           return toast('서버 연결 중입니다. 잠시 후 다시 시도해 주세요.');
         }
-
         if (btn) { btn.disabled = true; btn.textContent = '로그인 확인 중...'; }
         try {
           const { data: drivers, error } = await sb.from('yeoju_drivers').select('*');
@@ -736,7 +495,6 @@
             this.showLoginError(`서버 조회 오류: ${error.message}`);
             return toast('로그인 조회 중 오류가 발생했습니다.');
           }
-
           const norm = rawCode.toLowerCase();
           const matched = (drivers || []).find(d => String(d.code || '').trim().toLowerCase() === norm);
           if (!matched) {
@@ -747,7 +505,6 @@
             this.showLoginError(`기사 코드 [${matched.code}]는 현재 사용 정지 상태입니다. 상황실 관리자에게 문의하세요.`);
             return toast('정지된 고유 코드입니다.');
           }
-
           const rememberChecked = document.getElementById('remember-login-chk')?.checked;
           if (rememberChecked) safeStorageSet('yeoju_remembered_code', String(matched.code).trim());
           else safeStorageRemove('yeoju_remembered_code');
@@ -757,7 +514,6 @@
             this.currentLat = matched.lat;
             this.currentLng = matched.lng;
           }
-
           document.getElementById('login-view').style.display = 'none';
           document.getElementById('main-view').style.display = 'block';
           document.getElementById('header-controls').style.display = 'flex';
@@ -765,7 +521,6 @@
           document.getElementById('header-sub').textContent = '실시간 배차 수신 및 GPS 공유 중';
           this.syncHeaderOffset();
           this.startGpsTracking();
-
           try { await DISPATCH.init(); } catch (e) { console.error(e); }
           try { await CALC.init(); } catch (e) { console.error(e); }
           toast(`${matched.name} 기사님 환영합니다.`);
@@ -869,7 +624,7 @@
             if (typeof startLat === 'number' && typeof r.origin_lat === 'number') {
               const key = `to-origin-${r.id}-${startLat.toFixed(3)}-${startLng.toFixed(3)}`;
               if (!this.roadTimeCache.has(key)) {
-                const dur = await this.fetchDriveSeconds(startLng, startLat, r.origin_lng, r.origin_lat);
+                const dur = await this.fetchDriveSeconds(startLng, startLat, r.origin_lng, r.origin_lat, []);
                 this.roadTimeCache.set(key, dur);
               }
             }
@@ -877,11 +632,13 @@
         }
       },
 
-      async fetchDriveSeconds(oLng, oLat, dLng, dLat) {
+      async fetchDriveSeconds(oLng, oLat, dLng, dLat, wps = []) {
         const fallbackDist = haversineMeters(oLat, oLng, dLat, dLng);
         const fallbackSec = Math.max(120, Math.round((fallbackDist * 1.35) / (35000 / 3600)));
         try {
-          const url = `https://apis-navi.kakaomobility.com/v1/directions?origin=${oLng},${oLat}&destination=${dLng},${dLat}&priority=RECOMMEND`;
+          let url = `https://apis-navi.kakaomobility.com/v1/directions?origin=${oLng},${oLat}&destination=${dLng},${dLat}&priority=RECOMMEND`;
+          const validWps = (wps || []).filter(w => typeof w.lat === 'number' && typeof w.lng === 'number');
+          if (validWps.length) url += `&waypoints=${encodeURIComponent(validWps.map(w => `${w.lng},${w.lat}`).join('|'))}`;
           const rt = (await (await fetch(url, { headers: { Authorization: `KakaoAK ${CONFIG.KAKAO_REST_KEY}` } })).json()).routes?.[0];
           if (rt && rt.result_code === 0 && rt.summary?.duration > 0) return rt.summary.duration;
         } catch {}
@@ -895,10 +652,7 @@
         const elapsedSec = Math.max(0, Math.floor((nowMs - new Date(anchorStr).getTime()) / 1000));
         const isOverdue = elapsedSec > limitMin * 60;
 
-        let travelSec = 0;
-        let labelType = '탑승 도착 예정';
-        let hasExactGps = false;
-
+        let travelSec = 0, labelType = '탑승 도착 예정', hasExactGps = false;
         if (isPicked) {
           labelType = '목적지 도착 예정';
           travelSec = this.roadTimeCache.get(`trip-${r.id}`) || r.duration_seconds || 600;
@@ -914,7 +668,6 @@
             hasExactGps = false;
           }
         }
-
         const travelMin = Math.max(1, Math.round(travelSec / 60));
         const etaClockStr = formatClock(nowMs + travelSec * 1000);
         return { elapsedSec, limitMin, isOverdue, isPicked, labelType, travelMin, etaClockStr, hasExactGps };
@@ -1032,11 +785,12 @@
         const row = this.rows.find(x => x.id === id);
         if (!row) return;
         const nowIso = new Date().toISOString();
+        const wps = Array.isArray(row.waypoints) ? row.waypoints : [];
         let tripSec = row.duration_seconds || 0;
         if (typeof APP.currentLat === 'number' && typeof APP.currentLng === 'number' && typeof row.dest_lat === 'number') {
-          tripSec = await this.fetchDriveSeconds(APP.currentLng, APP.currentLat, row.dest_lng, row.dest_lat);
+          tripSec = await this.fetchDriveSeconds(APP.currentLng, APP.currentLat, row.dest_lng, row.dest_lat, wps);
         } else if (!tripSec && typeof row.origin_lat === 'number' && typeof row.dest_lat === 'number') {
-          tripSec = await this.fetchDriveSeconds(row.origin_lng, row.origin_lat, row.dest_lng, row.dest_lat);
+          tripSec = await this.fetchDriveSeconds(row.origin_lng, row.origin_lat, row.dest_lng, row.dest_lat, wps);
         }
         this.roadTimeCache.set(`trip-${id}`, tripSec);
         notifiedOverdueIds.delete(id);
