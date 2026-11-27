@@ -2,13 +2,13 @@
 <html lang="ko">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, viewport-fit=cover" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
   <meta name="apple-mobile-web-app-title" content="여주 배차·요금" />
   <meta name="theme-color" content="#1e3a8a" />
   <link rel="manifest" href="./manifest.json" />
-  <title>여주시 기사 배차 & 길찾기 요금표</title>
+  <title>여주시 기사 배차 &amp; 길찾기 요금표</title>
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin="" />
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin=""></script>
   <script src="https://t1.kakaocdn.net/kakao_js_sdk/2.7.4/kakao.min.js" crossorigin="anonymous"></script>
@@ -22,17 +22,29 @@
     }
     * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
     html, body {
-      margin: 0; padding: 0; width: 100%; max-width: 100%; min-height: 100dvh;
+      margin: 0; padding: 0; width: 100%; height: 100%;
+      overflow: hidden; overscroll-behavior: none;
       background: var(--bg); color: var(--text);
       font-family: -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo", "Malgun Gothic", sans-serif;
-      -webkit-user-select: text; user-select: text;
+      -webkit-user-select: none; user-select: none;
     }
-    body { overflow-x: hidden; padding-bottom: calc(32px + env(safe-area-inset-bottom)); }
+    @media (hover: hover) and (pointer: fine) {
+      html, body { -webkit-user-select: text; user-select: text; }
+    }
+    input, textarea, select { -webkit-user-select: text; user-select: text; }
     button, .tab-btn { -webkit-user-select: none; user-select: none; }
+
+    #app-shell {
+      position: fixed; top: 0; right: 0; bottom: 0; left: 0;
+      display: flex; flex-direction: column;
+      width: 100%; overflow: hidden;
+      background: var(--bg);
+    }
     header {
+      flex: 0 0 auto;
       background: linear-gradient(135deg, var(--primary-dark), var(--primary));
       color: #fff; padding: calc(11px + env(safe-area-inset-top)) 14px 11px;
-      position: sticky; top: 0; z-index: 1000; box-shadow: 0 2px 8px rgba(0,0,0,0.16);
+      z-index: 1000; box-shadow: 0 2px 8px rgba(0,0,0,0.16);
     }
     .header-inner { max-width: 980px; margin: 0 auto; display: flex; justify-content: space-between; align-items: center; gap: 6px; flex-wrap: wrap; }
     .header-title h1 { margin: 0; font-size: 1.02rem; }
@@ -41,8 +53,30 @@
     .pill { font-size: 0.73rem; font-weight: 700; padding: 4px 9px; border-radius: 999px; background: rgba(255,255,255,0.2); color: #fff; white-space: nowrap; }
     .pill.live { background: #10b981; }
 
-    .container { width: 100%; max-width: 980px; margin: 10px auto; padding: 0 10px; }
+    #top-tab-wrap {
+      flex: 0 0 auto; display: none;
+      background: var(--bg); padding: 8px 10px 4px;
+      border-bottom: 1px solid #e2e8f0; z-index: 950;
+    }
+    .tab-bar {
+      max-width: 980px; margin: 0 auto;
+      display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 4px;
+      background: #e2e8f0; padding: 4px; border-radius: 12px;
+    }
+    .tab-btn { background: transparent; color: var(--muted); padding: 9px 2px; border-radius: 8px; font-size: 0.79rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .tab-btn.active { background: #fff; color: var(--primary); box-shadow: 0 1px 4px rgba(0,0,0,0.1); }
+    .tab-badge { background: var(--danger); color: #fff; font-size: 0.67rem; padding: 1px 5px; border-radius: 999px; margin-left: 2px; }
+
+    #app-scroll {
+      flex: 1 1 auto; width: 100%;
+      overflow-y: auto; overflow-x: hidden;
+      overscroll-behavior-y: none; -webkit-overflow-scrolling: touch;
+      background: var(--bg);
+      padding: 10px 10px calc(28px + env(safe-area-inset-bottom));
+    }
+    .container { width: 100%; max-width: 980px; margin: 0 auto; }
     .card { width: 100%; background: var(--card); border-radius: 12px; border: 1px solid #e2e8f0; box-shadow: 0 2px 8px rgba(15,23,42,0.05); padding: 13px; margin-bottom: 10px; min-width: 0; }
+
     button {
       font-family: inherit; cursor: pointer; border: none; border-radius: 8px; font-weight: 700;
       font-size: 0.84rem; padding: 9px 12px; display: inline-flex; align-items: center; justify-content: center; gap: 4px; line-height: 1.2;
@@ -67,7 +101,7 @@
     input:focus, select:focus { border-color: var(--primary); }
     label { display: block; font-size: 0.77rem; font-weight: 700; color: var(--muted); margin-bottom: 4px; }
 
-    .login-box { max-width: 420px; margin: 24px auto; text-align: center; padding: 20px 16px; }
+    .login-box { max-width: 420px; margin: 20px auto; text-align: center; padding: 20px 16px; }
     .login-box h2 { margin: 0 0 6px; font-size: 1.18rem; }
     .login-box p { margin: 0 0 16px; font-size: 0.84rem; color: var(--muted); }
     .remember-row { display: flex; align-items: center; gap: 8px; margin: 10px 0 14px; text-align: left; cursor: pointer; font-size: 0.84rem; font-weight: 700; color: var(--text); }
@@ -77,14 +111,6 @@
       background: #fef2f2; border: 1px solid #fecaca; color: #b91c1c;
       font-size: 0.81rem; font-weight: 700; text-align: left; line-height: 1.45; word-break: keep-all;
     }
-
-    .tab-bar {
-      display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 4px; background: #e2e8f0;
-      padding: 4px; border-radius: 12px; margin-bottom: 10px; position: sticky; top: 52px; z-index: 900;
-    }
-    .tab-btn { background: transparent; color: var(--muted); padding: 9px 2px; border-radius: 8px; font-size: 0.79rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-    .tab-btn.active { background: #fff; color: var(--primary); box-shadow: 0 1px 4px rgba(0,0,0,0.1); }
-    .tab-badge { background: var(--danger); color: #fff; font-size: 0.67rem; padding: 1px 5px; border-radius: 999px; margin-left: 2px; }
 
     .dispatch-card { border: 1.5px solid #cbd5e1; border-radius: 12px; padding: 13px; margin-bottom: 10px; background: #fff; min-width: 0; }
     .dispatch-card.forced { border-color: #f59e0b; background: #fffbeb; }
@@ -151,11 +177,12 @@
     th, td { padding: 8px 6px; border-bottom: 1px solid #e2e8f0; text-align: left; }
     th { background: #f8fafc; color: var(--muted); white-space: nowrap; }
 
-    #toast { position: fixed; bottom: 22px; left: 50%; transform: translateX(-50%) translateY(80px); background: #0f172a; color: #fff; padding: 10px 18px; border-radius: 999px; font-size: 0.84rem; font-weight: 700; z-index: 9999; opacity: 0; transition: all 0.25s; max-width: 92vw; text-align: center; pointer-events: none; }
+    #toast { position: fixed; bottom: calc(22px + env(safe-area-inset-bottom)); left: 50%; transform: translateX(-50%) translateY(80px); background: #0f172a; color: #fff; padding: 10px 18px; border-radius: 999px; font-size: 0.84rem; font-weight: 700; z-index: 9999; opacity: 0; transition: all 0.25s; max-width: 92vw; text-align: center; pointer-events: none; }
     #toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
 
     @media (max-width: 780px) {
-      .container { padding: 0 8px; margin: 8px auto; }
+      #app-scroll { padding: 8px 8px calc(28px + env(safe-area-inset-bottom)); }
+      #top-tab-wrap { padding: 6px 8px 4px; }
       .card { padding: 11px; }
       .grid-2 { grid-template-columns: 1fr; }
       .stat-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
@@ -169,188 +196,182 @@
   </style>
 </head>
 <body>
-  <header id="app-header">
-    <div class="header-inner">
-      <div class="header-title">
-        <h1>여주시 기사 배차 &amp; 요금표</h1>
-        <p id="header-sub">고유 코드 로그인 후 실시간 배차 수신</p>
+  <div id="app-shell">
+    <header id="app-header">
+      <div class="header-inner">
+        <div class="header-title">
+          <h1>여주시 기사 배차 &amp; 요금표</h1>
+          <p id="header-sub">고유 코드 로그인 후 실시간 배차 수신</p>
+        </div>
+        <div class="header-right" id="header-controls" style="display:none;">
+          <span class="pill live" id="driver-badge">기사 로그인됨</span>
+          <button type="button" class="btn-outline btn-xs" id="btn-push" onclick="APP.enablePush()">🔔 푸시알림</button>
+          <button type="button" class="btn-kakao btn-xs" id="btn-wakelock" onclick="APP.toggleWakeLock()">☀️ 화면유지</button>
+          <button type="button" class="btn-outline btn-xs" onclick="APP.logout()">로그아웃</button>
+        </div>
       </div>
-      <div class="header-right" id="header-controls" style="display:none;">
-        <span class="pill live" id="driver-badge">기사 로그인됨</span>
-        <button type="button" class="btn-outline btn-xs" id="btn-push" onclick="APP.enablePush()">🔔 푸시알림</button>
-        <button type="button" class="btn-kakao btn-xs" id="btn-wakelock" onclick="APP.toggleWakeLock()">☀️ 화면유지</button>
-        <button type="button" class="btn-outline btn-xs" onclick="APP.logout()">로그아웃</button>
-      </div>
-    </div>
-  </header>
+    </header>
 
-  <main class="container">
-    <section id="login-view" class="card login-box">
-      <h2>🚕 기사 고유 코드 로그인</h2>
-      <p>상황실에서 발급받은 본인 고유 코드를 입력하세요.</p>
-      <div style="text-align:left;">
-        <label for="login-code">기사 고유 코드</label>
-        <input type="text" id="login-code" placeholder="예: 101" autocomplete="off" onkeydown="if(event.key==='Enter') APP.login(false)" />
-      </div>
-      <label class="remember-row" for="remember-login-chk">
-        <input type="checkbox" id="remember-login-chk" checked onchange="APP.onRememberToggle()" />
-        <span>자동 로그인 유지 (로그아웃 전까지 상태 유지)</span>
-      </label>
-      <button type="button" id="btn-driver-login" class="btn-primary" style="width:100%; min-height:44px; font-size:0.94rem;" onclick="APP.login(false)">로그인 및 배차 대기 시작</button>
-      <div id="login-error-box" class="login-error"></div>
-    </section>
-
-    <div id="main-view" style="display:none;">
+    <div id="top-tab-wrap">
       <div class="tab-bar" id="main-tab-bar">
         <button type="button" class="tab-btn active" id="tab-btn-waiting" onclick="APP.switchTab('waiting')">📢 배차대기<span class="tab-badge" id="cnt-waiting">0</span></button>
         <button type="button" class="tab-btn" id="tab-btn-active" onclick="APP.switchTab('active')">🚕 진행중<span class="tab-badge" id="cnt-active">0</span></button>
         <button type="button" class="tab-btn" id="tab-btn-done" onclick="APP.switchTab('done')">✅ 완료내역</button>
         <button type="button" class="tab-btn" id="tab-btn-calc" onclick="APP.switchTab('calc')">🧮 요금계산</button>
       </div>
-
-      <section id="tab-waiting">
-        <div class="card" style="padding:10px 12px; display:flex; justify-content:space-between; align-items:center; gap:6px;">
-          <span style="font-size:0.82rem; font-weight:700;">원하는 콜을 선택해 [배차 잡기]를 누르세요.</span>
-          <button type="button" class="btn-outline btn-xs" onclick="DISPATCH.loadAll()">🔄 새로고침</button>
-        </div>
-        <div id="list-waiting"></div>
-      </section>
-
-      <section id="tab-active" style="display:none;"><div id="list-active"></div></section>
-
-      <section id="tab-done" style="display:none;">
-        <div class="card" id="done-summary" style="font-weight:700; font-size:0.88rem;"></div>
-        <div id="list-done"></div>
-      </section>
-
-      <section id="tab-calc" style="display:none;">
-        <div class="grid-2">
-          <div>
-            <div class="card">
-              <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px; gap:6px; flex-wrap:wrap;">
-                <strong style="font-size:0.93rem;">📍 출발지 · 경유지 · 도착지</strong>
-                <div style="display:flex; gap:5px;">
-                  <button type="button" class="btn-warn btn-xs" onclick="CALC.addWaypoint()">➕ 경유지 추가</button>
-                  <button type="button" class="btn-outline btn-xs" onclick="CALC.swapPoints()">⇅ 반전</button>
-                </div>
-              </div>
-
-              <div class="route-box">
-                <div class="route-hdr">
-                  <span style="font-weight:800; color:#1e40af; font-size:0.82rem;">🔵 출발지</span>
-                  <div class="route-hdr-tools">
-                    <button type="button" class="btn-outline btn-xs" onclick="CALC.useCurrentLocation('origin')">📍 현위치</button>
-                    <select id="preset-origin" class="preset-select" onchange="CALC.selectPreset('origin', this.value)"></select>
-                  </div>
-                </div>
-                <div class="input-wrap">
-                  <div class="input-row">
-                    <input type="text" id="input-origin" placeholder="건물명, 도로명, 지번 입력" oninput="AC.onInput('origin', this.value)" onblur="AC.scheduleClose('origin')" />
-                    <button type="button" class="btn-outline btn-sm" onclick="AC.clear('origin')">✕</button>
-                    <button type="button" class="btn-primary btn-sm" onclick="CALC.searchPoint('origin')">검색</button>
-                  </div>
-                  <div id="suggest-origin" class="suggest-dropdown"></div>
-                </div>
-                <div id="origin-status" class="pt-status">확정 위치: <strong>여주시청</strong></div>
-              </div>
-
-              <div id="waypoints-container"></div>
-
-              <div class="route-box" style="margin-bottom:10px;">
-                <div class="route-hdr">
-                  <span style="font-weight:800; color:#991b1b; font-size:0.82rem;">🔴 도착지</span>
-                  <div class="route-hdr-tools">
-                    <button type="button" class="btn-outline btn-xs" onclick="CALC.useCurrentLocation('dest')">📍 현위치</button>
-                    <select id="preset-dest" class="preset-select" onchange="CALC.selectPreset('dest', this.value)"></select>
-                  </div>
-                </div>
-                <div class="input-wrap">
-                  <div class="input-row">
-                    <input type="text" id="input-dest" placeholder="건물명, 도로명, 지번 입력" oninput="AC.onInput('dest', this.value)" onblur="AC.scheduleClose('dest')" />
-                    <button type="button" class="btn-outline btn-sm" onclick="AC.clear('dest')">✕</button>
-                    <button type="button" class="btn-primary btn-sm" onclick="CALC.searchPoint('dest')">검색</button>
-                  </div>
-                  <div id="suggest-dest" class="suggest-dropdown"></div>
-                </div>
-                <div id="dest-status" class="pt-status">확정 위치: <strong>여주역 (경강선)</strong></div>
-              </div>
-
-              <div style="background:#eff6ff; border:1px solid #bfdbfe; border-radius:10px; padding:10px; margin-bottom:10px;">
-                <label for="calc-cust-phone">📞 손님 전화번호 (카톡·문자 안내 포함용)</label>
-                <div style="display:grid; grid-template-columns:minmax(0, 1fr) auto; gap:6px; margin-bottom:8px;">
-                  <input type="tel" id="calc-cust-phone" placeholder="010-0000-0000" oninput="CALC.formatPhone(this)" />
-                  <button type="button" class="btn-outline btn-sm" onclick="CALC.pastePhone()" style="white-space:nowrap;">📋 붙여넣기</button>
-                </div>
-                <div style="display:grid; grid-template-columns:1fr 1fr; gap:6px;">
-                  <button type="button" class="btn-kakao btn-sm" onclick="CALC.shareMessage()">💬 카톡/공유 전송</button>
-                  <button type="button" class="btn-primary btn-sm" onclick="CALC.sendSMS()">✉️ 문자(SMS) 보내기</button>
-                </div>
-              </div>
-
-              <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px;">
-                <div><label>기본요금(원)</label><input type="number" id="cfg-base-fare" value="4000" step="100" onchange="CALC.renderSummary()" /></div>
-                <div><label>기본 포함 거리(km)</label><input type="number" id="cfg-base-dist" value="2.0" step="0.1" onchange="CALC.renderSummary()" /></div>
-                <div><label>초과 km당(원)</label><input type="number" id="cfg-rate-km" value="1000" step="100" onchange="CALC.renderSummary()" /></div>
-                <div><label>통행료 직접입력(원)</label><input type="number" id="cfg-manual-toll" value="0" step="100" oninput="CALC.onManualToll(this.value)" /></div>
-              </div>
-            </div>
-          </div>
-
-          <div>
-            <div class="card">
-              <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px; flex-wrap:wrap; gap:6px;">
-                <strong style="font-size:0.93rem;">🗺️ 실도로 길찾기 &amp; 요금 산출</strong>
-                <span id="route-engine-tag" style="font-size:0.74rem; color:var(--muted); font-weight:700;">탐색 대기 중</span>
-              </div>
-              <div style="display:flex; gap:5px; flex-wrap:wrap; margin-bottom:6px;">
-                <button type="button" class="btn-outline btn-xs" id="btn-pick-origin" onclick="MAP.setPickMode('origin')">📌 출발찍기</button>
-                <button type="button" class="btn-outline btn-xs" id="btn-pick-dest" onclick="MAP.setPickMode('dest')">📌 도착찍기</button>
-                <button type="button" class="btn-primary btn-xs" onclick="CALC.calcRoute()">🔄 재탐색</button>
-                <button type="button" class="btn-kakao btn-xs" onclick="CALC.openKakaoMap()">카카오맵 ↗</button>
-                <button type="button" class="btn-navi btn-xs" onclick="CALC.openKakaoNavi()">🧭 카카오내비 ↗</button>
-              </div>
-              <div style="font-size:0.73rem; color:var(--muted); margin-bottom:4px;">💡 지도의 <strong>출발 · 경유 · 도착 핀을 드래그</strong>하면 위치와 요금이 자동 재계산됩니다.</div>
-              <div id="map-wrapper">
-                <div id="kakao-map" style="display:none;"></div>
-                <div id="leaflet-map"></div>
-              </div>
-              <div class="stat-grid">
-                <div class="stat-box"><div class="stat-lbl">실주행 거리</div><div class="stat-val" id="res-dist">-</div><div class="stat-sub" id="res-dur">-</div></div>
-                <div class="stat-box"><div class="stat-lbl">초과 거리요금</div><div class="stat-val" id="res-excess">-</div><div class="stat-sub">기본요금 별도</div></div>
-                <div class="stat-box"><div class="stat-lbl">통행료(천원올림)</div><div class="stat-val" id="res-toll">0원</div><div class="stat-sub" id="res-raw-toll">원통행료 0원</div></div>
-                <div class="stat-box hi"><div class="stat-lbl">최종 산출 요금</div><div class="stat-val" id="res-total">-</div><div class="stat-sub">기본+초과+통행료</div></div>
-              </div>
-              <button type="button" class="btn-success" style="width:100%; margin-top:10px; min-height:42px;" onclick="CALC.addToLocalTable()">➕ 아래 개인 요금표에 추가</button>
-            </div>
-
-            <div class="card">
-              <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
-                <strong style="font-size:0.9rem;">✅ 선택 지점 상세 주소 · GPS 좌표</strong>
-                <span style="font-size:0.72rem; color:var(--muted);">경유지 포함 실좌표 확인</span>
-              </div>
-              <div class="verify-grid" id="verify-grid"></div>
-            </div>
-          </div>
-        </div>
-
-        <div class="card">
-          <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:6px;">
-            <strong>📋 개인 누적 요금표 (<span id="local-cnt">0</span>건)</strong>
-            <div style="display:flex; gap:5px;">
-              <button type="button" class="btn-outline btn-xs" onclick="CALC.exportCSV()">📥 CSV 저장</button>
-              <button type="button" class="btn-danger-outline btn-xs" onclick="CALC.clearTable()">전체 삭제</button>
-            </div>
-          </div>
-          <div style="overflow-x:auto;">
-            <table>
-              <thead><tr><th>출발지</th><th>경유지</th><th>도착지</th><th>거리</th><th>통행료</th><th>최종요금</th><th>삭제</th></tr></thead>
-              <tbody id="local-table-body"></tbody>
-            </table>
-          </div>
-        </div>
-      </section>
     </div>
-  </main>
+
+    <main id="app-scroll">
+      <div class="container">
+        <section id="login-view" class="card login-box">
+          <h2>🚕 기사 고유 코드 로그인</h2>
+          <p>상황실에서 발급받은 본인 고유 코드를 입력하세요.</p>
+          <div style="text-align:left;">
+            <label for="login-code">기사 고유 코드</label>
+            <input type="text" id="login-code" placeholder="예: 101" autocomplete="off" onkeydown="if(event.key==='Enter') APP.login(false)" />
+          </div>
+          <label class="remember-row" for="remember-login-chk">
+            <input type="checkbox" id="remember-login-chk" checked onchange="APP.onRememberToggle()" />
+            <span>자동 로그인 유지 (로그아웃 전까지 상태 유지)</span>
+          </label>
+          <button type="button" id="btn-driver-login" class="btn-primary" style="width:100%; min-height:44px; font-size:0.94rem;" onclick="APP.login(false)">로그인 및 배차 대기 시작</button>
+          <div id="login-error-box" class="login-error"></div>
+        </section>
+
+        <div id="main-view" style="display:none;">
+          <section id="tab-waiting">
+            <div class="card" style="padding:10px 12px; display:flex; justify-content:space-between; align-items:center; gap:6px;">
+              <span style="font-size:0.82rem; font-weight:700;">원하는 콜을 선택해 [배차 잡기]를 누르세요.</span>
+              <button type="button" class="btn-outline btn-xs" onclick="DISPATCH.loadAll()">🔄 새로고침</button>
+            </div>
+            <div id="list-waiting"></div>
+          </section>
+
+          <section id="tab-active" style="display:none;"><div id="list-active"></div></section>
+
+          <section id="tab-done" style="display:none;">
+            <div class="card" id="done-summary" style="font-weight:700; font-size:0.88rem;"></div>
+            <div id="list-done"></div>
+          </section>
+
+          <section id="tab-calc" style="display:none;">
+            <div class="grid-2">
+              <div>
+                <div class="card">
+                  <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px; gap:6px; flex-wrap:wrap;">
+                    <strong style="font-size:0.93rem;">📍 출발지 · 경유지 · 도착지</strong>
+                    <div style="display:flex; gap:5px;">
+                      <button type="button" class="btn-warn btn-xs" onclick="CALC.addWaypoint()">➕ 경유지 추가</button>
+                      <button type="button" class="btn-outline btn-xs" onclick="CALC.swapPoints()">⇅ 반전</button>
+                    </div>
+                  </div>
+
+                  <div class="route-box">
+                    <div class="route-hdr">
+                      <span style="font-weight:800; color:#1e40af; font-size:0.82rem;">🔵 출발지</span>
+                      <div class="route-hdr-tools">
+                        <button type="button" class="btn-outline btn-xs" onclick="CALC.useCurrentLocation('origin')">📍 현위치</button>
+                        <select id="preset-origin" class="preset-select" onchange="CALC.selectPreset('origin', this.value)"></select>
+                      </div>
+                    </div>
+                    <div class="input-wrap">
+                      <div class="input-row">
+                        <input type="text" id="input-origin" placeholder="건물명, 도로명, 지번 입력" oninput="AC.onInput('origin', this.value)" onblur="AC.scheduleClose('origin')" />
+                        <button type="button" class="btn-outline btn-sm" onclick="AC.clear('origin')">✕</button>
+                        <button type="button" class="btn-primary btn-sm" onclick="CALC.searchPoint('origin')">검색</button>
+                      </div>
+                      <div id="suggest-origin" class="suggest-dropdown"></div>
+                    </div>
+                    <div id="origin-status" class="pt-status">확정 위치: <strong>여주시청</strong></div>
+                  </div>
+
+                  <div id="waypoints-container"></div>
+
+                  <div class="route-box" style="margin-bottom:10px;">
+                    <div class="route-hdr">
+                      <span style="font-weight:800; color:#991b1b; font-size:0.82rem;">🔴 도착지</span>
+                      <div class="route-hdr-tools">
+                        <button type="button" class="btn-outline btn-xs" onclick="CALC.useCurrentLocation('dest')">📍 현위치</button>
+                        <select id="preset-dest" class="preset-select" onchange="CALC.selectPreset('dest', this.value)"></select>
+                      </div>
+                    </div>
+                    <div class="input-wrap">
+                      <div class="input-row">
+                        <input type="text" id="input-dest" placeholder="건물명, 도로명, 지번 입력" oninput="AC.onInput('dest', this.value)" onblur="AC.scheduleClose('dest')" />
+                        <button type="button" class="btn-outline btn-sm" onclick="AC.clear('dest')">✕</button>
+                        <button type="button" class="btn-primary btn-sm" onclick="CALC.searchPoint('dest')">검색</button>
+                      </div>
+                      <div id="suggest-dest" class="suggest-dropdown"></div>
+                    </div>
+                    <div id="dest-status" class="pt-status">확정 위치: <strong>여주역 (경강선)</strong></div>
+                  </div>
+
+                  <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px;">
+                    <div><label>기본요금(원)</label><input type="number" id="cfg-base-fare" value="4000" step="100" onchange="CALC.renderSummary()" /></div>
+                    <div><label>기본 포함 거리(km)</label><input type="number" id="cfg-base-dist" value="2.0" step="0.1" onchange="CALC.renderSummary()" /></div>
+                    <div><label>초과 km당(원)</label><input type="number" id="cfg-rate-km" value="1000" step="100" onchange="CALC.renderSummary()" /></div>
+                    <div><label>통행료 직접입력(원)</label><input type="number" id="cfg-manual-toll" value="0" step="100" oninput="CALC.onManualToll(this.value)" /></div>
+                  </div>
+                </div>
+              </div>
+
+              <div>
+                <div class="card">
+                  <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px; flex-wrap:wrap; gap:6px;">
+                    <strong style="font-size:0.93rem;">🗺️ 실도로 길찾기 &amp; 요금 산출</strong>
+                    <span id="route-engine-tag" style="font-size:0.74rem; color:var(--muted); font-weight:700;">탐색 대기 중</span>
+                  </div>
+                  <div style="display:flex; gap:5px; flex-wrap:wrap; margin-bottom:6px;">
+                    <button type="button" class="btn-outline btn-xs" id="btn-pick-origin" onclick="MAP.setPickMode('origin')">📌 출발찍기</button>
+                    <button type="button" class="btn-outline btn-xs" id="btn-pick-dest" onclick="MAP.setPickMode('dest')">📌 도착찍기</button>
+                    <button type="button" class="btn-primary btn-xs" onclick="CALC.calcRoute()">🔄 재탐색</button>
+                    <button type="button" class="btn-kakao btn-xs" onclick="CALC.openKakaoMap()">카카오맵 ↗</button>
+                    <button type="button" class="btn-navi btn-xs" onclick="CALC.openKakaoNavi()">🧭 카카오내비 ↗</button>
+                  </div>
+                  <div style="font-size:0.73rem; color:var(--muted); margin-bottom:4px;">💡 지도의 <strong>출발 · 경유 · 도착 핀을 드래그</strong>하면 위치와 요금이 자동 재계산됩니다.</div>
+                  <div id="map-wrapper">
+                    <div id="kakao-map" style="display:none;"></div>
+                    <div id="leaflet-map"></div>
+                  </div>
+                  <div class="stat-grid">
+                    <div class="stat-box"><div class="stat-lbl">실주행 거리</div><div class="stat-val" id="res-dist">-</div><div class="stat-sub" id="res-dur">-</div></div>
+                    <div class="stat-box"><div class="stat-lbl">초과 거리요금</div><div class="stat-val" id="res-excess">-</div><div class="stat-sub">기본요금 별도</div></div>
+                    <div class="stat-box"><div class="stat-lbl">통행료(천원올림)</div><div class="stat-val" id="res-toll">0원</div><div class="stat-sub" id="res-raw-toll">원통행료 0원</div></div>
+                    <div class="stat-box hi"><div class="stat-lbl">최종 산출 요금</div><div class="stat-val" id="res-total">-</div><div class="stat-sub">기본+초과+통행료</div></div>
+                  </div>
+                  <button type="button" class="btn-success" style="width:100%; margin-top:10px; min-height:42px;" onclick="CALC.addToLocalTable()">➕ 아래 개인 요금표에 추가</button>
+                </div>
+
+                <div class="card">
+                  <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+                    <strong style="font-size:0.9rem;">✅ 선택 지점 상세 주소 · GPS 좌표</strong>
+                    <span style="font-size:0.72rem; color:var(--muted);">경유지 포함 실좌표 확인</span>
+                  </div>
+                  <div class="verify-grid" id="verify-grid"></div>
+                </div>
+              </div>
+            </div>
+
+            <div class="card">
+              <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:6px;">
+                <strong>📋 개인 누적 요금표 (<span id="local-cnt">0</span>건)</strong>
+                <div style="display:flex; gap:5px;">
+                  <button type="button" class="btn-outline btn-xs" onclick="CALC.exportCSV()">📥 CSV 저장</button>
+                  <button type="button" class="btn-danger-outline btn-xs" onclick="CALC.clearTable()">전체 삭제</button>
+                </div>
+              </div>
+              <div style="overflow-x:auto;">
+                <table>
+                  <thead><tr><th>출발지</th><th>경유지</th><th>도착지</th><th>거리</th><th>통행료</th><th>최종요금</th><th>삭제</th></tr></thead>
+                  <tbody id="local-table-body"></tbody>
+                </table>
+              </div>
+            </div>
+          </section>
+        </div>
+      </div>
+    </main>
+  </div>
 
   <div id="toast"></div>
 
@@ -451,6 +472,17 @@
       const dLat = toRad(lat2 - lat1), dLng = toRad(lng2 - lng1);
       const a = Math.sin(dLat/2)**2 + Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) * Math.sin(dLng/2)**2;
       return 2 * R * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+    }
+
+    if (window.visualViewport) {
+      window.visualViewport.addEventListener('resize', () => {
+        const sc = document.getElementById('app-scroll');
+        if (!sc) return;
+        const kbHeight = Math.max(0, window.innerHeight - window.visualViewport.height);
+        sc.style.paddingBottom = kbHeight > 100
+          ? `${kbHeight + 24}px`
+          : 'calc(28px + env(safe-area-inset-bottom))';
+      });
     }
 
     const APP = {
@@ -557,11 +589,6 @@
         box.textContent = msg || '';
       },
 
-      syncHeaderOffset() {
-        const hdr = document.getElementById('app-header'), tab = document.getElementById('main-tab-bar');
-        if (hdr && tab) tab.style.top = `${hdr.offsetHeight + 4}px`;
-      },
-
       onRememberToggle() {
         const chk = document.getElementById('remember-login-chk');
         const code = document.getElementById('login-code').value.trim();
@@ -613,8 +640,6 @@
       init() {
         if (window.Kakao && !window.Kakao.isInitialized()) { try { window.Kakao.init(CONFIG.KAKAO_JS_KEY); } catch {} }
         this.registerServiceWorker();
-        this.syncHeaderOffset();
-        window.addEventListener('resize', () => this.syncHeaderOffset());
         this.bindLifecycleEvents();
 
         this.wantWakeLock = safeStorageGet(STORAGE_KEYS.WAKE_LOCK_PREF, '0') === '1';
@@ -701,11 +726,11 @@
           }
 
           document.getElementById('login-view').style.display = 'none';
+          document.getElementById('top-tab-wrap').style.display = 'block';
           document.getElementById('main-view').style.display = 'block';
           document.getElementById('header-controls').style.display = 'flex';
           document.getElementById('driver-badge').textContent = `${matched.name}(${matched.code})`;
           document.getElementById('header-sub').textContent = '실시간 배차 수신 및 GPS 공유 중';
-          this.syncHeaderOffset();
           this.startGpsTracking();
           await this.syncPushButtonState();
 
@@ -741,6 +766,7 @@
           this.wakeLock = null;
         }
         document.getElementById('main-view').style.display = 'none';
+        document.getElementById('top-tab-wrap').style.display = 'none';
         document.getElementById('header-controls').style.display = 'none';
         document.getElementById('login-view').style.display = 'block';
         document.getElementById('header-sub').textContent = '고유 코드 로그인 후 실시간 배차 수신';
@@ -810,6 +836,8 @@
           document.getElementById(`tab-${t}`).style.display = t === name ? 'block' : 'none';
           document.getElementById(`tab-btn-${t}`).classList.toggle('active', t === name);
         });
+        const sc = document.getElementById('app-scroll');
+        if (sc) sc.scrollTop = 0;
         if (name === 'calc') MAP.refreshSize();
       }
     };
@@ -1296,16 +1324,6 @@
         document.getElementById('res-excess').textContent = `${f.excess.toLocaleString()}원`; document.getElementById('res-toll').textContent = `${f.toll.toLocaleString()}원`;
         document.getElementById('res-raw-toll').textContent = `원통행료 ${f.rawToll.toLocaleString()}원`; document.getElementById('res-total').textContent = `${f.total.toLocaleString()}원`;
       },
-      formatPhone(el) { const d = el.value.replace(/\D/g, '').slice(0, 11); el.value = d.length > 7 ? `${d.slice(0,3)}-${d.slice(3,7)}-${d.slice(7)}` : (d.length > 3 ? `${d.slice(0,3)}-${d.slice(3)}` : d); },
-      async pastePhone() {
-        try { const m = (await navigator.clipboard.readText()).match(/01[016789][-.\s]?\d{3,4}[-.\s]?\d{4}/); if (m) { const el = document.getElementById('calc-cust-phone'); el.value = m[0]; this.formatPhone(el); toast(`번호 입력됨: ${el.value}`); } else toast('클립보드에 휴대폰 번호가 없습니다.'); } catch { toast('붙여넣기 권한을 허용하거나 입력칸을 길게 눌러 붙여넣으세요.'); }
-      },
-      buildShareText() {
-        const f = this.getFareInfo(), phone = document.getElementById('calc-cust-phone').value.trim(), wps = this.waypoints.filter(w => typeof w.lat === 'number');
-        return `[여주시 요금 및 경로 안내]\n출발: ${this.origin.name}${wps.length ? `\n경유: ${wps.map(w=>w.name).join(' → ')}` : ''}\n도착: ${this.dest.name}\n거리: ${f ? f.km.toFixed(2) : 0}km (약 ${f ? f.durMin : 0}분)\n통행료: ${f ? f.toll.toLocaleString() : 0}원\n최종요금: ${f ? f.total.toLocaleString() : 0}원${phone ? `\n손님연락처: ${phone}` : ''}\n길찾기: ${this.buildMapUrl(this.origin, wps, this.dest)}`;
-      },
-      async shareMessage() { const text = this.buildShareText(); if (navigator.share) { try { await navigator.share({ title: '여주시 배차 안내', text }); } catch {} } else { await navigator.clipboard.writeText(text); toast('안내 문구가 복사되었습니다. 카톡에 붙여넣으세요.'); } },
-      sendSMS() { location.href = `sms:${/iPhone|iPad|iPod/i.test(navigator.userAgent) ? '&' : '?'}body=${encodeURIComponent(this.buildShareText())}`; },
       buildMapUrl(o, wps, d) {
         let u = `https://map.kakao.com/link/from/${encodeURIComponent(o.name)},${o.lat},${o.lng}`;
         (wps || []).forEach(w => { if (w.lat) u += `/by/${encodeURIComponent(w.name)},${w.lat},${w.lng}`; });
