@@ -188,13 +188,13 @@
       <p>상황실에서 발급받은 본인 고유 코드를 입력하세요.</p>
       <div style="text-align:left;">
         <label for="login-code">기사 고유 코드</label>
-        <input type="text" id="login-code" placeholder="예: 101" autocomplete="off" onkeydown="if(event.key==='Enter') APP.login()" />
+        <input type="text" id="login-code" placeholder="예: 101" autocomplete="off" onkeydown="if(event.key==='Enter') APP.login(false)" />
       </div>
       <label class="remember-row" for="remember-login-chk">
-        <input type="checkbox" id="remember-login-chk" onchange="APP.onRememberToggle()" />
-        <span>로그인 정보 기억하기 (고유 코드 저장)</span>
+        <input type="checkbox" id="remember-login-chk" checked onchange="APP.onRememberToggle()" />
+        <span>자동 로그인 유지 (로그아웃 전까지 상태 유지)</span>
       </label>
-      <button type="button" id="btn-driver-login" class="btn-primary" style="width:100%; min-height:44px; font-size:0.94rem;" onclick="APP.login()">로그인 및 배차 대기 시작</button>
+      <button type="button" id="btn-driver-login" class="btn-primary" style="width:100%; min-height:44px; font-size:0.94rem;" onclick="APP.login(false)">로그인 및 배차 대기 시작</button>
       <div id="login-error-box" class="login-error"></div>
     </section>
 
@@ -381,6 +381,14 @@
       { id: 'gangcheon', name: '강천면 행정복지센터', roadAddr: '경기도 여주시 강천면 강문로 448', jibunAddr: '경기도 여주시 강천면 간매리 378-3', lat: 37.269912, lng: 127.716185 }
     ];
 
+    const STORAGE_KEYS = {
+      ACTIVE_SESSION: 'yeoju_active_driver_code',
+      REMEMBERED_CODE: 'yeoju_remembered_code',
+      WAKE_LOCK_PREF: 'yeoju_wakelock_pref',
+      LOCAL_FARES: 'yeoju_local_rows_v1',
+      SB_CFG: 'yeoju_sb_cfg'
+    };
+
     const notifiedOverdueIds = new Set();
     let audioCtx = null;
 
@@ -434,86 +442,167 @@
     }
 
     const APP = {
-      sb: null, driver: null, currentLat: null, currentLng: null, gpsTimer: null, wakeLock: null,
+      sb: null, driver: null, currentLat: null, currentLng: null,
+      gpsTimer: null, wakeLock: null, wantWakeLock: false, calcBooted: false, lifecycleBound: false,
+
       getSupabase() {
         let saved = {};
-        try { saved = JSON.parse(safeStorageGet('yeoju_sb_cfg', '{}')); } catch {}
+        try { saved = JSON.parse(safeStorageGet(STORAGE_KEYS.SB_CFG, '{}')); } catch {}
         const url = (CONFIG.SUPABASE_URL || saved.url || '').trim();
         const key = (CONFIG.SUPABASE_ANON_KEY || saved.key || '').trim();
         if (!url || !key || !window.supabase) return null;
         if (!this.sb) this.sb = window.supabase.createClient(url, key);
         return this.sb;
       },
+
       showLoginError(msg) {
         const box = document.getElementById('login-error-box');
         if (!box) return;
         box.style.display = msg ? 'block' : 'none';
         box.textContent = msg || '';
       },
+
       syncHeaderOffset() {
         const hdr = document.getElementById('app-header'), tab = document.getElementById('main-tab-bar');
         if (hdr && tab) tab.style.top = `${hdr.offsetHeight + 4}px`;
       },
+
       onRememberToggle() {
         const chk = document.getElementById('remember-login-chk');
         const code = document.getElementById('login-code').value.trim();
-        if (chk?.checked && code) safeStorageSet('yeoju_remembered_code', code);
-        else if (!chk?.checked) safeStorageRemove('yeoju_remembered_code');
+        if (chk?.checked) {
+          if (code) safeStorageSet(STORAGE_KEYS.REMEMBERED_CODE, code);
+        } else {
+          safeStorageRemove(STORAGE_KEYS.REMEMBERED_CODE);
+          safeStorageRemove(STORAGE_KEYS.ACTIVE_SESSION);
+        }
       },
+
+      bindLifecycleEvents() {
+        if (this.lifecycleBound) return;
+        this.lifecycleBound = true;
+
+        document.addEventListener('visibilitychange', () => {
+          if (document.visibilityState === 'visible') this.onResume();
+        });
+        window.addEventListener('pageshow', (e) => {
+          if (e.persisted) this.onResume();
+        });
+        window.addEventListener('online', () => {
+          if (this.driver) {
+            toast('네트워크 재연결됨 · 배차 동기화 중');
+            this.onResume();
+          }
+        });
+      },
+
+      async onResume() {
+        const activeCode = safeStorageGet(STORAGE_KEYS.ACTIVE_SESSION, '');
+        if (!this.driver) {
+          if (activeCode) {
+            document.getElementById('login-code').value = activeCode;
+            await this.login(true);
+          }
+          return;
+        }
+        this.sendGpsOnce();
+        DISPATCH.ensureRealtime();
+        await DISPATCH.loadAll();
+        DISPATCH.tickTimers();
+        if (this.wantWakeLock && !this.wakeLock) {
+          await this.acquireWakeLock(true);
+        }
+      },
+
       init() {
         if (window.Kakao && !window.Kakao.isInitialized()) { try { window.Kakao.init(CONFIG.KAKAO_JS_KEY); } catch {} }
         this.syncHeaderOffset();
         window.addEventListener('resize', () => this.syncHeaderOffset());
-        const remembered = safeStorageGet('yeoju_remembered_code', '');
+        this.bindLifecycleEvents();
+
+        this.wantWakeLock = safeStorageGet(STORAGE_KEYS.WAKE_LOCK_PREF, '0') === '1';
+        const activeCode = safeStorageGet(STORAGE_KEYS.ACTIVE_SESSION, '');
+        const remembered = safeStorageGet(STORAGE_KEYS.REMEMBERED_CODE, '');
         const chk = document.getElementById('remember-login-chk');
-        if (remembered) {
-          document.getElementById('login-code').value = remembered;
+
+        if (activeCode || remembered) {
+          document.getElementById('login-code').value = activeCode || remembered;
           if (chk) chk.checked = true;
+        } else if (chk) {
+          chk.checked = true;
+        }
+
+        if (activeCode) {
+          this.login(true);
         }
       },
-      async login() {
-        unlockAudio();
+
+      async login(isAuto = false) {
+        if (!isAuto) unlockAudio();
         this.showLoginError('');
         const btn = document.getElementById('btn-driver-login');
         const codeInput = document.getElementById('login-code');
-        const rawCode = (codeInput?.value || '').trim();
+        const rawCode = (codeInput?.value || safeStorageGet(STORAGE_KEYS.ACTIVE_SESSION, '')).trim();
         if (!rawCode) {
-          this.showLoginError('기사 고유 코드를 입력하세요.');
-          toast('기사 고유 코드를 입력하세요.');
-          codeInput?.focus();
+          if (!isAuto) {
+            this.showLoginError('기사 고유 코드를 입력하세요.');
+            toast('기사 고유 코드를 입력하세요.');
+            codeInput?.focus();
+          }
           return;
         }
+
         const sb = this.getSupabase();
         if (!sb) {
           this.showLoginError('서버 연결 라이브러리를 불러오지 못했습니다. 새로고침 후 다시 시도해 주세요.');
-          return toast('서버 연결 중입니다. 잠시 후 다시 시도해 주세요.');
+          if (!isAuto) toast('서버 연결 중입니다. 잠시 후 다시 시도해 주세요.');
+          return;
         }
-        if (btn) { btn.disabled = true; btn.textContent = '로그인 확인 중...'; }
+
+        if (btn) {
+          btn.disabled = true;
+          btn.textContent = isAuto ? '자동 로그인 복구 중...' : '로그인 확인 중...';
+        }
+
         try {
           const { data: drivers, error } = await sb.from('yeoju_drivers').select('*');
           if (error) {
             this.showLoginError(`서버 조회 오류: ${error.message}`);
-            return toast('로그인 조회 중 오류가 발생했습니다.');
+            if (!isAuto) toast('로그인 조회 중 오류가 발생했습니다.');
+            return;
           }
+
           const norm = rawCode.toLowerCase();
           const matched = (drivers || []).find(d => String(d.code || '').trim().toLowerCase() === norm);
           if (!matched) {
+            safeStorageRemove(STORAGE_KEYS.ACTIVE_SESSION);
             this.showLoginError(`입력한 코드 [${rawCode}]가 등록되어 있지 않습니다. 관리자 페이지에서 먼저 기사 고유 코드를 등록해 주세요.`);
-            return toast('등록되지 않은 고유 코드입니다.');
+            if (!isAuto) toast('등록되지 않은 고유 코드입니다.');
+            return;
           }
           if (matched.active === false) {
+            safeStorageRemove(STORAGE_KEYS.ACTIVE_SESSION);
             this.showLoginError(`기사 코드 [${matched.code}]는 현재 사용 정지 상태입니다. 상황실 관리자에게 문의하세요.`);
-            return toast('정지된 고유 코드입니다.');
+            if (!isAuto) toast('정지된 고유 코드입니다.');
+            return;
           }
+
+          const cleanCode = String(matched.code).trim();
           const rememberChecked = document.getElementById('remember-login-chk')?.checked;
-          if (rememberChecked) safeStorageSet('yeoju_remembered_code', String(matched.code).trim());
-          else safeStorageRemove('yeoju_remembered_code');
+          if (rememberChecked) {
+            safeStorageSet(STORAGE_KEYS.REMEMBERED_CODE, cleanCode);
+            safeStorageSet(STORAGE_KEYS.ACTIVE_SESSION, cleanCode);
+          } else {
+            safeStorageRemove(STORAGE_KEYS.REMEMBERED_CODE);
+            safeStorageRemove(STORAGE_KEYS.ACTIVE_SESSION);
+          }
 
           this.driver = matched;
           if (typeof matched.lat === 'number' && typeof matched.lng === 'number') {
             this.currentLat = matched.lat;
             this.currentLng = matched.lng;
           }
+
           document.getElementById('login-view').style.display = 'none';
           document.getElementById('main-view').style.display = 'block';
           document.getElementById('header-controls').style.display = 'flex';
@@ -521,57 +610,103 @@
           document.getElementById('header-sub').textContent = '실시간 배차 수신 및 GPS 공유 중';
           this.syncHeaderOffset();
           this.startGpsTracking();
+
+          if (this.wantWakeLock) {
+            await this.acquireWakeLock(true);
+          }
+
           try { await DISPATCH.init(); } catch (e) { console.error(e); }
-          try { await CALC.init(); } catch (e) { console.error(e); }
-          toast(`${matched.name} 기사님 환영합니다.`);
+          if (!this.calcBooted) {
+            this.calcBooted = true;
+            try { await CALC.init(); } catch (e) { console.error(e); }
+          }
+          if (!isAuto) toast(`${matched.name} 기사님 환영합니다.`);
         } catch (err) {
           this.showLoginError(`로그인 처리 중 오류: ${err?.message || '알 수 없는 오류'}`);
         } finally {
-          if (btn) { btn.disabled = false; btn.textContent = '로그인 및 배차 대기 시작'; }
+          if (btn) {
+            btn.disabled = false;
+            btn.textContent = '로그인 및 배차 대기 시작';
+          }
         }
       },
+
       logout() {
-        if (!confirm('로그아웃 하시겠습니까?')) return;
+        if (!confirm('로그아웃 하시겠습니까?\n로그아웃 시 자동 로그인이 해제됩니다.')) return;
         clearInterval(this.gpsTimer);
         clearInterval(DISPATCH.clockTimer);
+        DISPATCH.teardownRealtime();
         this.driver = null;
+        safeStorageRemove(STORAGE_KEYS.ACTIVE_SESSION);
+        if (this.wakeLock) {
+          try { this.wakeLock.release(); } catch {}
+          this.wakeLock = null;
+        }
         document.getElementById('main-view').style.display = 'none';
         document.getElementById('header-controls').style.display = 'none';
         document.getElementById('login-view').style.display = 'block';
         document.getElementById('header-sub').textContent = '고유 코드 로그인 후 실시간 배차 수신';
         this.showLoginError('');
-        const remembered = safeStorageGet('yeoju_remembered_code', '');
+        const remembered = safeStorageGet(STORAGE_KEYS.REMEMBERED_CODE, '');
         document.getElementById('login-code').value = remembered;
         const chk = document.getElementById('remember-login-chk');
         if (chk) chk.checked = Boolean(remembered);
       },
-      startGpsTracking() {
-        const sendLoc = () => {
-          if (!this.driver || !navigator.geolocation) return;
-          navigator.geolocation.getCurrentPosition(async (pos) => {
-            this.currentLat = pos.coords.latitude;
-            this.currentLng = pos.coords.longitude;
-            const sb = this.getSupabase();
-            if (!sb || !this.driver) return;
-            await sb.from('yeoju_drivers').update({ lat: this.currentLat, lng: this.currentLng, last_seen: new Date().toISOString() }).eq('code', this.driver.code);
-            if (DISPATCH.rows.some(r => !r.deleted_at && r.status === 'accepted' && r.driver_code === this.driver.code)) {
-              await DISPATCH.prefetchActiveDurations();
-              DISPATCH.tickTimers();
-            }
-          }, () => {}, { enableHighAccuracy: true, timeout: 8000 });
-        };
-        sendLoc();
-        clearInterval(this.gpsTimer);
-        this.gpsTimer = setInterval(sendLoc, 15000);
+
+      sendGpsOnce() {
+        if (!this.driver || !navigator.geolocation) return;
+        navigator.geolocation.getCurrentPosition(async (pos) => {
+          this.currentLat = pos.coords.latitude;
+          this.currentLng = pos.coords.longitude;
+          const sb = this.getSupabase();
+          if (!sb || !this.driver) return;
+          await sb.from('yeoju_drivers').update({ lat: this.currentLat, lng: this.currentLng, last_seen: new Date().toISOString() }).eq('code', this.driver.code);
+          if (DISPATCH.rows.some(r => !r.deleted_at && r.status === 'accepted' && r.driver_code === this.driver.code)) {
+            await DISPATCH.prefetchActiveDurations();
+            DISPATCH.tickTimers();
+          }
+        }, () => {}, { enableHighAccuracy: true, timeout: 8000 });
       },
+
+      startGpsTracking() {
+        this.sendGpsOnce();
+        clearInterval(this.gpsTimer);
+        this.gpsTimer = setInterval(() => this.sendGpsOnce(), 15000);
+      },
+
+      async acquireWakeLock(silent = false) {
+        const btn = document.getElementById('btn-wakelock');
+        try {
+          if ('wakeLock' in navigator) {
+            this.wakeLock = await navigator.wakeLock.request('screen');
+            this.wakeLock.addEventListener('release', () => { this.wakeLock = null; });
+            if (btn) btn.textContent = '🔆 유지ON';
+            if (!silent) toast('대기 중 화면이 꺼지지 않도록 유지합니다.');
+          } else if (!silent) {
+            toast('이 브라우저는 화면 유지 기능을 지원하지 않습니다.');
+          }
+        } catch {
+          if (!silent) toast('화면을 한 번 터치한 뒤 다시 눌러 주세요.');
+        }
+      },
+
       async toggleWakeLock() {
         const btn = document.getElementById('btn-wakelock');
-        if (this.wakeLock) { await this.wakeLock.release(); this.wakeLock = null; btn.textContent = '☀️ 화면유지'; return toast('화면 꺼짐 방지가 해제되었습니다.'); }
-        try {
-          if ('wakeLock' in navigator) { this.wakeLock = await navigator.wakeLock.request('screen'); btn.textContent = '🔆 유지ON'; toast('대기 중 화면이 꺼지지 않도록 유지합니다.'); }
-          else toast('이 브라우저는 화면 유지 기능을 지원하지 않습니다.');
-        } catch { toast('화면 유지 권한을 허용할 수 없습니다.'); }
+        if (this.wakeLock || this.wantWakeLock) {
+          this.wantWakeLock = false;
+          safeStorageSet(STORAGE_KEYS.WAKE_LOCK_PREF, '0');
+          if (this.wakeLock) {
+            try { await this.wakeLock.release(); } catch {}
+            this.wakeLock = null;
+          }
+          if (btn) btn.textContent = '☀️ 화면유지';
+          return toast('화면 꺼짐 방지가 해제되었습니다.');
+        }
+        this.wantWakeLock = true;
+        safeStorageSet(STORAGE_KEYS.WAKE_LOCK_PREF, '1');
+        await this.acquireWakeLock(false);
       },
+
       switchTab(name) {
         ['waiting', 'active', 'done', 'calc'].forEach(t => {
           document.getElementById(`tab-${t}`).style.display = t === name ? 'block' : 'none';
@@ -584,13 +719,20 @@
     const DISPATCH = {
       rows: [], channel: null, clockTimer: null, tripDurationCache: new Map(), originEtaCache: new Map(),
 
-      async init() {
-        await this.loadAll();
-        clearInterval(this.clockTimer);
-        this.clockTimer = setInterval(() => this.tickTimers(), 1000);
+      teardownRealtime() {
         const sb = APP.getSupabase();
-        if (!sb || this.channel) return;
-        this.channel = sb.channel('driver-dispatches')
+        if (sb && this.channel) {
+          try { sb.removeChannel(this.channel); } catch {}
+        }
+        this.channel = null;
+      },
+
+      ensureRealtime() {
+        const sb = APP.getSupabase();
+        if (!sb || !APP.driver) return;
+        if (this.channel && (this.channel.state === 'joined' || this.channel.state === 'joining')) return;
+        this.teardownRealtime();
+        this.channel = sb.channel(`driver-dispatches-${Date.now()}`)
           .on('postgres_changes', { event: '*', schema: 'public', table: 'yeoju_dispatches' }, (payload) => {
             const n = payload.new || {};
             if (n.deleted_at) {
@@ -605,6 +747,13 @@
             this.loadAll();
           })
           .subscribe();
+      },
+
+      async init() {
+        await this.loadAll();
+        clearInterval(this.clockTimer);
+        this.clockTimer = setInterval(() => this.tickTimers(), 1000);
+        this.ensureRealtime();
       },
 
       async loadAll() {
@@ -952,7 +1101,7 @@
       getTargetLabel(t) { return t === 'origin' ? '출발지' : t === 'dest' ? '도착지' : t.startsWith('wp-') ? `경유지 ${Number(t.split('-')[1]) + 1}` : '지점'; },
       async init() {
         ['preset-origin', 'preset-dest'].forEach(id => { document.getElementById(id).innerHTML = '<option value="">거점 선택</option>' + YEOJU_PRESETS.map(p => `<option value="${p.id}">${p.name}</option>`).join(''); });
-        try { this.localRows = JSON.parse(safeStorageGet('yeoju_local_rows_v1', '[]')); } catch { this.localRows = []; }
+        try { this.localRows = JSON.parse(safeStorageGet(STORAGE_KEYS.LOCAL_FARES, '[]')); } catch { this.localRows = []; }
         this.renderLocalTable(); this.updateVerifyGrid();
         const s = document.createElement('script'); s.src = `https://dapi.kakao.com/v2/maps/sdk.js?appkey=${CONFIG.KAKAO_JS_KEY}&libraries=services&autoload=false`;
         s.onload = () => MAP.init(); s.onerror = () => MAP.init(); document.head.appendChild(s);
@@ -1073,10 +1222,10 @@
         try { window.Kakao.Navi.start(opt); } catch { toast('카카오내비 실행 오류'); }
       },
       openKakaoNavi() { this.launchNavi(this.origin, this.waypoints, this.dest); },
-      addToLocalTable() { const f = this.getFareInfo(); if (!f) return; this.localRows.push({ o: this.origin.name, wp: this.waypoints.filter(w => w.lat).map(w => w.name).join(' → ') || '-', d: this.dest.name, km: f.km.toFixed(2), toll: f.toll, total: f.total }); safeStorageSet('yeoju_local_rows_v1', JSON.stringify(this.localRows)); this.renderLocalTable(); toast('개인 요금표에 추가되었습니다.'); },
+      addToLocalTable() { const f = this.getFareInfo(); if (!f) return; this.localRows.push({ o: this.origin.name, wp: this.waypoints.filter(w => w.lat).map(w => w.name).join(' → ') || '-', d: this.dest.name, km: f.km.toFixed(2), toll: f.toll, total: f.total }); safeStorageSet(STORAGE_KEYS.LOCAL_FARES, JSON.stringify(this.localRows)); this.renderLocalTable(); toast('개인 요금표에 추가되었습니다.'); },
       renderLocalTable() { document.getElementById('local-cnt').textContent = this.localRows.length; document.getElementById('local-table-body').innerHTML = this.localRows.map((r, i) => `<tr><td>${esc(r.o)}</td><td>${esc(r.wp)}</td><td>${esc(r.d)}</td><td>${r.km}km</td><td>${r.toll.toLocaleString()}원</td><td><strong>${r.total.toLocaleString()}원</strong></td><td><button type="button" class="btn-danger-outline btn-sm" onclick="CALC.delRow(${i})">삭제</button></td></tr>`).join(''); },
-      delRow(i) { this.localRows.splice(i, 1); safeStorageSet('yeoju_local_rows_v1', JSON.stringify(this.localRows)); this.renderLocalTable(); },
-      clearTable() { this.localRows = []; safeStorageSet('yeoju_local_rows_v1', '[]'); this.renderLocalTable(); },
+      delRow(i) { this.localRows.splice(i, 1); safeStorageSet(STORAGE_KEYS.LOCAL_FARES, JSON.stringify(this.localRows)); this.renderLocalTable(); },
+      clearTable() { this.localRows = []; safeStorageSet(STORAGE_KEYS.LOCAL_FARES, '[]'); this.renderLocalTable(); },
       exportCSV() { if (!this.localRows.length) return toast('데이터가 없습니다.'); const csv = ['출발지,경유지,도착지,거리(km),통행료,최종요금', ...this.localRows.map(r => `"${r.o}","${r.wp}","${r.d}",${r.km},${r.toll},${r.total}`)].join('\n'); const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob(['\uFEFF' + csv], { type: 'text/csv;charset=utf-8;' })); a.download = '여주_개인요금표.csv'; a.click(); }
     };
 
