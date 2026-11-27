@@ -2,7 +2,9 @@
 <html lang="ko">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, viewport-fit=cover" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
   <title>여주시 배차 상황실 · 관리자 페이지</title>
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin="" />
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin=""></script>
@@ -13,14 +15,32 @@
       --success: #059669; --danger: #dc2626; --warn: #d97706;
       --bg: #f1f5f9; --card: #ffffff; --border: #cbd5e1; --muted: #475569;
     }
-    * { box-sizing: border-box; }
-    body { margin: 0; font-family: -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo", "Malgun Gothic", sans-serif; background: var(--bg); color: var(--dark); padding-bottom: 36px; }
-    header { background: var(--dark); color: #fff; padding: 13px 18px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; position: sticky; top: 0; z-index: 1000; box-shadow: 0 2px 8px rgba(0,0,0,0.18); }
-    header h1 { margin: 0; font-size: 1.1rem; }
-    .container { max-width: 1480px; margin: 14px auto; padding: 0 14px; display: flex; flex-direction: column; gap: 14px; }
-    .card { background: var(--card); border-radius: 12px; border: 1px solid #e2e8f0; padding: 15px; box-shadow: 0 2px 8px rgba(0,0,0,0.04); }
-    .card-title { margin: 0 0 12px; font-size: 0.98rem; font-weight: 800; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px; border-bottom: 1px solid #f1f5f9; padding-bottom: 8px; }
-    button { font-family: inherit; cursor: pointer; border: none; border-radius: 8px; font-weight: 700; font-size: 0.84rem; padding: 8px 13px; display: inline-flex; align-items: center; justify-content: center; gap: 5px; }
+    * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+    html, body { max-width: 100%; overflow-x: hidden; }
+    body {
+      margin: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo", "Malgun Gothic", sans-serif;
+      background: var(--bg);
+      color: var(--dark);
+      padding-bottom: calc(36px + env(safe-area-inset-bottom));
+    }
+    header {
+      background: var(--dark); color: #fff; padding: 12px 14px;
+      display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px;
+      position: sticky; top: 0; z-index: 1000; box-shadow: 0 2px 8px rgba(0,0,0,0.18);
+    }
+    header h1 { margin: 0; font-size: 1.05rem; }
+    .container { max-width: 1480px; margin: 12px auto; padding: 0 12px; display: flex; flex-direction: column; gap: 12px; }
+    .card { background: var(--card); border-radius: 12px; border: 1px solid #e2e8f0; padding: 14px; box-shadow: 0 2px 8px rgba(0,0,0,0.04); min-width: 0; }
+    .card-title {
+      margin: 0 0 12px; font-size: 0.96rem; font-weight: 800;
+      display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px;
+      border-bottom: 1px solid #f1f5f9; padding-bottom: 8px;
+    }
+    button {
+      font-family: inherit; cursor: pointer; border: none; border-radius: 8px; font-weight: 700;
+      font-size: 0.84rem; padding: 8px 12px; display: inline-flex; align-items: center; justify-content: center; gap: 5px;
+    }
     button:active { transform: scale(0.98); }
     .btn-primary { background: var(--primary); color: #fff; }
     .btn-danger { background: var(--danger); color: #fff; }
@@ -31,17 +51,30 @@
     .btn-outline.active { background: var(--primary-light); border-color: var(--primary); color: var(--primary); }
     .btn-trash { background: #f8fafc; color: #334155; border: 1px solid #94a3b8; }
     .btn-trash.active { background: #fee2e2; color: #991b1b; border-color: #ef4444; }
-    .btn-sm { padding: 5px 9px; font-size: 0.76rem; }
-    .btn-xs { padding: 4px 7px; font-size: 0.73rem; }
+    .btn-sm { padding: 6px 10px; font-size: 0.78rem; }
+    .btn-xs { padding: 5px 8px; font-size: 0.75rem; }
+
     input[type="text"], input[type="password"], input[type="tel"], input[type="number"], input[type="date"], select {
-      width: 100%; padding: 8px 10px; border: 1px solid var(--border); border-radius: 8px; font-size: 0.88rem; background: #fff; outline: none;
+      width: 100%; min-width: 0; padding: 8px 10px; border: 1px solid var(--border); border-radius: 8px;
+      font-size: 0.9rem; background: #fff; outline: none;
     }
     input:focus, select:focus { border-color: var(--primary); }
-    input[type="color"] { width: 34px; height: 30px; padding: 2px; border: 1px solid var(--border); border-radius: 6px; background: #fff; cursor: pointer; }
+    input[type="color"] { width: 36px; height: 34px; padding: 2px; border: 1px solid var(--border); border-radius: 6px; background: #fff; cursor: pointer; flex-shrink: 0; }
     label { display: block; font-size: 0.75rem; font-weight: 700; color: var(--muted); margin-bottom: 4px; }
+
+    /* 반응형 그리드 시스템 */
     .top-grid { display: grid; grid-template-columns: 1.05fr 0.95fr; gap: 14px; align-items: start; }
     .mid-grid { display: grid; grid-template-columns: 1fr 1.75fr; gap: 14px; align-items: start; }
-    #map-box { position: relative; width: 100%; height: 350px; border-radius: 10px; overflow: hidden; border: 1px solid var(--border); background: #e2e8f0; }
+    .top-grid > *, .mid-grid > * { min-width: 0; }
+
+    .grid-setup { display: grid; grid-template-columns: 1.2fr 1.2fr 0.7fr auto; gap: 8px; align-items: end; }
+    .grid-form-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 8px; }
+    .grid-fare-4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; margin-bottom: 6px; }
+    .grid-submit-row { display: grid; grid-template-columns: 1fr 1.25fr; gap: 8px; align-items: end; }
+    .force-box { display: grid; grid-template-columns: 1fr auto; gap: 6px; }
+    .grid-driver-add { display: grid; grid-template-columns: 0.75fr 1fr auto auto; gap: 6px; margin-bottom: 10px; align-items: center; }
+
+    #map-box { position: relative; width: 100%; height: 340px; border-radius: 10px; overflow: hidden; border: 1px solid var(--border); background: #e2e8f0; }
     #kakao-map, #leaflet-map { width: 100%; height: 100%; }
     .driver-chips { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 10px; }
     .d-chip { padding: 6px 10px; border-radius: 8px; border: 1.5px solid var(--border); background: #f8fafc; font-size: 0.78rem; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; }
@@ -49,64 +82,110 @@
     .color-dot { width: 11px; height: 11px; border-radius: 50%; display: inline-block; flex-shrink: 0; border: 1.5px solid #fff; box-shadow: 0 0 0 1px rgba(0,0,0,0.2); }
     .status-dot { width: 7px; height: 7px; border-radius: 50%; background: #94a3b8; }
     .d-chip.online .status-dot { background: #10b981; }
-    .suggest-wrap { position: relative; }
+
+    .suggest-wrap { position: relative; min-width: 0; }
     .suggest-list { position: absolute; top: calc(100% + 3px); left: 0; right: 0; background: #fff; border: 1.5px solid var(--primary); border-radius: 8px; max-height: 230px; overflow-y: auto; z-index: 1600; display: none; box-shadow: 0 10px 24px rgba(0,0,0,0.16); }
     .suggest-list.open { display: block; }
-    .suggest-row { padding: 8px 10px; border-bottom: 1px solid #f1f5f9; cursor: pointer; font-size: 0.84rem; }
+    .suggest-row { padding: 9px 10px; border-bottom: 1px solid #f1f5f9; cursor: pointer; font-size: 0.85rem; }
     .suggest-row:hover { background: var(--primary-light); }
     .wp-item { display: grid; grid-template-columns: 1fr auto; gap: 6px; margin-bottom: 6px; background: #fffbeb; padding: 7px; border-radius: 8px; border: 1px solid #fde68a; }
-    .fare-bar { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 10px; padding: 10px; margin: 10px 0; text-align: center; }
-    .fare-bar .val { font-size: 1rem; font-weight: 800; margin-top: 2px; }
-    .fare-bar .hi { color: var(--primary); font-size: 1.1rem; }
+
+    .fare-bar { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 10px; padding: 10px 8px; margin: 10px 0; text-align: center; }
+    .fare-bar .val { font-size: 0.96rem; font-weight: 800; margin-top: 2px; }
+    .fare-bar .hi { color: var(--primary); font-size: 1.05rem; }
 
     .filter-panel { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 10px; padding: 10px; margin-bottom: 10px; display: flex; flex-direction: column; gap: 8px; }
     .filter-row { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
-    .summary-strip { background: var(--primary-light); border: 1px solid #bfdbfe; border-radius: 8px; padding: 8px 12px; font-size: 0.83rem; font-weight: 700; color: #1e3a8a; display: flex; flex-wrap: wrap; gap: 14px; align-items: center; justify-content: space-between; }
-    .trash-banner { background: #fef2f2; border: 1.5px solid #fecaca; border-radius: 10px; padding: 10px 12px; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px; color: #991b1b; font-size: 0.83rem; font-weight: 700; }
+    .date-range-box { display: flex; align-items: center; gap: 5px; flex: 1; min-width: 230px; }
+    .summary-strip { background: var(--primary-light); border: 1px solid #bfdbfe; border-radius: 8px; padding: 8px 10px; font-size: 0.82rem; font-weight: 700; color: #1e3a8a; display: flex; flex-wrap: wrap; gap: 10px; align-items: center; }
+    .trash-banner { background: #fef2f2; border: 1.5px solid #fecaca; border-radius: 10px; padding: 10px 12px; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px; color: #991b1b; font-size: 0.82rem; font-weight: 700; }
 
-    .table-wrap { overflow-x: auto; }
+    .table-wrap { overflow-x: auto; width: 100%; }
     table { width: 100%; border-collapse: collapse; font-size: 0.82rem; }
-    th, td { padding: 8px 7px; border-bottom: 1px solid #e2e8f0; text-align: left; vertical-align: middle; }
+    th, td { padding: 8px 6px; border-bottom: 1px solid #e2e8f0; text-align: left; vertical-align: middle; }
     th { background: #f8fafc; color: var(--muted); white-space: nowrap; }
     tr.trashed-row { background: #fff8f8; }
+
     .badge { padding: 3px 7px; border-radius: 6px; font-size: 0.72rem; font-weight: 800; white-space: nowrap; display: inline-block; }
     .st-waiting { background: #dbeafe; color: #1e40af; }
     .st-accepted { background: #fef3c7; color: #92400e; }
     .st-completed { background: #d1fae5; color: #065f46; }
     .st-cancelled { background: #fee2e2; color: #991b1b; }
     .tag-forced { background: #dc2626; color: #fff; padding: 2px 6px; border-radius: 4px; font-size: 0.7rem; font-weight: 800; }
-    #toast { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%) translateY(80px); background: #0f172a; color: #fff; padding: 10px 18px; border-radius: 999px; font-size: 0.84rem; font-weight: 700; z-index: 9999; opacity: 0; transition: all 0.25s; }
+
+    /* 모바일 전용 운행 기록 카드 리스트 */
+    .mobile-record-list { display: none; flex-direction: column; gap: 8px; }
+    .m-rec-card { border: 1.5px solid #cbd5e1; border-radius: 10px; padding: 11px; background: #fff; }
+    .m-rec-card.trashed { border-color: #fecaca; background: #fff8f8; }
+    .m-rec-top { display: flex; justify-content: space-between; align-items: center; gap: 6px; margin-bottom: 6px; flex-wrap: wrap; }
+    .m-rec-route { font-size: 0.88rem; font-weight: 700; line-height: 1.45; margin-bottom: 6px; word-break: keep-all; }
+    .m-rec-meta { display: flex; flex-wrap: wrap; gap: 8px; font-size: 0.78rem; color: var(--muted); background: #f8fafc; padding: 6px 8px; border-radius: 6px; margin-bottom: 8px; }
+    .m-rec-actions { display: flex; gap: 6px; }
+    .m-rec-actions > button { flex: 1; }
+
+    #toast { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%) translateY(80px); background: #0f172a; color: #fff; padding: 10px 18px; border-radius: 999px; font-size: 0.84rem; font-weight: 700; z-index: 9999; opacity: 0; transition: all 0.25s; max-width: 92vw; text-align: center; }
     #toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
-    @media (max-width: 1060px) { .top-grid, .mid-grid { grid-template-columns: 1fr; } }
+
+    @media (max-width: 1060px) {
+      .top-grid, .mid-grid { grid-template-columns: 1fr; }
+    }
+
+    @media (max-width: 768px) {
+      /* iOS Safari 입력창 자동 확대 방지 */
+      input[type="text"], input[type="password"], input[type="tel"], input[type="number"], input[type="date"], select {
+        font-size: 16px !important;
+        padding: 9px 10px;
+      }
+      header { padding: 10px 12px; }
+      header h1 { font-size: 0.98rem; }
+      .container { padding: 0 8px; margin: 8px auto; gap: 10px; }
+      .card { padding: 12px; }
+
+      .grid-setup { grid-template-columns: 1fr; }
+      .grid-form-2 { grid-template-columns: 1fr; }
+      .grid-fare-4 { grid-template-columns: 1fr 1fr; }
+      .fare-bar { grid-template-columns: 1fr 1fr; }
+      .grid-submit-row { grid-template-columns: 1fr; }
+      .grid-driver-add { grid-template-columns: 1fr 1fr; }
+      .grid-driver-add input[type="color"] { width: 100%; height: 38px; }
+      .grid-driver-add button { height: 38px; }
+
+      #map-box { height: 250px; }
+      #driver-table th, #driver-table td { padding: 7px 4px; font-size: 0.78rem; }
+
+      /* 모바일에서는 9열 표 대신 카드 리스트로 표시 */
+      #dispatch-desktop-wrap { display: none; }
+      .mobile-record-list { display: flex; }
+    }
   </style>
 </head>
 <body>
   <header>
-    <h1>🖥️ 여주시 배차 상황실 · 관리자 관제</h1>
-    <div style="display:flex; gap:8px; align-items:center; flex-wrap:wrap;">
-      <span id="conn-status" style="font-size:0.78rem; background:rgba(255,255,255,0.16); padding:4px 10px; border-radius:999px;">서버 연결 대기</span>
-      <a href="./index.html" target="_blank" style="text-decoration:none;"><button type="button" class="btn-outline btn-sm">기사 앱 열기 ↗</button></a>
-      <button type="button" class="btn-outline btn-sm" onclick="ADMIN.toggleSetup()">⚙️ Supabase · 보안 설정</button>
+    <h1>🖥️ 여주시 배차 상황실 · 관리자</h1>
+    <div style="display:flex; gap:6px; align-items:center; flex-wrap:wrap;">
+      <span id="conn-status" style="font-size:0.74rem; background:rgba(255,255,255,0.16); padding:4px 9px; border-radius:999px;">서버 연결 대기</span>
+      <a href="./index.html" target="_blank" style="text-decoration:none;"><button type="button" class="btn-outline btn-xs">기사앱 ↗</button></a>
+      <button type="button" class="btn-outline btn-xs" onclick="ADMIN.toggleSetup()">⚙️ 설정</button>
     </div>
   </header>
 
-  <div id="pin-view" class="container" style="max-width:400px; margin-top:55px;">
+  <div id="pin-view" class="container" style="max-width:400px; margin-top:45px;">
     <div class="card" style="text-align:center;">
       <h2 style="margin:0 0 6px;">🔐 상황실 관리자 인증</h2>
       <p style="font-size:0.84rem; color:var(--muted); margin:0 0 14px;">관리자 비밀번호를 입력하세요. (초기 비밀번호: 1234)</p>
       <input type="password" id="admin-pin-input" placeholder="비밀번호 입력" style="margin-bottom:10px; text-align:center;" onkeydown="if(event.key==='Enter') ADMIN.unlock()" />
-      <button type="button" class="btn-primary" style="width:100%; padding:11px;" onclick="ADMIN.unlock()">관제 화면 열기</button>
+      <button type="button" class="btn-primary" style="width:100%; padding:12px;" onclick="ADMIN.unlock()">관제 화면 열기</button>
     </div>
   </div>
 
   <main id="admin-main" class="container" style="display:none;">
     <section id="setup-panel" class="card" style="display:none;">
       <div class="card-title">⚙️ Supabase 서버 및 관리자 비밀번호 설정</div>
-      <div style="display:grid; grid-template-columns:1.2fr 1.2fr 0.7fr auto; gap:8px; align-items:end;">
+      <div class="grid-setup">
         <div><label>Supabase Project URL</label><input type="text" id="sb-url" /></div>
         <div><label>Supabase Publishable Key</label><input type="password" id="sb-key" /></div>
         <div><label>관리자 비밀번호 변경</label><input type="text" id="new-pin" placeholder="새 비밀번호" /></div>
-        <button type="button" class="btn-success" onclick="ADMIN.saveSetup()">저장 및 연결</button>
+        <button type="button" class="btn-success" style="height:38px;" onclick="ADMIN.saveSetup()">저장 및 연결</button>
       </div>
     </section>
 
@@ -114,26 +193,26 @@
       <!-- 좌측: 신규 배차 및 강제배차 발송 -->
       <section class="card">
         <div class="card-title">
-          <span>📢 신규 배차 등록 &amp; 강제배차 발송</span>
+          <span>📢 신규 배차 &amp; 강제배차 발송</span>
           <div style="display:flex; gap:5px;">
-            <button type="button" class="btn-warn btn-sm" onclick="DISPATCH_FORM.addWp()">➕ 경유지 추가</button>
-            <button type="button" class="btn-outline btn-sm" onclick="DISPATCH_FORM.swapPoints()">⇅ 반전</button>
+            <button type="button" class="btn-warn btn-xs" onclick="DISPATCH_FORM.addWp()">➕ 경유지</button>
+            <button type="button" class="btn-outline btn-xs" onclick="DISPATCH_FORM.swapPoints()">⇅ 반전</button>
           </div>
         </div>
 
-        <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-bottom:8px;">
+        <div class="grid-form-2">
           <div class="suggest-wrap">
-            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:3px;">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px;">
               <label style="margin:0;">🔵 출발지</label>
-              <select id="preset-origin" style="width:auto; padding:2px 6px; font-size:0.75rem;" onchange="DISPATCH_FORM.selectPreset('origin', this.value)"></select>
+              <select id="preset-origin" style="width:auto; padding:3px 6px; font-size:0.78rem;" onchange="DISPATCH_FORM.selectPreset('origin', this.value)"></select>
             </div>
             <input type="text" id="f-origin" value="여주시청" placeholder="건물명, 도로명, 지번" oninput="DISPATCH_FORM.onSearch('origin', this.value)" onblur="setTimeout(()=>DISPATCH_FORM.hide('origin'),200)" />
             <div id="sug-origin" class="suggest-list"></div>
           </div>
           <div class="suggest-wrap">
-            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:3px;">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px;">
               <label style="margin:0;">🔴 도착지</label>
-              <select id="preset-dest" style="width:auto; padding:2px 6px; font-size:0.75rem;" onchange="DISPATCH_FORM.selectPreset('dest', this.value)"></select>
+              <select id="preset-dest" style="width:auto; padding:3px 6px; font-size:0.78rem;" onchange="DISPATCH_FORM.selectPreset('dest', this.value)"></select>
             </div>
             <input type="text" id="f-dest" value="여주역 (경강선)" placeholder="건물명, 도로명, 지번" oninput="DISPATCH_FORM.onSearch('dest', this.value)" onblur="setTimeout(()=>DISPATCH_FORM.hide('dest'),200)" />
             <div id="sug-dest" class="suggest-list"></div>
@@ -142,10 +221,10 @@
 
         <div id="f-waypoints"></div>
 
-        <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-bottom:8px;">
+        <div class="grid-form-2">
           <div>
             <label>📞 손님 전화번호</label>
-            <div style="display:flex; gap:4px;">
+            <div style="display:flex; gap:5px;">
               <input type="tel" id="f-phone" placeholder="010-0000-0000" oninput="DISPATCH_FORM.formatPhone(this)" />
               <button type="button" class="btn-outline btn-sm" onclick="DISPATCH_FORM.pastePhone()" style="white-space:nowrap;">📋 붙여넣기</button>
             </div>
@@ -156,7 +235,7 @@
           </div>
         </div>
 
-        <div style="display:grid; grid-template-columns:repeat(4,1fr); gap:6px; margin-bottom:6px;">
+        <div class="grid-fare-4">
           <div><label>기본요금(원)</label><input type="number" id="cfg-base-fare" value="4000" step="100" onchange="DISPATCH_FORM.renderFare()" /></div>
           <div><label>기본거리(km)</label><input type="number" id="cfg-base-dist" value="2.0" step="0.1" onchange="DISPATCH_FORM.renderFare()" /></div>
           <div><label>km당 요금</label><input type="number" id="cfg-rate-km" value="1000" step="100" onchange="DISPATCH_FORM.renderFare()" /></div>
@@ -170,9 +249,9 @@
           <div><div style="font-size:0.72rem;color:var(--muted);">최종 요금</div><div class="val hi" id="sum-total">-</div></div>
         </div>
 
-        <div style="display:grid; grid-template-columns:1fr 1.2fr; gap:8px; align-items:end;">
-          <button type="button" class="btn-primary" style="padding:11px;" onclick="DISPATCH_FORM.submit('normal')">📢 일반 배차 올리기 (대기열)</button>
-          <div style="display:grid; grid-template-columns:1fr auto; gap:5px;">
+        <div class="grid-submit-row">
+          <button type="button" class="btn-primary" style="padding:11px; width:100%;" onclick="DISPATCH_FORM.submit('normal')">📢 일반 배차 올리기 (대기열)</button>
+          <div class="force-box">
             <select id="force-driver-select"><option value="">강제배차 기사 선택...</option></select>
             <button type="button" class="btn-danger" style="padding:11px; white-space:nowrap;" onclick="DISPATCH_FORM.submit('forced')">🚨 강제배차</button>
           </div>
@@ -182,14 +261,14 @@
       <!-- 우측: 실시간 기사 위치 아이콘 관제 지도 -->
       <section class="card">
         <div class="card-title">
-          <span>🗺️ 실시간 기사 위치 아이콘 &amp; 경로 관제</span>
-          <button type="button" class="btn-outline btn-sm" onclick="DRIVER_MGR.loadDrivers()">🔄 위치 갱신</button>
+          <span>🗺️ 실시간 기사 위치 &amp; 경로 관제</span>
+          <button type="button" class="btn-outline btn-xs" onclick="DRIVER_MGR.loadDrivers()">🔄 위치 갱신</button>
         </div>
         <div id="map-box">
           <div id="kakao-map" style="display:none;"></div>
           <div id="leaflet-map"></div>
         </div>
-        <div style="font-size:0.75rem; color:var(--muted); margin-top:8px;">지도 아이콘 또는 아래 기사 칩을 클릭하면 좌측 강제배차 대상으로 즉시 선택됩니다. (초록 점: 3분 이내 접속중)</div>
+        <div style="font-size:0.74rem; color:var(--muted); margin-top:8px;">지도 아이콘 또는 아래 기사 칩을 터치하면 강제배차 대상으로 선택됩니다.</div>
         <div class="driver-chips" id="driver-chips"></div>
       </section>
     </div>
@@ -197,15 +276,15 @@
     <div class="mid-grid">
       <!-- 기사 고유 코드 및 아이콘 색상 관리 -->
       <section class="card">
-        <div class="card-title"><span>🚕 기사 고유 코드 · 아이콘 색상 관리</span></div>
-        <div style="display:grid; grid-template-columns:0.7fr 1fr auto auto; gap:6px; margin-bottom:10px; align-items:center;">
+        <div class="card-title"><span>🚕 기사 고유 코드 · 아이콘 색상</span></div>
+        <div class="grid-driver-add">
           <input type="text" id="new-d-code" placeholder="코드(102)" />
           <input type="text" id="new-d-name" placeholder="기사명/차량" />
-          <input type="color" id="new-d-color" value="#1d4ed8" title="지도 아이콘 색상 선택" style="width:38px; height:35px;" />
-          <button type="button" class="btn-success btn-sm" style="height:35px;" onclick="DRIVER_MGR.addDriver()">등록</button>
+          <input type="color" id="new-d-color" value="#1d4ed8" title="지도 아이콘 색상 선택" />
+          <button type="button" class="btn-success btn-sm" onclick="DRIVER_MGR.addDriver()">등록</button>
         </div>
         <div class="table-wrap">
-          <table>
+          <table id="driver-table">
             <thead><tr><th>색상</th><th>코드</th><th>기사명</th><th>상태/접속</th><th>관리</th></tr></thead>
             <tbody id="driver-table-body"></tbody>
           </table>
@@ -217,33 +296,36 @@
         <div class="card-title">
           <span id="record-card-heading">📋 실시간 배차 현황 &amp; 운행 기록</span>
           <div style="display:flex; gap:6px; flex-wrap:wrap;">
-            <button type="button" class="btn-trash btn-sm" id="btn-toggle-trash" onclick="DISPATCH_MGR.toggleTrash()">🗑️ 휴지통 (<span id="trash-count">0</span>)</button>
-            <button type="button" class="btn-outline btn-sm" id="btn-export-csv" onclick="DISPATCH_MGR.exportCSV()">📥 조회 결과 CSV 저장</button>
+            <button type="button" class="btn-trash btn-xs" id="btn-toggle-trash" onclick="DISPATCH_MGR.toggleTrash()">🗑️ 휴지통 (<span id="trash-count">0</span>)</button>
+            <button type="button" class="btn-outline btn-xs" id="btn-export-csv" onclick="DISPATCH_MGR.exportCSV()">📥 CSV 저장</button>
           </div>
         </div>
 
         <!-- 일반 조회 필터 패널 -->
         <div class="filter-panel" id="normal-filter-panel">
           <div class="filter-row">
-            <span style="font-size:0.76rem; font-weight:700; color:var(--muted);">📅 기간:</span>
-            <input type="date" id="flt-date-start" style="width:auto; padding:5px 8px; font-size:0.8rem;" onchange="DISPATCH_MGR.render()" />
-            <span style="font-size:0.8rem; color:var(--muted);">~</span>
-            <input type="date" id="flt-date-end" style="width:auto; padding:5px 8px; font-size:0.8rem;" onchange="DISPATCH_MGR.render()" />
-            <button type="button" class="btn-outline btn-xs" onclick="DISPATCH_MGR.setDatePreset('today')">오늘</button>
-            <button type="button" class="btn-outline btn-xs" onclick="DISPATCH_MGR.setDatePreset('month')">이번 달</button>
-            <button type="button" class="btn-outline btn-xs" onclick="DISPATCH_MGR.setDatePreset('all')">전체 기간</button>
+            <div class="date-range-box">
+              <input type="date" id="flt-date-start" onchange="DISPATCH_MGR.render()" />
+              <span style="font-size:0.8rem; color:var(--muted);">~</span>
+              <input type="date" id="flt-date-end" onchange="DISPATCH_MGR.render()" />
+            </div>
+            <div style="display:flex; gap:4px; flex-wrap:wrap;">
+              <button type="button" class="btn-outline btn-xs" onclick="DISPATCH_MGR.setDatePreset('today')">오늘</button>
+              <button type="button" class="btn-outline btn-xs" onclick="DISPATCH_MGR.setDatePreset('month')">이번 달</button>
+              <button type="button" class="btn-outline btn-xs" onclick="DISPATCH_MGR.setDatePreset('all')">전체 기간</button>
+            </div>
           </div>
           <div class="filter-row">
-            <span style="font-size:0.76rem; font-weight:700; color:var(--muted);">🚕 기사:</span>
-            <select id="flt-driver" style="width:auto; min-width:145px; padding:5px 8px; font-size:0.8rem;" onchange="DISPATCH_MGR.render()">
+            <select id="flt-driver" style="width:auto; min-width:140px; flex:1;" onchange="DISPATCH_MGR.render()">
               <option value="all">전체 기사</option>
             </select>
-            <span style="font-size:0.76rem; font-weight:700; color:var(--muted); margin-left:4px;">📌 상태:</span>
-            <button type="button" class="btn-outline btn-xs active" id="flt-all" onclick="DISPATCH_MGR.setFilter('all')">전체</button>
-            <button type="button" class="btn-outline btn-xs" id="flt-waiting" onclick="DISPATCH_MGR.setFilter('waiting')">대기중</button>
-            <button type="button" class="btn-outline btn-xs" id="flt-accepted" onclick="DISPATCH_MGR.setFilter('accepted')">진행중</button>
-            <button type="button" class="btn-outline btn-xs" id="flt-completed" onclick="DISPATCH_MGR.setFilter('completed')">완료</button>
-            <button type="button" class="btn-outline btn-xs" id="flt-cancelled" onclick="DISPATCH_MGR.setFilter('cancelled')">취소</button>
+            <div style="display:flex; gap:4px; flex-wrap:wrap;">
+              <button type="button" class="btn-outline btn-xs active" id="flt-all" onclick="DISPATCH_MGR.setFilter('all')">전체</button>
+              <button type="button" class="btn-outline btn-xs" id="flt-waiting" onclick="DISPATCH_MGR.setFilter('waiting')">대기</button>
+              <button type="button" class="btn-outline btn-xs" id="flt-accepted" onclick="DISPATCH_MGR.setFilter('accepted')">진행</button>
+              <button type="button" class="btn-outline btn-xs" id="flt-completed" onclick="DISPATCH_MGR.setFilter('completed')">완료</button>
+              <button type="button" class="btn-outline btn-xs" id="flt-cancelled" onclick="DISPATCH_MGR.setFilter('cancelled')">취소</button>
+            </div>
           </div>
           <div class="summary-strip" id="dispatch-summary-strip">
             <span>조회 결과: 0건 | 합계 요금: 0원</span>
@@ -252,14 +334,15 @@
 
         <!-- 휴지통 안내 배너 -->
         <div class="trash-banner" id="trash-banner" style="display:none;">
-          <span>🗑️ 휴지통 보관 내역 — [↩ 복원]을 누르면 원래 상태와 날짜의 운행 기록으로 즉시 되돌아갑니다.</span>
+          <span>🗑️ 휴지통 — [↩ 복원] 시 원래 상태와 날짜로 즉시 복구됩니다.</span>
           <div style="display:flex; gap:6px;">
-            <button type="button" class="btn-outline btn-xs" onclick="DISPATCH_MGR.toggleTrash(false)">← 운행 기록으로 복귀</button>
-            <button type="button" class="btn-danger btn-xs" onclick="DISPATCH_MGR.emptyTrash()">🧹 휴지통 비우기</button>
+            <button type="button" class="btn-outline btn-xs" onclick="DISPATCH_MGR.toggleTrash(false)">← 목록 복귀</button>
+            <button type="button" class="btn-danger btn-xs" onclick="DISPATCH_MGR.emptyTrash()">🧹 비우기</button>
           </div>
         </div>
 
-        <div class="table-wrap">
+        <!-- PC 화면용 테이블 -->
+        <div class="table-wrap" id="dispatch-desktop-wrap">
           <table>
             <thead id="dispatch-table-head">
               <tr><th>번호/시각</th><th>구분</th><th>상태</th><th>담당기사</th><th>손님번호</th><th>출발 → 경유 → 도착</th><th>거리/요금</th><th>포기이력/메모</th><th>통제/휴지통</th></tr>
@@ -267,6 +350,9 @@
             <tbody id="dispatch-table-body"></tbody>
           </table>
         </div>
+
+        <!-- 모바일 화면용 카드 리스트 -->
+        <div class="mobile-record-list" id="dispatch-mobile-list"></div>
       </section>
     </div>
   </main>
@@ -599,8 +685,8 @@
             <td><input type="color" value="${color}" title="아이콘 색상 변경" onchange="DRIVER_MGR.updateColor('${esc(d.code)}', this.value)" /></td>
             <td><strong>${esc(d.code)}</strong></td>
             <td>${esc(d.name)}</td>
-            <td>${d.active ? '<span style="color:var(--success);font-weight:800;">사용중</span>' : '<span style="color:var(--danger);">정지</span>'}<br/><span style="font-size:0.72rem;color:var(--muted);">${seen}</span></td>
-            <td><div style="display:flex;gap:4px;">
+            <td>${d.active ? '<span style="color:var(--success);font-weight:800;">사용</span>' : '<span style="color:var(--danger);">정지</span>'}<br/><span style="font-size:0.7rem;color:var(--muted);">${seen}</span></td>
+            <td><div style="display:flex;gap:3px;flex-wrap:wrap;">
               <button type="button" class="btn-outline btn-xs" onclick="DRIVER_MGR.toggleActive('${esc(d.code)}', ${d.active})">${d.active ? '정지' : '해제'}</button>
               <button type="button" class="btn-danger-outline btn-xs" onclick="DRIVER_MGR.deleteDriver('${esc(d.code)}')">삭제</button>
             </div></td>
@@ -729,6 +815,7 @@
         document.getElementById('trash-count').textContent = trashedRows.length;
 
         const stLabel = { waiting: ['대기중', 'st-waiting'], accepted: ['진행중', 'st-accepted'], completed: ['완료', 'st-completed'], cancelled: ['취소됨', 'st-cancelled'] };
+        const mobileBox = document.getElementById('dispatch-mobile-list');
 
         if (this.viewMode === 'trash') {
           document.getElementById('dispatch-table-head').innerHTML =
@@ -737,6 +824,7 @@
           if (!trashedRows.length) {
             document.getElementById('dispatch-table-body').innerHTML =
               '<tr><td colspan="8" style="text-align:center;padding:28px;color:var(--muted);">휴지통이 비어 있습니다.</td></tr>';
+            mobileBox.innerHTML = '<div style="text-align:center;padding:24px;color:var(--muted);font-size:0.84rem;">휴지통이 비어 있습니다.</div>';
             return;
           }
 
@@ -762,6 +850,29 @@
               </td>
             </tr>`;
           }).join('');
+
+          mobileBox.innerHTML = trashedRows.map(r => {
+            const [txt, cls] = stLabel[r.status] || [r.status, ''];
+            const wps = Array.isArray(r.waypoints) ? r.waypoints : [];
+            const time = new Date(r.created_at).toLocaleString('ko-KR', { month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' });
+            const delTime = new Date(r.deleted_at).toLocaleString('ko-KR', { month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' });
+            return `<div class="m-rec-card trashed">
+              <div class="m-rec-top">
+                <div><span class="badge ${cls}">${txt}</span> <strong style="font-size:0.82rem;">#${r.id}</strong> <span style="font-size:0.72rem;color:#991b1b;">(삭제 ${delTime})</span></div>
+                <strong style="color:var(--primary);font-size:0.95rem;">${(r.total_fare||0).toLocaleString()}원</strong>
+              </div>
+              <div class="m-rec-route">🔵 ${esc(r.origin_name)}<br/>${wps.length ? `🟡 경유: ${esc(wps.map(w=>w.name).join(' → '))}<br/>` : ''}🔴 ${esc(r.dest_name)}</div>
+              <div class="m-rec-meta">
+                <span>접수: ${time}</span>
+                <span>기사: <strong>${r.driver_name ? `${esc(r.driver_name)}(${esc(r.driver_code)})` : '미배정'}</strong></span>
+                <span>손님: ${esc(r.customer_phone || '-')}</span>
+              </div>
+              <div class="m-rec-actions">
+                <button type="button" class="btn-success btn-sm" onclick="DISPATCH_MGR.restoreDispatch(${r.id})">↩ 복원하기</button>
+                <button type="button" class="btn-danger-outline btn-sm" onclick="DISPATCH_MGR.hardDeleteDispatch(${r.id})">영구삭제</button>
+              </div>
+            </div>`;
+          }).join('');
           return;
         }
 
@@ -775,15 +886,14 @@
         const completedFareSum = completedList.reduce((acc, r) => acc + (r.total_fare || 0), 0);
 
         document.getElementById('dispatch-summary-strip').innerHTML = `
-          <div>
-            <span>조회 결과: <strong>${list.length}건</strong></span>
-            <span style="margin-left:12px;">조회 합계 요금: <strong>${totalFareSum.toLocaleString()}원</strong></span>
-            <span style="margin-left:12px;color:#059669;">완료 건수: <strong>${completedList.length}건 (${completedFareSum.toLocaleString()}원)</strong></span>
-          </div>
+          <span>조회: <strong>${list.length}건</strong></span>
+          <span>합계: <strong>${totalFareSum.toLocaleString()}원</strong></span>
+          <span style="color:#059669;">완료: <strong>${completedList.length}건 (${completedFareSum.toLocaleString()}원)</strong></span>
         `;
 
         if (!list.length) {
           document.getElementById('dispatch-table-body').innerHTML = '<tr><td colspan="9" style="text-align:center;padding:24px;color:var(--muted);">선택한 조건에 해당하는 운행 기록이 없습니다.</td></tr>';
+          mobileBox.innerHTML = '<div style="text-align:center;padding:24px;color:var(--muted);font-size:0.84rem;">선택한 조건에 해당하는 운행 기록이 없습니다.</div>';
           return;
         }
 
@@ -810,6 +920,31 @@
             </td>
           </tr>`;
         }).join('');
+
+        mobileBox.innerHTML = list.map(r => {
+          const [txt, cls] = stLabel[r.status] || [r.status, ''];
+          const wps = Array.isArray(r.waypoints) ? r.waypoints : [];
+          const time = new Date(r.created_at).toLocaleString('ko-KR', { month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' });
+          const canCancel = r.status === 'waiting' || r.status === 'accepted';
+          return `<div class="m-rec-card">
+            <div class="m-rec-top">
+              <div>${r.dispatch_type === 'forced' ? '<span class="tag-forced">강제</span> ' : ''}<span class="badge ${cls}">${txt}</span> <strong style="font-size:0.82rem;">#${r.id}</strong> <span style="font-size:0.73rem;color:var(--muted);">· ${time}</span></div>
+              <strong style="color:var(--primary);font-size:0.96rem;">${(r.total_fare||0).toLocaleString()}원</strong>
+            </div>
+            <div class="m-rec-route">🔵 ${esc(r.origin_name)}<br/>${wps.length ? `🟡 경유: ${esc(wps.map(w=>w.name).join(' → '))}<br/>` : ''}🔴 ${esc(r.dest_name)}</div>
+            <div class="m-rec-meta">
+              <span>기사: <strong>${r.driver_name ? `${esc(r.driver_name)}(${esc(r.driver_code)})` : '미배정'}</strong></span>
+              <span>거리: <strong>${(r.distance_meters/1000).toFixed(2)}km</strong></span>
+              <span>손님: <strong>${esc(r.customer_phone || '-')}</strong></span>
+              ${r.note ? `<span>메모: ${esc(r.note)}</span>` : ''}
+              ${r.forfeit_log ? `<span style="color:#b45309;">포기: ${esc(r.forfeit_log)}</span>` : ''}
+            </div>
+            <div class="m-rec-actions">
+              ${canCancel ? `<button type="button" class="btn-warn btn-sm" onclick="DISPATCH_MGR.cancelDispatch(${r.id})">배차 취소</button>` : ''}
+              <button type="button" class="btn-danger-outline btn-sm" onclick="DISPATCH_MGR.moveToTrash(${r.id})">🗑️ 휴지통 이동</button>
+            </div>
+          </div>`;
+        }).join('');
       },
 
       async cancelDispatch(id) {
@@ -824,7 +959,7 @@
         const { error } = await ADMIN.getSupabase().from('yeoju_dispatches')
           .update({ deleted_at: new Date().toISOString(), updated_at: new Date().toISOString() })
           .eq('id', id);
-        if (error) return toast(`휴지통 이동 오류 (1단계 SQL 실행 확인): ${error.message}`);
+        if (error) return toast(`휴지통 이동 오류: ${error.message}`);
         toast(`🗑️ #${id} 내역이 휴지통으로 이동되었습니다.`);
         await this.loadAll();
       },
