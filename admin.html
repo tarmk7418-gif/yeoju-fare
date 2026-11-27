@@ -76,6 +76,9 @@
     .force-box { display: grid; grid-template-columns: 1fr auto; gap: 6px; }
     .grid-driver-add { display: grid; grid-template-columns: 0.75fr 1fr auto auto; gap: 6px; margin-bottom: 10px; align-items: center; }
 
+    .pt-hdr { display: flex; justify-content: space-between; align-items: center; gap: 4px; margin-bottom: 4px; flex-wrap: wrap; }
+    .pt-tools { display: flex; align-items: center; gap: 4px; flex-wrap: wrap; }
+
     .limit-bar {
       background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 9px; padding: 8px 10px; margin-bottom: 8px;
       display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px;
@@ -99,7 +102,7 @@
     .suggest-list.open { display: block; }
     .suggest-row { padding: 9px 10px; border-bottom: 1px solid #f1f5f9; cursor: pointer; font-size: 0.85rem; }
     .suggest-row:hover { background: var(--primary-light); }
-    .wp-item { display: grid; grid-template-columns: 1fr auto; gap: 6px; margin-bottom: 6px; background: #fffbeb; padding: 7px; border-radius: 8px; border: 1px solid #fde68a; }
+    .wp-item { display: grid; grid-template-columns: 1fr auto auto; gap: 6px; margin-bottom: 6px; background: #fffbeb; padding: 7px; border-radius: 8px; border: 1px solid #fde68a; align-items: center; }
 
     .fare-bar { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 10px; padding: 10px 8px; margin: 10px 0; text-align: center; }
     .fare-bar .val { font-size: 0.96rem; font-weight: 800; margin-top: 2px; }
@@ -225,17 +228,23 @@
 
         <div class="grid-form-2">
           <div class="suggest-wrap">
-            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px;">
+            <div class="pt-hdr">
               <label style="margin:0;">🔵 출발지</label>
-              <select id="preset-origin" style="width:auto; padding:3px 6px; font-size:0.78rem;" onchange="DISPATCH_FORM.selectPreset('origin', this.value)"></select>
+              <div class="pt-tools">
+                <button type="button" class="btn-outline btn-xs" onclick="DISPATCH_FORM.useCurrentLocation('origin')">📍 현위치</button>
+                <select id="preset-origin" style="width:auto; max-width:118px; padding:4px 6px; font-size:0.78rem;" onchange="DISPATCH_FORM.selectPreset('origin', this.value)"></select>
+              </div>
             </div>
             <input type="text" id="f-origin" value="여주시청" placeholder="건물명, 도로명, 지번" oninput="DISPATCH_FORM.onSearch('origin', this.value)" onblur="setTimeout(()=>DISPATCH_FORM.hide('origin'),200)" />
             <div id="sug-origin" class="suggest-list"></div>
           </div>
           <div class="suggest-wrap">
-            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px;">
+            <div class="pt-hdr">
               <label style="margin:0;">🔴 도착지</label>
-              <select id="preset-dest" style="width:auto; padding:3px 6px; font-size:0.78rem;" onchange="DISPATCH_FORM.selectPreset('dest', this.value)"></select>
+              <div class="pt-tools">
+                <button type="button" class="btn-outline btn-xs" onclick="DISPATCH_FORM.useCurrentLocation('dest')">📍 현위치</button>
+                <select id="preset-dest" style="width:auto; max-width:118px; padding:4px 6px; font-size:0.78rem;" onchange="DISPATCH_FORM.selectPreset('dest', this.value)"></select>
+              </div>
             </div>
             <input type="text" id="f-dest" value="여주역 (경강선)" placeholder="건물명, 도로명, 지번" oninput="DISPATCH_FORM.onSearch('dest', this.value)" onblur="setTimeout(()=>DISPATCH_FORM.hide('dest'),200)" />
             <div id="sug-dest" class="suggest-list"></div>
@@ -301,7 +310,10 @@
       <section id="sec-live-map" class="card">
         <div class="card-title">
           <span>🗺️ 실시간 기사 위치 &amp; 경로 관제</span>
-          <button type="button" class="btn-outline btn-xs" onclick="DRIVER_MGR.loadDrivers()">🔄 위치 갱신</button>
+          <div style="display:flex; gap:5px; flex-wrap:wrap;">
+            <button type="button" class="btn-outline btn-xs" onclick="ADMIN_MAP.moveToMyLocation()">📍 내 위치</button>
+            <button type="button" class="btn-outline btn-xs" onclick="DRIVER_MGR.loadDrivers()">🔄 위치 갱신</button>
+          </div>
         </div>
         <div id="map-box">
           <div id="kakao-map" style="display:none;"></div>
@@ -394,6 +406,7 @@
               <span>현재 목록 전체 선택 (<span id="selected-count-txt">0</span>건 선택됨)</span>
             </label>
             <div style="display:flex; gap:6px; flex-wrap:wrap;">
+              <button type="button" class="btn-warn btn-xs" id="btn-bulk-cancel" disabled onclick="DISPATCH_MGR.bulkCancel()">선택 일괄 취소 (0건)</button>
               <button type="button" class="btn-danger-outline btn-xs" id="btn-bulk-trash" disabled onclick="DISPATCH_MGR.bulkMoveToTrash()">🗑️ 선택 일괄 휴지통 (0건)</button>
             </div>
           </div>
@@ -611,10 +624,33 @@
     };
 
     const ADMIN_MAP = {
-      mode: 'leaflet', kMap: null, lMap: null, routeOverlays: [], driverOverlays: [],
+      mode: 'leaflet', kMap: null, lMap: null, routeOverlays: [], driverOverlays: [], myLocOverlay: null,
       refreshSize() {
         if (this.mode === 'kakao' && this.kMap) { this.kMap.relayout(); DISPATCH_FORM.calcRoute(); }
         else if (this.lMap) this.lMap.invalidateSize();
+      },
+      moveToMyLocation() {
+        if (!navigator.geolocation) return toast('이 기기는 위치 확인 기능을 지원하지 않습니다.');
+        toast('현재 위치를 확인 중입니다...');
+        navigator.geolocation.getCurrentPosition(pos => {
+          const lat = pos.coords.latitude, lng = pos.coords.longitude;
+          if (this.mode === 'kakao' && this.kMap) {
+            const ll = new window.kakao.maps.LatLng(lat, lng);
+            if (this.myLocOverlay) this.myLocOverlay.setMap(null);
+            this.myLocOverlay = new window.kakao.maps.CustomOverlay({
+              map: this.kMap, position: ll, yAnchor: 1.2,
+              content: '<div style="background:#0f172a;color:#fde047;font-size:11px;font-weight:800;padding:3px 8px;border-radius:999px;border:1.5px solid #fff;box-shadow:0 2px 6px rgba(0,0,0,0.35);">📍 상황실 현위치</div>'
+            });
+            this.kMap.setCenter(ll);
+            this.kMap.setLevel(4);
+          } else if (this.lMap) {
+            if (this.myLocOverlay) this.lMap.removeLayer(this.myLocOverlay);
+            const icon = L.divIcon({ html: '<div style="background:#0f172a;color:#fde047;font-size:11px;font-weight:800;padding:3px 8px;border-radius:999px;border:1.5px solid #fff;white-space:nowrap;">📍 상황실 현위치</div>', className: '', iconAnchor: [40, 14] });
+            this.myLocOverlay = L.marker([lat, lng], { icon }).addTo(this.lMap);
+            this.lMap.setView([lat, lng], 15);
+          }
+          toast('지도를 현재 위치로 이동했습니다.');
+        }, () => toast('위치 권한을 허용해 주세요.'), { enableHighAccuracy: true, timeout: 8000 });
       },
       loadKakaoSDK() {
         const s = document.createElement('script');
@@ -717,6 +753,14 @@
           document.querySelectorAll('.limit-btn').forEach(b => b.classList.toggle('active', Number(b.dataset.min) === this.etaLimit));
         }
       },
+      useCurrentLocation(target) {
+        if (!navigator.geolocation) return toast('이 기기는 위치 확인 기능을 지원하지 않습니다.');
+        toast('현재 위치를 확인 중입니다...');
+        navigator.geolocation.getCurrentPosition(async pos => {
+          await this.setCoord(target, pos.coords.latitude, pos.coords.longitude);
+          toast('현위치 주소가 입력되었습니다.');
+        }, () => toast('위치 권한을 허용해 주세요.'), { enableHighAccuracy: true, timeout: 8000 });
+      },
       async setCoord(t, lat, lng) {
         let name = `좌표(${lat.toFixed(5)}, ${lng.toFixed(5)})`;
         try {
@@ -738,8 +782,11 @@
       removeWp(i) { this.waypoints.splice(i, 1); this.renderWps(); this.calcRoute(); },
       renderWps() {
         document.getElementById('f-waypoints').innerHTML = this.waypoints.map((w, i) => `
-          <div class="wp-item"><div class="suggest-wrap"><input type="text" id="f-wp-${i}" value="${esc(w.name)}" placeholder="경유지 ${i+1} 건물명·주소 검색" oninput="DISPATCH_FORM.onSearch('wp-${i}', this.value)" onblur="setTimeout(()=>DISPATCH_FORM.hide('wp-${i}'),200)" /><div id="sug-wp-${i}" class="suggest-list"></div></div>
-          <button type="button" class="btn-danger-outline btn-sm" onclick="DISPATCH_FORM.removeWp(${i})">삭제</button></div>`).join('');
+          <div class="wp-item">
+            <div class="suggest-wrap"><input type="text" id="f-wp-${i}" value="${esc(w.name)}" placeholder="경유지 ${i+1} 건물명·주소 검색" oninput="DISPATCH_FORM.onSearch('wp-${i}', this.value)" onblur="setTimeout(()=>DISPATCH_FORM.hide('wp-${i}'),200)" /><div id="sug-wp-${i}" class="suggest-list"></div></div>
+            <button type="button" class="btn-outline btn-sm" onclick="DISPATCH_FORM.useCurrentLocation('wp-${i}')" style="white-space:nowrap;">📍 현위치</button>
+            <button type="button" class="btn-danger-outline btn-sm" onclick="DISPATCH_FORM.removeWp(${i})" style="white-space:nowrap;">삭제</button>
+          </div>`).join('');
       },
       swapPoints() {
         [this.origin, this.dest] = [this.dest, this.origin]; this.waypoints.reverse();
@@ -977,6 +1024,14 @@
 
         const cntEl = document.getElementById('selected-count-txt');
         if (cntEl) cntEl.textContent = count;
+
+        const cancellableCount = visible.filter(r => this.selectedIds.has(Number(r.id)) && (r.status === 'waiting' || r.status === 'accepted' || r.status === 'picked_up')).length;
+        const bulkCancelBtn = document.getElementById('btn-bulk-cancel');
+        if (bulkCancelBtn) {
+          bulkCancelBtn.disabled = cancellableCount === 0;
+          bulkCancelBtn.textContent = `선택 일괄 취소 (${cancellableCount}건)`;
+        }
+
         const bulkTrashBtn = document.getElementById('btn-bulk-trash');
         if (bulkTrashBtn) {
           bulkTrashBtn.disabled = count === 0;
@@ -1250,6 +1305,18 @@
         if (!confirm(`#${id} 배차를 강제 취소하시겠습니까?`)) return;
         await ADMIN.getSupabase().from('yeoju_dispatches').update({ status: 'cancelled', updated_at: new Date().toISOString() }).eq('id', id);
         toast(`#${id} 배차가 취소되었습니다.`);
+        await this.loadAll();
+      },
+      async bulkCancel() {
+        const cancellableIds = this.getVisibleRows()
+          .filter(r => this.selectedIds.has(Number(r.id)) && (r.status === 'waiting' || r.status === 'accepted' || r.status === 'picked_up'))
+          .map(r => Number(r.id));
+        if (!cancellableIds.length) return toast('취소 가능한 대기·진행중 배차가 선택되지 않았습니다.');
+        if (!confirm(`선택한 ${cancellableIds.length}건의 배차를 일괄 취소하시겠습니까?`)) return;
+        const { error } = await ADMIN.getSupabase().from('yeoju_dispatches').update({ status: 'cancelled', updated_at: new Date().toISOString() }).in('id', cancellableIds);
+        if (error) return toast(`일괄 취소 오류: ${error.message}`);
+        this.selectedIds.clear();
+        toast(`선택한 ${cancellableIds.length}건의 배차가 취소되었습니다.`);
         await this.loadAll();
       },
       async moveToTrash(id) {
