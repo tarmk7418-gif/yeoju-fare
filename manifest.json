@@ -1,1 +1,16 @@
-
+{
+  "name": "여주시 기사 배차 & 요금표",
+  "short_name": "여주배차",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "background_color": "#1e3a8a",
+  "theme_color": "#1e3a8a",
+  "icons": [
+    {
+      "src": "https://cdn-icons-png.flaticon.com/512/3097/3097180.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}
