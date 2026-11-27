@@ -1,1 +1,559 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0" />
+  <title>여주시 배차 상황실 · 관리자 페이지</title>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin="" />
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin=""></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <style>
+    :root { --primary:#1d4ed8; --primary-light:#eff6ff; --dark:#0f172a; --success:#059669; --danger:#dc2626; --warn:#d97706; --bg:#f1f5f9; --card:#ffffff; --border:#cbd5e1; --muted:#475569; }
+    * { box-sizing: border-box; }
+    body { margin:0; font-family:-apple-system,BlinkMacSystemFont,"Apple SD Gothic Neo","Malgun Gothic",sans-serif; background:var(--bg); color:var(--dark); padding-bottom:36px; }
+    header { background:var(--dark); color:#fff; padding:13px 18px; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px; position:sticky; top:0; z-index:1000; box-shadow:0 2px 8px rgba(0,0,0,0.18); }
+    header h1 { margin:0; font-size:1.1rem; }
+    .container { max-width:1440px; margin:14px auto; padding:0 14px; display:flex; flex-direction:column; gap:14px; }
+    .card { background:var(--card); border-radius:12px; border:1px solid #e2e8f0; padding:15px; box-shadow:0 2px 8px rgba(0,0,0,0.04); }
+    .card-title { margin:0 0 12px; font-size:0.98rem; font-weight:800; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px; border-bottom:1px solid #f1f5f9; padding-bottom:8px; }
+    button { font-family:inherit; cursor:pointer; border:none; border-radius:8px; font-weight:700; font-size:0.84rem; padding:8px 13px; display:inline-flex; align-items:center; justify-content:center; gap:5px; }
+    button:active { transform:scale(0.98); }
+    .btn-primary { background:var(--primary); color:#fff; }
+    .btn-danger { background:var(--danger); color:#fff; }
+    .btn-danger-outline { background:#fff; color:var(--danger); border:1px solid #fecaca; }
+    .btn-success { background:var(--success); color:#fff; }
+    .btn-warn { background:#fef3c7; color:#92400e; border:1px solid #fcd34d; }
+    .btn-outline { background:#fff; color:var(--dark); border:1px solid var(--border); }
+    .btn-outline.active { background:var(--primary-light); border-color:var(--primary); color:var(--primary); }
+    .btn-sm { padding:5px 9px; font-size:0.76rem; }
+    input, select { width:100%; padding:8px 10px; border:1px solid var(--border); border-radius:8px; font-size:0.9rem; background:#fff; outline:none; }
+    input:focus, select:focus { border-color:var(--primary); }
+    label { display:block; font-size:0.75rem; font-weight:700; color:var(--muted); margin-bottom:4px; }
+    .top-grid { display:grid; grid-template-columns:1.05fr 0.95fr; gap:14px; align-items:start; }
+    .mid-grid { display:grid; grid-template-columns:1fr 1.6fr; gap:14px; align-items:start; }
+    #map-box { position:relative; width:100%; height:340px; border-radius:10px; overflow:hidden; border:1px solid var(--border); background:#e2e8f0; }
+    #kakao-map, #leaflet-map { width:100%; height:100%; }
+    .driver-chips { display:flex; flex-wrap:wrap; gap:6px; margin-top:10px; }
+    .d-chip { padding:6px 10px; border-radius:8px; border:1px solid var(--border); background:#f8fafc; font-size:0.78rem; cursor:pointer; display:inline-flex; align-items:center; gap:5px; }
+    .d-chip.online { border-color:#10b981; background:#ecfdf5; }
+    .dot { width:8px; height:8px; border-radius:50%; background:#94a3b8; }
+    .d-chip.online .dot { background:#10b981; }
+    .suggest-wrap { position:relative; }
+    .suggest-list { position:absolute; top:calc(100% + 3px); left:0; right:0; background:#fff; border:1.5px solid var(--primary); border-radius:8px; max-height:230px; overflow-y:auto; z-index:1600; display:none; box-shadow:0 10px 24px rgba(0,0,0,0.16); }
+    .suggest-list.open { display:block; }
+    .suggest-row { padding:8px 10px; border-bottom:1px solid #f1f5f9; cursor:pointer; font-size:0.84rem; }
+    .suggest-row:hover { background:var(--primary-light); }
+    .wp-item { display:grid; grid-template-columns:1fr auto; gap:6px; margin-bottom:6px; background:#fffbeb; padding:7px; border-radius:8px; border:1px solid #fde68a; }
+    .fare-bar { display:grid; grid-template-columns:repeat(4,1fr); gap:8px; background:#f8fafc; border:1px solid #e2e8f0; border-radius:10px; padding:10px; margin:10px 0; text-align:center; }
+    .fare-bar .val { font-size:1rem; font-weight:800; margin-top:2px; }
+    .fare-bar .hi { color:var(--primary); font-size:1.1rem; }
+    .table-wrap { overflow-x:auto; }
+    table { width:100%; border-collapse:collapse; font-size:0.82rem; }
+    th, td { padding:8px 7px; border-bottom:1px solid #e2e8f0; text-align:left; vertical-align:middle; }
+    th { background:#f8fafc; color:var(--muted); white-space:nowrap; }
+    .badge { padding:3px 7px; border-radius:6px; font-size:0.72rem; font-weight:800; white-space:nowrap; display:inline-block; }
+    .st-waiting { background:#dbeafe; color:#1e40af; }
+    .st-accepted { background:#fef3c7; color:#92400e; }
+    .st-completed { background:#d1fae5; color:#065f46; }
+    .st-cancelled { background:#fee2e2; color:#991b1b; }
+    .tag-forced { background:#dc2626; color:#fff; padding:2px 6px; border-radius:4px; font-size:0.7rem; font-weight:800; }
+    #toast { position:fixed; bottom:20px; left:50%; transform:translateX(-50%) translateY(80px); background:#0f172a; color:#fff; padding:10px 18px; border-radius:999px; font-size:0.84rem; font-weight:700; z-index:9999; opacity:0; transition:all 0.25s; }
+    #toast.show { opacity:1; transform:translateX(-50%) translateY(0); }
+    @media (max-width:1024px) { .top-grid, .mid-grid { grid-template-columns:1fr; } }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>🖥️ 여주시 배차 상황실 · 관리자 관제</h1>
+    <div style="display:flex; gap:8px; align-items:center; flex-wrap:wrap;">
+      <span id="conn-status" style="font-size:0.78rem; background:rgba(255,255,255,0.16); padding:4px 10px; border-radius:999px;">서버 연결 대기</span>
+      <a href="./index.html" target="_blank" style="text-decoration:none;"><button type="button" class="btn-outline btn-sm">기사 앱 열기 ↗</button></a>
+      <button type="button" class="btn-outline btn-sm" onclick="ADMIN.toggleSetup()">⚙️ Supabase · 보안 설정</button>
+    </div>
+  </header>
 
+  <div id="pin-view" class="container" style="max-width:400px; margin-top:55px;">
+    <div class="card" style="text-align:center;">
+      <h2 style="margin:0 0 6px;">🔐 상황실 관리자 인증</h2>
+      <p style="font-size:0.84rem; color:var(--muted); margin:0 0 14px;">관리자 비밀번호를 입력하세요. (초기 비밀번호: 1234)</p>
+      <input type="password" id="admin-pin-input" placeholder="비밀번호 입력" style="margin-bottom:10px; text-align:center;" onkeydown="if(event.key==='Enter') ADMIN.unlock()" />
+      <button type="button" class="btn-primary" style="width:100%; padding:11px;" onclick="ADMIN.unlock()">관제 화면 열기</button>
+    </div>
+  </div>
+
+  <main id="admin-main" class="container" style="display:none;">
+    <section id="setup-panel" class="card" style="display:none;">
+      <div class="card-title">⚙️ Supabase 서버 및 관리자 비밀번호 설정</div>
+      <div style="display:grid; grid-template-columns:1.2fr 1.2fr 0.7fr auto; gap:8px; align-items:end;">
+        <div><label>Supabase Project URL</label><input type="text" id="sb-url" /></div>
+        <div><label>Supabase Publishable Key</label><input type="password" id="sb-key" placeholder="sb_publishable_..." /></div>
+        <div><label>관리자 비밀번호 변경</label><input type="text" id="new-pin" placeholder="새 비밀번호" /></div>
+        <button type="button" class="btn-success" onclick="ADMIN.saveSetup()">저장 및 연결</button>
+      </div>
+    </section>
+
+    <div class="top-grid">
+      <section class="card">
+        <div class="card-title">
+          <span>📢 신규 배차 등록 &amp; 강제배차 발송</span>
+          <div style="display:flex; gap:5px;">
+            <button type="button" class="btn-warn btn-sm" onclick="DISPATCH_FORM.addWp()">➕ 경유지 추가</button>
+            <button type="button" class="btn-outline btn-sm" onclick="DISPATCH_FORM.swapPoints()">⇅ 반전</button>
+          </div>
+        </div>
+
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-bottom:8px;">
+          <div class="suggest-wrap">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:3px;">
+              <label style="margin:0;">🔵 출발지</label>
+              <select id="preset-origin" style="width:auto; padding:2px 6px; font-size:0.75rem;" onchange="DISPATCH_FORM.selectPreset('origin', this.value)"></select>
+            </div>
+            <input type="text" id="f-origin" value="여주시청" placeholder="건물명, 도로명, 지번" oninput="DISPATCH_FORM.onSearch('origin', this.value)" onblur="setTimeout(()=>DISPATCH_FORM.hide('origin'),200)" />
+            <div id="sug-origin" class="suggest-list"></div>
+          </div>
+          <div class="suggest-wrap">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:3px;">
+              <label style="margin:0;">🔴 도착지</label>
+              <select id="preset-dest" style="width:auto; padding:2px 6px; font-size:0.75rem;" onchange="DISPATCH_FORM.selectPreset('dest', this.value)"></select>
+            </div>
+            <input type="text" id="f-dest" value="여주역 (경강선)" placeholder="건물명, 도로명, 지번" oninput="DISPATCH_FORM.onSearch('dest', this.value)" onblur="setTimeout(()=>DISPATCH_FORM.hide('dest'),200)" />
+            <div id="sug-dest" class="suggest-list"></div>
+          </div>
+        </div>
+
+        <div id="f-waypoints"></div>
+
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-bottom:8px;">
+          <div>
+            <label>📞 손님 전화번호</label>
+            <div style="display:flex; gap:4px;">
+              <input type="tel" id="f-phone" placeholder="010-0000-0000" oninput="DISPATCH_FORM.formatPhone(this)" />
+              <button type="button" class="btn-outline btn-sm" onclick="DISPATCH_FORM.pastePhone()" style="white-space:nowrap;">📋 붙여넣기</button>
+            </div>
+          </div>
+          <div>
+            <label>📝 배차 메모 (기사 전달사항)</label>
+            <input type="text" id="f-note" placeholder="예: 정문 앞 대기, 카드결제 등" />
+          </div>
+        </div>
+
+        <div style="display:grid; grid-template-columns:repeat(4,1fr); gap:6px; margin-bottom:6px;">
+          <div><label>기본요금(원)</label><input type="number" id="cfg-base-fare" value="4000" step="100" onchange="DISPATCH_FORM.renderFare()" /></div>
+          <div><label>기본거리(km)</label><input type="number" id="cfg-base-dist" value="2.0" step="0.1" onchange="DISPATCH_FORM.renderFare()" /></div>
+          <div><label>km당 요금</label><input type="number" id="cfg-rate-km" value="1000" step="100" onchange="DISPATCH_FORM.renderFare()" /></div>
+          <div><label>통행료 수정(원)</label><input type="number" id="cfg-manual-toll" value="0" step="100" oninput="DISPATCH_FORM.onManualToll(this.value)" /></div>
+        </div>
+
+        <div class="fare-bar">
+          <div><div style="font-size:0.72rem;color:var(--muted);">실주행 거리</div><div class="val" id="sum-dist">-</div></div>
+          <div><div style="font-size:0.72rem;color:var(--muted);">초과 거리요금</div><div class="val" id="sum-excess">-</div></div>
+          <div><div style="font-size:0.72rem;color:var(--muted);">통행료(천원올림)</div><div class="val" id="sum-toll">0원</div></div>
+          <div><div style="font-size:0.72rem;color:var(--muted);">최종 요금</div><div class="val hi" id="sum-total">-</div></div>
+        </div>
+
+        <div style="display:grid; grid-template-columns:1fr 1.2fr; gap:8px; align-items:end;">
+          <button type="button" class="btn-primary" style="padding:11px;" onclick="DISPATCH_FORM.submit('normal')">📢 일반 배차 올리기 (대기열)</button>
+          <div style="display:grid; grid-template-columns:1fr auto; gap:5px;">
+            <select id="force-driver-select"><option value="">강제배차 기사 선택...</option></select>
+            <button type="button" class="btn-danger" style="padding:11px; white-space:nowrap;" onclick="DISPATCH_FORM.submit('forced')">🚨 강제배차</button>
+          </div>
+        </div>
+      </section>
+
+      <section class="card">
+        <div class="card-title">
+          <span>🗺️ 실시간 기사 위치 &amp; 경로 관제 지도</span>
+          <button type="button" class="btn-outline btn-sm" onclick="DRIVER_MGR.loadDrivers()">🔄 위치 갱신</button>
+        </div>
+        <div id="map-box">
+          <div id="kakao-map" style="display:none;"></div>
+          <div id="leaflet-map"></div>
+        </div>
+        <div style="font-size:0.75rem; color:var(--muted); margin-top:8px;">기사 칩을 클릭하면 좌측 강제배차 대상으로 즉시 선택됩니다. (초록색: 3분 이내 위치 수신)</div>
+        <div class="driver-chips" id="driver-chips"></div>
+      </section>
+    </div>
+
+    <div class="mid-grid">
+      <section class="card">
+        <div class="card-title"><span>🚕 기사 고유 코드 발급 · 관리</span></div>
+        <div style="display:grid; grid-template-columns:0.8fr 1fr auto; gap:6px; margin-bottom:10px;">
+          <input type="text" id="new-d-code" placeholder="코드(예: 102)" />
+          <input type="text" id="new-d-name" placeholder="기사명/차량번호" />
+          <button type="button" class="btn-success btn-sm" onclick="DRIVER_MGR.addDriver()">등록</button>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>코드</th><th>기사명</th><th>상태</th><th>최근접속</th><th>관리</th></tr></thead>
+            <tbody id="driver-table-body"></tbody>
+          </table>
+        </div>
+      </section>
+
+      <section class="card">
+        <div class="card-title">
+          <span>📋 실시간 배차 현황 &amp; 운행 기록 (<span id="disp-count">0</span>건)</span>
+          <div style="display:flex; gap:5px; flex-wrap:wrap;">
+            <button type="button" class="btn-outline btn-sm active" id="flt-all" onclick="DISPATCH_MGR.setFilter('all')">전체</button>
+            <button type="button" class="btn-outline btn-sm" id="flt-waiting" onclick="DISPATCH_MGR.setFilter('waiting')">대기중</button>
+            <button type="button" class="btn-outline btn-sm" id="flt-accepted" onclick="DISPATCH_MGR.setFilter('accepted')">진행중</button>
+            <button type="button" class="btn-outline btn-sm" id="flt-completed" onclick="DISPATCH_MGR.setFilter('completed')">완료</button>
+            <button type="button" class="btn-outline btn-sm" onclick="DISPATCH_MGR.exportCSV()">📥 CSV</button>
+          </div>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr><th>번호/시각</th><th>구분</th><th>상태</th><th>담당기사</th><th>손님번호</th><th>출발 → 경유 → 도착</th><th>거리/요금</th><th>포기이력/메모</th><th>통제</th></tr>
+            </thead>
+            <tbody id="dispatch-table-body"></tbody>
+          </table>
+        </div>
+      </section>
+    </div>
+  </main>
+
+  <div id="toast"></div>
+
+  <script>
+    const CONFIG = {
+      KAKAO_JS_KEY: '348aec403735e7af2a661c30ce11e8e5',
+      KAKAO_REST_KEY: '8753d03a528d0664dfdaaca2a11ce75e',
+      SUPABASE_URL: 'https://uoayezajeeadhmofgfrd.supabase.co',
+      SUPABASE_ANON_KEY: '여기에_복사한_sb_publishable_전체키_붙여넣기',
+      YEOJU_CENTER: { lat: 37.298344, lng: 127.637518 }
+    };
+
+    const YEOJU_PRESETS = [
+      { id: 'cityhall', name: '여주시청', lat: 37.298344, lng: 127.637518 },
+      { id: 'yeojustation', name: '여주역 (경강선)', lat: 37.282795, lng: 127.628571 },
+      { id: 'sejongstation', name: '세종대왕릉역', lat: 37.293933, lng: 127.570728 },
+      { id: 'terminal', name: '여주종합터미널', lat: 37.291642, lng: 127.637915 },
+      { id: 'outlet', name: '여주프리미엄아울렛', lat: 37.243542, lng: 127.614828 },
+      { id: 'emart', name: '이마트 여주점', lat: 37.292118, lng: 127.649122 },
+      { id: 'silleuksa', name: '신륵사 관광지', lat: 37.299581, lng: 127.656241 },
+      { id: 'yeojuic', name: '여주IC', lat: 37.260215, lng: 127.623812 },
+      { id: 'ganam', name: '가남읍 행정복지센터', lat: 37.202298, lng: 127.543284 },
+      { id: 'jeomdong', name: '점동면 행정복지센터', lat: 37.204556, lng: 127.674983 },
+      { id: 'sejongmyeon', name: '세종대왕면 행정복지센터', lat: 37.295183, lng: 127.551672 },
+      { id: 'heungcheon', name: '흥천면 행정복지센터', lat: 37.359624, lng: 127.525537 },
+      { id: 'geumsa', name: '금사면 행정복지센터', lat: 37.397631, lng: 127.547198 },
+      { id: 'sanbuk', name: '산북면 행정복지센터', lat: 37.411647, lng: 127.445512 },
+      { id: 'daesin', name: '대신면 행정복지센터', lat: 37.368851, lng: 127.603914 },
+      { id: 'bungnae', name: '북내면 행정복지센터', lat: 37.339618, lng: 127.669842 },
+      { id: 'gangcheon', name: '강천면 행정복지센터', lat: 37.269912, lng: 127.716185 }
+    ];
+
+    function toast(msg) { const el = document.getElementById('toast'); el.textContent = msg; el.classList.add('show'); clearTimeout(window._at); window._at = setTimeout(() => el.classList.remove('show'), 3000); }
+    function esc(s) { return String(s || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+
+    const ADMIN = {
+      sb: null,
+      isPlaceholder(v) { return !v || v.includes('여기에_복사한'); },
+      getSupabase() {
+        const saved = JSON.parse(localStorage.getItem('yeoju_sb_cfg') || '{}');
+        const url = (!this.isPlaceholder(CONFIG.SUPABASE_URL) ? CONFIG.SUPABASE_URL : (saved.url || '')).trim();
+        const key = (!this.isPlaceholder(CONFIG.SUPABASE_ANON_KEY) ? CONFIG.SUPABASE_ANON_KEY : (saved.key || '')).trim();
+        if (!url || !key || !window.supabase) return null;
+        if (!this.sb) this.sb = window.supabase.createClient(url, key);
+        return this.sb;
+      },
+      unlock() {
+        const savedPin = localStorage.getItem('yeoju_admin_pin') || '1234';
+        if (document.getElementById('admin-pin-input').value.trim() !== savedPin) return toast('비밀번호가 일치하지 않습니다.');
+        document.getElementById('pin-view').style.display = 'none';
+        document.getElementById('admin-main').style.display = 'flex';
+        this.boot();
+      },
+      toggleSetup() { const p = document.getElementById('setup-panel'); p.style.display = p.style.display === 'none' ? 'block' : 'none'; },
+      saveSetup() {
+        const url = document.getElementById('sb-url').value.trim(), key = document.getElementById('sb-key').value.trim(), newPin = document.getElementById('new-pin').value.trim();
+        if (url && key) { localStorage.setItem('yeoju_sb_cfg', JSON.stringify({ url, key })); this.sb = null; }
+        if (newPin) { localStorage.setItem('yeoju_admin_pin', newPin); document.getElementById('new-pin').value = ''; }
+        toast('설정이 저장되었습니다.');
+        this.connectRealtime();
+      },
+      async boot() {
+        const saved = JSON.parse(localStorage.getItem('yeoju_sb_cfg') || '{}');
+        document.getElementById('sb-url').value = !this.isPlaceholder(CONFIG.SUPABASE_URL) ? CONFIG.SUPABASE_URL : (saved.url || '');
+        document.getElementById('sb-key').value = !this.isPlaceholder(CONFIG.SUPABASE_ANON_KEY) ? CONFIG.SUPABASE_ANON_KEY : (saved.key || '');
+        ['preset-origin', 'preset-dest'].forEach(id => { document.getElementById(id).innerHTML = '<option value="">거점선택</option>' + YEOJU_PRESETS.map(p => `<option value="${p.id}">${p.name}</option>`).join(''); });
+        ADMIN_MAP.loadKakaoSDK();
+        await DISPATCH_FORM.calcRoute();
+        await this.connectRealtime();
+      },
+      async connectRealtime() {
+        const sb = this.getSupabase(), st = document.getElementById('conn-status');
+        if (!sb) { st.textContent = '⚠️ Publishable Key 입력 필요'; document.getElementById('setup-panel').style.display = 'block'; return; }
+        st.textContent = '🟢 실시간 관제 연결됨';
+        await DRIVER_MGR.loadDrivers();
+        await DISPATCH_MGR.loadAll();
+        if (!this._subscribed) {
+          this._subscribed = true;
+          sb.channel('admin-live')
+            .on('postgres_changes', { event: '*', schema: 'public', table: 'yeoju_drivers' }, () => DRIVER_MGR.loadDrivers())
+            .on('postgres_changes', { event: '*', schema: 'public', table: 'yeoju_dispatches' }, () => DISPATCH_MGR.loadAll())
+            .subscribe();
+        }
+      }
+    };
+
+    const ADMIN_MAP = {
+      mode: 'leaflet', kMap: null, lMap: null, routeOverlays: [], driverOverlays: [],
+      loadKakaoSDK() {
+        const s = document.createElement('script');
+        s.src = `https://dapi.kakao.com/v2/maps/sdk.js?appkey=${CONFIG.KAKAO_JS_KEY}&libraries=services&autoload=false`;
+        s.onload = () => {
+          if (window.kakao?.maps) {
+            window.kakao.maps.load(() => {
+              document.getElementById('leaflet-map').style.display = 'none';
+              document.getElementById('kakao-map').style.display = 'block';
+              this.mode = 'kakao';
+              this.kMap = new window.kakao.maps.Map(document.getElementById('kakao-map'), { center: new window.kakao.maps.LatLng(CONFIG.YEOJU_CENTER.lat, CONFIG.YEOJU_CENTER.lng), level: 7 });
+              DISPATCH_FORM.calcRoute();
+              DRIVER_MGR.renderMapDrivers();
+            });
+          } else this.initLeaflet();
+        };
+        s.onerror = () => this.initLeaflet();
+        document.head.appendChild(s);
+      },
+      initLeaflet() { if (this.lMap) return; this.lMap = L.map('leaflet-map').setView([CONFIG.YEOJU_CENTER.lat, CONFIG.YEOJU_CENTER.lng], 12); L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(this.lMap); },
+      drawRoute(o, wps, d, path) {
+        const pts = [o, ...wps.filter(w => typeof w.lat === 'number'), d];
+        if (this.mode === 'kakao' && this.kMap) {
+          this.routeOverlays.forEach(x => x.setMap(null)); this.routeOverlays = [];
+          const bounds = new window.kakao.maps.LatLngBounds();
+          pts.forEach((p, idx) => {
+            const pos = new window.kakao.maps.LatLng(p.lat, p.lng);
+            const label = idx === 0 ? '출발' : (idx === pts.length - 1 ? '도착' : `경유${idx}`);
+            const bg = idx === 0 ? '#1d4ed8' : (idx === pts.length - 1 ? '#dc2626' : '#d97706');
+            this.routeOverlays.push(new window.kakao.maps.CustomOverlay({ map: this.kMap, position: pos, yAnchor: 1.3, content: `<div style="background:${bg};color:#fff;font-size:11px;font-weight:800;padding:3px 7px;border-radius:999px;border:1.5px solid #fff;box-shadow:0 2px 5px rgba(0,0,0,0.3);">${label}</div>` }));
+            bounds.extend(pos);
+          });
+          const line = new window.kakao.maps.Polyline({ path: (path?.length ? path : pts.map(p => [p.lat, p.lng])).map(c => new window.kakao.maps.LatLng(c[0], c[1])), strokeWeight: 5, strokeColor: '#1d4ed8', strokeOpacity: 0.85 });
+          line.setMap(this.kMap); this.routeOverlays.push(line); this.kMap.setBounds(bounds);
+        } else if (this.lMap) {
+          this.routeOverlays.forEach(x => this.lMap.removeLayer(x)); this.routeOverlays = [];
+          pts.forEach(p => this.routeOverlays.push(L.marker([p.lat, p.lng]).addTo(this.lMap)));
+          const line = L.polyline(path?.length ? path : pts.map(p => [p.lat, p.lng]), { color: '#1d4ed8', weight: 5 }).addTo(this.lMap);
+          this.routeOverlays.push(line); this.lMap.fitBounds(line.getBounds(), { padding: [30, 30] });
+        }
+      },
+      drawDrivers(drivers) {
+        if (this.mode === 'kakao' && this.kMap) {
+          this.driverOverlays.forEach(x => x.setMap(null)); this.driverOverlays = [];
+          drivers.forEach(d => {
+            if (typeof d.lat !== 'number' || typeof d.lng !== 'number') return;
+            const isOnline = d.last_seen && (Date.now() - new Date(d.last_seen).getTime() < 180000);
+            this.driverOverlays.push(new window.kakao.maps.CustomOverlay({ map: this.kMap, position: new window.kakao.maps.LatLng(d.lat, d.lng), yAnchor: 1.2, content: `<div onclick="DRIVER_MGR.selectForForce('${esc(d.code)}')" style="cursor:pointer;background:${isOnline ? '#059669' : '#64748b'};color:#fff;font-size:11px;font-weight:800;padding:4px 8px;border-radius:8px;border:2px solid #fff;box-shadow:0 2px 6px rgba(0,0,0,0.35);white-space:nowrap;">🚕 ${esc(d.name)}(${esc(d.code)})</div>` }));
+          });
+        } else if (this.lMap) {
+          this.driverOverlays.forEach(x => this.lMap.removeLayer(x)); this.driverOverlays = [];
+          drivers.forEach(d => {
+            if (typeof d.lat !== 'number' || typeof d.lng !== 'number') return;
+            const icon = L.divIcon({ html: `<div style="background:#059669;color:#fff;font-size:11px;font-weight:800;padding:3px 7px;border-radius:6px;white-space:nowrap;">🚕 ${esc(d.name)}</div>`, className: '' });
+            this.driverOverlays.push(L.marker([d.lat, d.lng], { icon }).addTo(this.lMap));
+          });
+        }
+      }
+    };
+
+    const DISPATCH_FORM = {
+      origin: { ...YEOJU_PRESETS[0] }, waypoints: [], dest: { ...YEOJU_PRESETS[1] }, route: null, timers: {}, suggestCache: {},
+      selectPreset(t, id) { const f = YEOJU_PRESETS.find(p => p.id === id); if (f) { this[t] = { ...f }; document.getElementById(`f-${t}`).value = f.name; this.calcRoute(); } },
+      addWp() { if (this.waypoints.length >= 5) return toast('경유지는 최대 5곳까지 가능합니다.'); this.waypoints.push({ name: '', lat: null, lng: null }); this.renderWps(); },
+      removeWp(i) { this.waypoints.splice(i, 1); this.renderWps(); this.calcRoute(); },
+      renderWps() {
+        document.getElementById('f-waypoints').innerHTML = this.waypoints.map((w, i) => `
+          <div class="wp-item"><div class="suggest-wrap"><input type="text" id="f-wp-${i}" value="${esc(w.name)}" placeholder="경유지 ${i+1} 건물명·주소 검색" oninput="DISPATCH_FORM.onSearch('wp-${i}', this.value)" onblur="setTimeout(()=>DISPATCH_FORM.hide('wp-${i}'),200)" /><div id="sug-wp-${i}" class="suggest-list"></div></div>
+          <button type="button" class="btn-danger-outline btn-sm" onclick="DISPATCH_FORM.removeWp(${i})">삭제</button></div>`).join('');
+      },
+      swapPoints() {
+        [this.origin, this.dest] = [this.dest, this.origin]; this.waypoints.reverse();
+        document.getElementById('f-origin').value = this.origin.name; document.getElementById('f-dest').value = this.dest.name;
+        this.renderWps(); this.calcRoute();
+      },
+      onSearch(target, val) {
+        clearTimeout(this.timers[target]);
+        const q = val.trim(); if (!q) return this.hide(target);
+        this.timers[target] = setTimeout(async () => {
+          const box = document.getElementById(`sug-${target}`); if (!box) return;
+          const res = [];
+          try {
+            const headers = { Authorization: `KakaoAK ${CONFIG.KAKAO_REST_KEY}` };
+            const [kr, ar] = await Promise.allSettled([
+              fetch(`https://dapi.kakao.com/v2/local/search/keyword.json?query=${encodeURIComponent(q)}&x=127.637518&y=37.298344&size=8`, { headers }),
+              fetch(`https://dapi.kakao.com/v2/local/search/address.json?query=${encodeURIComponent(q)}&size=4`, { headers })
+            ]);
+            if (kr.status === 'fulfilled' && kr.value.ok) { (await kr.value.json()).documents?.forEach(d => res.push({ name: d.place_name, sub: d.road_address_name || d.address_name, lat: parseFloat(d.y), lng: parseFloat(d.x) })); }
+            if (ar.status === 'fulfilled' && ar.value.ok) { (await ar.value.json()).documents?.forEach(d => res.push({ name: d.road_address?.address_name || d.address?.address_name, sub: d.address?.address_name || '', lat: parseFloat(d.y), lng: parseFloat(d.x) })); }
+          } catch {}
+          this.suggestCache[target] = res;
+          box.innerHTML = res.length ? res.map((it, idx) => `<div class="suggest-row" onmousedown="event.preventDefault(); DISPATCH_FORM.pickSuggest('${target}', ${idx})"><strong>${esc(it.name)}</strong><div style="font-size:0.74rem;color:var(--muted);">${esc(it.sub)}</div></div>`).join('') : '<div class="suggest-row" style="color:var(--muted);">검색 결과 없음</div>';
+          box.classList.add('open');
+        }, 200);
+      },
+      pickSuggest(target, idx) {
+        const it = (this.suggestCache[target] || [])[idx]; if (!it) return;
+        this.hide(target);
+        if (target === 'origin' || target === 'dest') { this[target] = it; document.getElementById(`f-${target}`).value = it.name; }
+        else if (target.startsWith('wp-')) { this.waypoints[Number(target.split('-')[1])] = it; this.renderWps(); }
+        this.calcRoute();
+      },
+      hide(target) { const b = document.getElementById(`sug-${target}`); if (b) b.classList.remove('open'); },
+      formatPhone(el) {
+        const d = el.value.replace(/\D/g, '').slice(0, 11);
+        el.value = d.length > 7 ? `${d.slice(0,3)}-${d.slice(3,7)}-${d.slice(7)}` : (d.length > 3 ? `${d.slice(0,3)}-${d.slice(3)}` : d);
+      },
+      async pastePhone() {
+        try {
+          const m = (await navigator.clipboard.readText()).match(/01[016789][-.\s]?\d{3,4}[-.\s]?\d{4}/);
+          if (m) { const el = document.getElementById('f-phone'); el.value = m[0]; this.formatPhone(el); toast('번호 입력됨'); }
+          else toast('클립보드에 휴대폰 번호가 없습니다.');
+        } catch { toast('붙여넣기 권한을 허용해 주세요.'); }
+      },
+      async calcRoute() {
+        const wps = this.waypoints.filter(w => typeof w.lat === 'number');
+        try {
+          let url = `https://apis-navi.kakaomobility.com/v1/directions?origin=${this.origin.lng},${this.origin.lat}&destination=${this.dest.lng},${this.dest.lat}&priority=RECOMMEND`;
+          if (wps.length) url += `&waypoints=${encodeURIComponent(wps.map(w => `${w.lng},${w.lat}`).join('|'))}`;
+          const rt = (await (await fetch(url, { headers: { Authorization: `KakaoAK ${CONFIG.KAKAO_REST_KEY}` } })).json()).routes?.[0];
+          if (rt && rt.result_code === 0) {
+            const path = [];
+            (rt.sections || []).forEach(s => (s.roads || []).forEach(rd => { for (let i = 0; i < (rd.vertexes || []).length; i += 2) path.push([rd.vertexes[i+1], rd.vertexes[i]]); }));
+            this.route = { dist: rt.summary.distance, dur: rt.summary.duration, toll: rt.summary.fare?.toll || 0, path };
+            document.getElementById('cfg-manual-toll').value = this.route.toll;
+            ADMIN_MAP.drawRoute(this.origin, wps, this.dest, path);
+            this.renderFare();
+            return;
+          }
+        } catch {}
+        const pts = [this.origin, ...wps, this.dest];
+        const oRt = (await (await fetch(`https://router.project-osrm.org/route/v1/driving/${pts.map(p=>`${p.lng},${p.lat}`).join(';')}?overview=full&geometries=geojson`)).json()).routes?.[0];
+        if (oRt) {
+          this.route = { dist: Math.round(oRt.distance), dur: Math.round(oRt.duration), toll: 0, path: oRt.geometry.coordinates.map(c=>[c[1],c[0]]) };
+          ADMIN_MAP.drawRoute(this.origin, wps, this.dest, this.route.path);
+          this.renderFare();
+        }
+      },
+      onManualToll(v) { if (this.route) { this.route.toll = Math.max(0, Number(v) || 0); this.renderFare(); } },
+      getFare() {
+        if (!this.route) return { km: 0, base: 4000, excess: 0, rawToll: 0, toll: 0, total: 4000 };
+        const base = Number(document.getElementById('cfg-base-fare').value) || 0, baseDist = Number(document.getElementById('cfg-base-dist').value) || 0, rate = Number(document.getElementById('cfg-rate-km').value) || 0;
+        const km = this.route.dist / 1000, excess = Math.floor(Math.max(0, km - baseDist) * rate / 1000) * 1000, rawToll = this.route.toll || 0, toll = rawToll > 0 ? Math.ceil(rawToll / 1000) * 1000 : 0;
+        return { km, base, excess, rawToll, toll, total: base + excess + toll };
+      },
+      renderFare() {
+        const f = this.getFare();
+        document.getElementById('sum-dist').textContent = `${f.km.toFixed(2)} km`;
+        document.getElementById('sum-excess').textContent = `${f.excess.toLocaleString()}원`;
+        document.getElementById('sum-toll').textContent = `${f.toll.toLocaleString()}원`;
+        document.getElementById('sum-total').textContent = `${f.total.toLocaleString()}원`;
+      },
+      async submit(type) {
+        const sb = ADMIN.getSupabase();
+        if (!sb) return toast('먼저 Supabase Publishable Key 설정을 완료해 주세요.');
+        if (!this.route) await this.calcRoute();
+        let driverCode = null, driverName = null, status = 'waiting';
+        if (type === 'forced') {
+          driverCode = document.getElementById('force-driver-select').value;
+          if (!driverCode) return toast('강제배차할 기사를 먼저 선택하세요.');
+          const drv = DRIVER_MGR.drivers.find(d => d.code === driverCode);
+          driverName = drv ? drv.name : driverCode;
+          status = 'accepted';
+        }
+        const f = this.getFare(), wps = this.waypoints.filter(w => typeof w.lat === 'number').map(w => ({ name: w.name, lat: w.lat, lng: w.lng }));
+        const { error } = await sb.from('yeoju_dispatches').insert([{
+          dispatch_type: type, status, driver_code: driverCode, driver_name: driverName,
+          customer_phone: document.getElementById('f-phone').value.trim(),
+          origin_name: this.origin.name, origin_lat: this.origin.lat, origin_lng: this.origin.lng, waypoints: wps,
+          dest_name: this.dest.name, dest_lat: this.dest.lat, dest_lng: this.dest.lng,
+          distance_meters: this.route?.dist || 0, duration_seconds: this.route?.dur || 0,
+          raw_toll: f.rawToll, applied_toll: f.toll, base_fare: f.base, excess_fare: f.excess, total_fare: f.total,
+          note: document.getElementById('f-note').value.trim()
+        }]);
+        if (error) return toast(`배차 등록 오류: ${error.message}`);
+        toast(type === 'forced' ? `🚨 [${driverName}] 기사에게 강제배차를 발송했습니다.` : '📢 일반 배차가 대기열에 등록되었습니다.');
+        document.getElementById('f-phone').value = '';
+        document.getElementById('f-note').value = '';
+        await DISPATCH_MGR.loadAll();
+      }
+    };
+
+    const DRIVER_MGR = {
+      drivers: [],
+      async loadDrivers() {
+        const sb = ADMIN.getSupabase(); if (!sb) return;
+        const { data } = await sb.from('yeoju_drivers').select('*').order('code', { ascending: true });
+        this.drivers = data || [];
+        this.render(); this.renderMapDrivers();
+      },
+      render() {
+        const sel = document.getElementById('force-driver-select'), prev = sel.value;
+        sel.innerHTML = '<option value="">강제배차 기사 선택...</option>' + this.drivers.filter(d => d.active).map(d => `<option value="${esc(d.code)}">${esc(d.name)} (${esc(d.code)})</option>`).join('');
+        if (prev) sel.value = prev;
+        document.getElementById('driver-chips').innerHTML = this.drivers.filter(d => d.active).map(d => {
+          const isOnline = d.last_seen && (Date.now() - new Date(d.last_seen).getTime() < 180000);
+          const seenTxt = d.last_seen ? new Date(d.last_seen).toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit' }) : '미접속';
+          return `<div class="d-chip ${isOnline ? 'online' : ''}" onclick="DRIVER_MGR.selectForForce('${esc(d.code)}')"><span class="dot"></span><strong>${esc(d.name)}</strong>(${esc(d.code)}) · ${seenTxt}</div>`;
+        }).join('');
+        document.getElementById('driver-table-body').innerHTML = this.drivers.map(d => {
+          const seen = d.last_seen ? new Date(d.last_seen).toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit' }) : '-';
+          return `<tr><td><strong>${esc(d.code)}</strong></td><td>${esc(d.name)}</td><td>${d.active ? '<span style="color:var(--success);font-weight:800;">사용중</span>' : '<span style="color:var(--danger);">정지</span>'}</td><td>${seen}</td><td><div style="display:flex;gap:4px;"><button type="button" class="btn-outline btn-sm" onclick="DRIVER_MGR.toggleActive('${esc(d.code)}', ${d.active})">${d.active ? '정지' : '해제'}</button><button type="button" class="btn-danger-outline btn-sm" onclick="DRIVER_MGR.deleteDriver('${esc(d.code)}')">삭제</button></div></td></tr>`;
+        }).join('');
+      },
+      renderMapDrivers() { ADMIN_MAP.drawDrivers(this.drivers.filter(d => d.active)); },
+      selectForForce(code) { document.getElementById('force-driver-select').value = code; toast(`강제배차 대상 선택됨: 코드 ${code}`); },
+      async addDriver() {
+        const sb = ADMIN.getSupabase(), code = document.getElementById('new-d-code').value.trim(), name = document.getElementById('new-d-name').value.trim();
+        if (!code || !name) return toast('고유 코드와 기사명을 입력하세요.');
+        const { error } = await sb.from('yeoju_drivers').upsert([{ code, name, active: true }]);
+        if (error) return toast(`등록 실패: ${error.message}`);
+        document.getElementById('new-d-code').value = ''; document.getElementById('new-d-name').value = '';
+        toast(`기사 [${name} (${code})] 등록 완료`);
+        await this.loadDrivers();
+      },
+      async toggleActive(code, cur) { await ADMIN.getSupabase().from('yeoju_drivers').update({ active: !cur }).eq('code', code); await this.loadDrivers(); },
+      async deleteDriver(code) { if (!confirm(`기사 코드 [${code}]를 삭제하시겠습니까?`)) return; await ADMIN.getSupabase().from('yeoju_drivers').delete().eq('code', code); await this.loadDrivers(); }
+    };
+
+    const DISPATCH_MGR = {
+      rows: [], filter: 'all',
+      async loadAll() {
+        const sb = ADMIN.getSupabase(); if (!sb) return;
+        const { data } = await sb.from('yeoju_dispatches').select('*').order('created_at', { ascending: false }).limit(200);
+        this.rows = data || [];
+        this.render();
+      },
+      setFilter(f) { this.filter = f; ['all', 'waiting', 'accepted', 'completed'].forEach(k => document.getElementById(`flt-${k}`).classList.toggle('active', k === f)); this.render(); },
+      render() {
+        const list = this.filter === 'all' ? this.rows : this.rows.filter(r => r.status === this.filter);
+        document.getElementById('disp-count').textContent = list.length;
+        const stLabel = { waiting: ['대기중', 'st-waiting'], accepted: ['진행중', 'st-accepted'], completed: ['완료', 'st-completed'], cancelled: ['취소됨', 'st-cancelled'] };
+        document.getElementById('dispatch-table-body').innerHTML = list.map(r => {
+          const [txt, cls] = stLabel[r.status] || [r.status, ''], wps = Array.isArray(r.waypoints) ? r.waypoints : [];
+          const routeStr = `${r.origin_name}${wps.length ? ` → [경유:${wps.map(w=>w.name).join(',')}]` : ''} → ${r.dest_name}`;
+          const time = new Date(r.created_at).toLocaleString('ko-KR', { month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' });
+          const canCancel = r.status === 'waiting' || r.status === 'accepted';
+          return `<tr><td><strong>#${r.id}</strong><br/><span style="font-size:0.74rem;color:var(--muted);">${time}</span></td><td>${r.dispatch_type === 'forced' ? '<span class="tag-forced">강제</span>' : '일반'}</td><td><span class="badge ${cls}">${txt}</span></td><td>${r.driver_name ? `<strong>${esc(r.driver_name)}</strong>(${esc(r.driver_code)})` : '-'}</td><td>${esc(r.customer_phone || '-')}</td><td style="max-width:250px;word-break:keep-all;">${esc(routeStr)}</td><td style="white-space:nowrap;">${(r.distance_meters/1000).toFixed(2)}km<br/><strong style="color:var(--primary);">${(r.total_fare||0).toLocaleString()}원</strong></td><td style="font-size:0.76rem;max-width:160px;">${r.note ? `<div>메모: ${esc(r.note)}</div>` : ''}${r.forfeit_log ? `<div style="color:#b45309;">포기: ${esc(r.forfeit_log)}</div>` : ''}</td><td>${canCancel ? `<button type="button" class="btn-danger-outline btn-sm" onclick="DISPATCH_MGR.cancelDispatch(${r.id})">배차취소</button>` : '-'}</td></tr>`;
+        }).join('');
+      },
+      async cancelDispatch(id) {
+        if (!confirm(`#${id} 배차를 강제 취소하시겠습니까?`)) return;
+        await ADMIN.getSupabase().from('yeoju_dispatches').update({ status: 'cancelled', updated_at: new Date().toISOString() }).eq('id', id);
+        toast(`#${id} 배차가 취소되었습니다.`);
+        await this.loadAll();
+      },
+      exportCSV() {
+        if (!this.rows.length) return toast('내보낼 데이터가 없습니다.');
+        const h = ['번호', '접수일시', '구분', '상태', '기사코드', '기사명', '손님번호', '출발지', '도착지', '거리(km)', '통행료', '최종요금', '메모', '포기이력'];
+        const csv = [h.join(','), ...this.rows.map(r => [r.id, `"${new Date(r.created_at).toLocaleString('ko-KR')}"`, r.dispatch_type, r.status, `"${r.driver_code||''}"`, `"${r.driver_name||''}"`, `"${r.customer_phone||''}"`, `"${r.origin_name}"`, `"${r.dest_name}"`, (r.distance_meters/1000).toFixed(2), r.applied_toll, r.total_fare, `"${(r.note||'').replace(/"/g,'""')}"`, `"${(r.forfeit_log||'').replace(/"/g,'""')}"`].join(','))];
+        const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob(['\uFEFF' + csv.join('\n')], { type: 'text/csv;charset=utf-8;' })); a.download = `여주시_배차관제기록_${new Date().toISOString().slice(0,10)}.csv`; a.click();
+      }
+    };
+
+    window.addEventListener('DOMContentLoaded', () => document.getElementById('admin-pin-input').focus());
+  </script>
+</body>
+</html>
