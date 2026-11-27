@@ -7,6 +7,7 @@
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
   <meta name="apple-mobile-web-app-title" content="여주 배차·요금" />
   <meta name="theme-color" content="#1e3a8a" />
+  <link rel="manifest" href="./manifest.json" />
   <title>여주시 기사 배차 & 길찾기 요금표</title>
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin="" />
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin=""></script>
@@ -176,6 +177,7 @@
       </div>
       <div class="header-right" id="header-controls" style="display:none;">
         <span class="pill live" id="driver-badge">기사 로그인됨</span>
+        <button type="button" class="btn-outline btn-xs" id="btn-push" onclick="APP.enablePush()">🔔 푸시알림</button>
         <button type="button" class="btn-kakao btn-xs" id="btn-wakelock" onclick="APP.toggleWakeLock()">☀️ 화면유지</button>
         <button type="button" class="btn-outline btn-xs" onclick="APP.logout()">로그아웃</button>
       </div>
@@ -358,6 +360,7 @@
       KAKAO_REST_KEY: '8753d03a528d0664dfdaaca2a11ce75e',
       SUPABASE_URL: 'https://uoayezajeeadhmofgfrd.supabase.co',
       SUPABASE_ANON_KEY: 'sb_publishable_kTviyUA-HeO4-_Us2--PWA_8yhpZ2XP',
+      VAPID_PUBLIC_KEY: 'BBJkaysnrsRehMUI0Lv0B3lno4xvHI0-DtWDVXkNUqjyDwRs-JsrU6wVnAbROl4M9thlH8s7UJHoaT0UZvSAYU',
       YEOJU_CENTER: { lat: 37.298344, lng: 127.637518 }
     };
 
@@ -395,6 +398,15 @@
     function safeStorageGet(k, fallback = '') { try { return localStorage.getItem(k) ?? fallback; } catch { return fallback; } }
     function safeStorageSet(k, v) { try { localStorage.setItem(k, v); } catch {} }
     function safeStorageRemove(k) { try { localStorage.removeItem(k); } catch {} }
+
+    function urlBase64ToUint8Array(base64String) {
+      const padding = '='.repeat((4 - (base64String.length % 4)) % 4);
+      const base64 = (base64String + padding).replace(/-/g, '+').replace(/_/g, '/');
+      const rawData = atob(base64);
+      const outputArray = new Uint8Array(rawData.length);
+      for (let i = 0; i < rawData.length; ++i) outputArray[i] = rawData.charCodeAt(i);
+      return outputArray;
+    }
 
     function unlockAudio() {
       try {
@@ -443,7 +455,7 @@
 
     const APP = {
       sb: null, driver: null, currentLat: null, currentLng: null,
-      gpsTimer: null, wakeLock: null, wantWakeLock: false, calcBooted: false, lifecycleBound: false,
+      gpsTimer: null, wakeLock: null, wantWakeLock: false, calcBooted: false, lifecycleBound: false, swReg: null,
 
       getSupabase() {
         let saved = {};
@@ -453,6 +465,68 @@
         if (!url || !key || !window.supabase) return null;
         if (!this.sb) this.sb = window.supabase.createClient(url, key);
         return this.sb;
+      },
+
+      async registerServiceWorker() {
+        if (!('serviceWorker' in navigator)) return null;
+        try {
+          this.swReg = await navigator.serviceWorker.register('./sw.js');
+          return this.swReg;
+        } catch (e) {
+          console.error('SW register failed:', e);
+          return null;
+        }
+      },
+
+      async syncPushButtonState() {
+        const btn = document.getElementById('btn-push');
+        if (!btn) return;
+        if (!('PushManager' in window) || !('Notification' in window)) {
+          btn.textContent = '🔕 푸시미지원';
+          return;
+        }
+        if (Notification.permission === 'granted') {
+          try {
+            const reg = this.swReg || await navigator.serviceWorker.ready;
+            const sub = await reg.pushManager.getSubscription();
+            btn.textContent = sub ? '🔔 푸시ON' : '🔔 푸시등록';
+            if (sub && this.driver) {
+              const sb = this.getSupabase();
+              if (sb) await sb.from('yeoju_drivers').update({ push_subscription: sub.toJSON() }).eq('code', this.driver.code);
+            }
+          } catch {}
+        } else {
+          btn.textContent = '🔔 푸시알림';
+        }
+      },
+
+      async enablePush() {
+        if (!this.driver) return toast('먼저 기사 로그인을 완료하세요.');
+        if (!('PushManager' in window) || !('Notification' in window)) {
+          return toast('아이폰은 Safari에서 [홈 화면에 추가]로 연 뒤 눌러 주세요.');
+        }
+        try {
+          const perm = await Notification.requestPermission();
+          if (perm !== 'granted') {
+            return toast('알림 권한이 거부되었습니다. 기기 설정에서 알림을 허용해 주세요.');
+          }
+          const reg = this.swReg || await this.registerServiceWorker() || await navigator.serviceWorker.ready;
+          let sub = await reg.pushManager.getSubscription();
+          if (!sub) {
+            sub = await reg.pushManager.subscribe({
+              userVisibleOnly: true,
+              applicationServerKey: urlBase64ToUint8Array(CONFIG.VAPID_PUBLIC_KEY)
+            });
+          }
+          const sb = this.getSupabase();
+          if (!sb) return toast('서버 연결을 확인해 주세요.');
+          const { error } = await sb.from('yeoju_drivers').update({ push_subscription: sub.toJSON() }).eq('code', this.driver.code);
+          if (error) return toast(`푸시 저장 오류: ${error.message}`);
+          await this.syncPushButtonState();
+          toast('🔔 백그라운드 푸시 알람이 등록되었습니다!');
+        } catch (err) {
+          toast(`푸시 등록 실패: ${err?.message || '권한을 확인하세요.'}`);
+        }
       },
 
       showLoginError(msg) {
@@ -509,6 +583,7 @@
         DISPATCH.ensureRealtime();
         await DISPATCH.loadAll();
         DISPATCH.tickTimers();
+        await this.syncPushButtonState();
         if (this.wantWakeLock && !this.wakeLock) {
           await this.acquireWakeLock(true);
         }
@@ -516,6 +591,7 @@
 
       init() {
         if (window.Kakao && !window.Kakao.isInitialized()) { try { window.Kakao.init(CONFIG.KAKAO_JS_KEY); } catch {} }
+        this.registerServiceWorker();
         this.syncHeaderOffset();
         window.addEventListener('resize', () => this.syncHeaderOffset());
         this.bindLifecycleEvents();
@@ -610,6 +686,7 @@
           document.getElementById('header-sub').textContent = '실시간 배차 수신 및 GPS 공유 중';
           this.syncHeaderOffset();
           this.startGpsTracking();
+          await this.syncPushButtonState();
 
           if (this.wantWakeLock) {
             await this.acquireWakeLock(true);
