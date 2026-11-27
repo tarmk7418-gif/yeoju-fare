@@ -360,7 +360,7 @@
       KAKAO_REST_KEY: '8753d03a528d0664dfdaaca2a11ce75e',
       SUPABASE_URL: 'https://uoayezajeeadhmofgfrd.supabase.co',
       SUPABASE_ANON_KEY: 'sb_publishable_kTviyUA-HeO4-_Us2--PWA_8yhpZ2XP',
-      VAPID_PUBLIC_KEY: 'BBJkaysnrsRehMUI0Lv0B3lno4xvHI0-DtWDVXkNUqjyDwRs-JsrU6wVnAbROl4M9thlH8s7UJHoaT0UZvSAYU',
+      VAPID_PUBLIC_KEY: 'BBjkaysnrsRehMUI0Lv0B3Ino4xvHi0-DtWDVXkNUqjyDwRs-JsrU6wVnAbROl4M9thIlH8s7UJHoaT0UZvSAYU',
       YEOJU_CENTER: { lat: 37.298344, lng: 127.637518 }
     };
 
@@ -470,7 +470,7 @@
       async registerServiceWorker() {
         if (!('serviceWorker' in navigator)) return null;
         try {
-          this.swReg = await navigator.serviceWorker.register('./sw.js');
+          this.swReg = await navigator.serviceWorker.register('./sw.js', { updateViaCache: 'none' });
           return this.swReg;
         } catch (e) {
           console.error('SW register failed:', e);
@@ -491,8 +491,9 @@
             const sub = await reg.pushManager.getSubscription();
             btn.textContent = sub ? '🔔 푸시ON' : '🔔 푸시등록';
             if (sub && this.driver) {
+              const subJson = sub.toJSON ? sub.toJSON() : JSON.parse(JSON.stringify(sub));
               const sb = this.getSupabase();
-              if (sb) await sb.from('yeoju_drivers').update({ push_subscription: sub.toJSON() }).eq('code', this.driver.code);
+              if (sb) await sb.from('yeoju_drivers').update({ push_subscription: subJson }).eq('code', this.driver.code);
             }
           } catch {}
         } else {
@@ -502,30 +503,50 @@
 
       async enablePush() {
         if (!this.driver) return toast('먼저 기사 로그인을 완료하세요.');
+        const isIOS = /iPhone|iPad|iPod/i.test(navigator.userAgent);
+        const isStandalone = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true;
+        if (isIOS && !isStandalone) {
+          return toast('아이폰은 Safari에서 [홈 화면에 추가]로 만든 아이콘으로 열어야 합니다.');
+        }
         if (!('PushManager' in window) || !('Notification' in window)) {
-          return toast('아이폰은 Safari에서 [홈 화면에 추가]로 연 뒤 눌러 주세요.');
+          return toast('이 브라우저는 푸시를 지원하지 않습니다. 홈 화면 앱으로 열어 주세요.');
         }
         try {
           const perm = await Notification.requestPermission();
           if (perm !== 'granted') {
-            return toast('알림 권한이 거부되었습니다. 기기 설정에서 알림을 허용해 주세요.');
+            return toast('알림 권한이 거부되었습니다. 휴대폰 설정에서 알림을 허용해 주세요.');
           }
-          const reg = this.swReg || await this.registerServiceWorker() || await navigator.serviceWorker.ready;
+
+          const cleanKey = (CONFIG.VAPID_PUBLIC_KEY || '').trim().replace(/^["']|["']$/g, '');
+          const keyBytes = urlBase64ToUint8Array(cleanKey);
+          if (keyBytes.length !== 65) {
+            return toast(`공개키 길이 오류(${cleanKey.length}자): 앱을 새로고침 후 다시 시도해 주세요.`);
+          }
+
+          await this.registerServiceWorker();
+          const reg = await Promise.race([
+            navigator.serviceWorker.ready,
+            new Promise((_, rej) => setTimeout(() => rej(new Error('sw.js 준비 지연 - 앱을 닫고 다시 열어 주세요.')), 7000))
+          ]);
+
           let sub = await reg.pushManager.getSubscription();
-          if (!sub) {
-            sub = await reg.pushManager.subscribe({
-              userVisibleOnly: true,
-              applicationServerKey: urlBase64ToUint8Array(CONFIG.VAPID_PUBLIC_KEY)
-            });
+          if (sub) {
+            try { await sub.unsubscribe(); } catch {}
           }
+          sub = await reg.pushManager.subscribe({
+            userVisibleOnly: true,
+            applicationServerKey: keyBytes
+          });
+
+          const subJson = sub.toJSON ? sub.toJSON() : JSON.parse(JSON.stringify(sub));
           const sb = this.getSupabase();
           if (!sb) return toast('서버 연결을 확인해 주세요.');
-          const { error } = await sb.from('yeoju_drivers').update({ push_subscription: sub.toJSON() }).eq('code', this.driver.code);
+          const { error } = await sb.from('yeoju_drivers').update({ push_subscription: subJson }).eq('code', this.driver.code);
           if (error) return toast(`푸시 저장 오류: ${error.message}`);
           await this.syncPushButtonState();
           toast('🔔 백그라운드 푸시 알람이 등록되었습니다!');
         } catch (err) {
-          toast(`푸시 등록 실패: ${err?.message || '권한을 확인하세요.'}`);
+          toast(`푸시 등록 실패: ${err?.message || '권한 및 홈 화면 설치 상태를 확인하세요.'}`);
         }
       },
 
