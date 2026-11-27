@@ -8,10 +8,10 @@
   <meta name="apple-mobile-web-app-title" content="여주 배차·요금" />
   <meta name="theme-color" content="#1e3a8a" />
   <title>여주시 기사 배차 & 길찾기 요금표</title>
-  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin="" />
-  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin=""></script>
-  <script src="https://t1.kakaocdn.net/kakao_js_sdk/2.7.4/kakao.min.js" crossorigin="anonymous"></script>
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <link rel="stylesheet" href="[https://unpkg.com/leaflet@1.9.4/dist/leaflet.css](https://unpkg.com/leaflet@1.9.4/dist/leaflet.css)" crossorigin="" />
+  <script src="[https://unpkg.com/leaflet@1.9.4/dist/leaflet.js](https://unpkg.com/leaflet@1.9.4/dist/leaflet.js)" crossorigin=""></script>
+  <script src="[https://t1.kakaocdn.net/kakao_js_sdk/2.7.4/kakao.min.js](https://t1.kakaocdn.net/kakao_js_sdk/2.7.4/kakao.min.js)" crossorigin="anonymous"></script>
+  <script src="[https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2](https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2)"></script>
   <style>
     :root {
       --primary: #1d4ed8; --primary-dark: #1e3a8a; --primary-light: #eff6ff;
@@ -356,7 +356,7 @@
     const CONFIG = {
       KAKAO_JS_KEY: '348aec403735e7af2a661c30ce11e8e5',
       KAKAO_REST_KEY: '8753d03a528d0664dfdaaca2a11ce75e',
-      SUPABASE_URL: 'https://uoayezajeeadhmofgfrd.supabase.co',
+      SUPABASE_URL: '[https://uoayezajeeadhmofgfrd.supabase.co](https://uoayezajeeadhmofgfrd.supabase.co)',
       SUPABASE_ANON_KEY: 'sb_publishable_kTviyUA-HeO4-_Us2--PWA_8yhpZ2XP',
       YEOJU_CENTER: { lat: 37.298344, lng: 127.637518 }
     };
@@ -554,6 +554,10 @@
             const sb = this.getSupabase();
             if (!sb || !this.driver) return;
             await sb.from('yeoju_drivers').update({ lat: this.currentLat, lng: this.currentLng, last_seen: new Date().toISOString() }).eq('code', this.driver.code);
+            if (DISPATCH.rows.some(r => !r.deleted_at && r.status === 'accepted' && r.driver_code === this.driver.code)) {
+              await DISPATCH.prefetchActiveDurations();
+              DISPATCH.tickTimers();
+            }
           }, () => {}, { enableHighAccuracy: true, timeout: 8000 });
         };
         sendLoc();
@@ -578,7 +582,7 @@
     };
 
     const DISPATCH = {
-      rows: [], channel: null, clockTimer: null, roadTimeCache: new Map(),
+      rows: [], channel: null, clockTimer: null, tripDurationCache: new Map(), originEtaCache: new Map(),
 
       async init() {
         await this.loadAll();
@@ -617,16 +621,19 @@
         const activeRows = this.rows.filter(r => !r.deleted_at && (r.status === 'accepted' || r.status === 'picked_up') && r.driver_code === APP.driver.code);
         for (const r of activeRows) {
           if (r.status === 'picked_up') {
-            if (r.duration_seconds > 0) this.roadTimeCache.set(`trip-${r.id}`, r.duration_seconds);
-          } else {
-            const startLat = APP.currentLat ?? r.origin_lat;
-            const startLng = APP.currentLng ?? r.origin_lng;
-            if (typeof startLat === 'number' && typeof r.origin_lat === 'number') {
-              const key = `to-origin-${r.id}-${startLat.toFixed(3)}-${startLng.toFixed(3)}`;
-              if (!this.roadTimeCache.has(key)) {
-                const dur = await this.fetchDriveSeconds(startLng, startLat, r.origin_lng, r.origin_lat, []);
-                this.roadTimeCache.set(key, dur);
+            if (!this.tripDurationCache.has(r.id)) {
+              if (r.duration_seconds > 0) this.tripDurationCache.set(r.id, r.duration_seconds);
+              else if (typeof r.origin_lat === 'number' && typeof r.dest_lat === 'number') {
+                const dur = await this.fetchDriveSeconds(r.origin_lng, r.origin_lat, r.dest_lng, r.dest_lat, r.waypoints || []);
+                this.tripDurationCache.set(r.id, dur);
               }
+            }
+          } else if (typeof APP.currentLat === 'number' && typeof APP.currentLng === 'number' && typeof r.origin_lat === 'number') {
+            const locKey = `${APP.currentLat.toFixed(3)},${APP.currentLng.toFixed(3)}`;
+            const prev = this.originEtaCache.get(r.id);
+            if (!prev || prev.locKey !== locKey) {
+              const dur = await this.fetchDriveSeconds(APP.currentLng, APP.currentLat, r.origin_lng, r.origin_lat, []);
+              this.originEtaCache.set(r.id, { sec: dur, measuredAt: Date.now(), locKey });
             }
           }
         }
@@ -636,7 +643,7 @@
         const fallbackDist = haversineMeters(oLat, oLng, dLat, dLng);
         const fallbackSec = Math.max(120, Math.round((fallbackDist * 1.35) / (35000 / 3600)));
         try {
-          let url = `https://apis-navi.kakaomobility.com/v1/directions?origin=${oLng},${oLat}&destination=${dLng},${dLat}&priority=RECOMMEND`;
+          let url = `[https://apis-navi.kakaomobility.com/v1/directions?origin=$](https://apis-navi.kakaomobility.com/v1/directions?origin=$){oLng},${oLat}&destination=${dLng},${dLat}&priority=RECOMMEND`;
           const validWps = (wps || []).filter(w => typeof w.lat === 'number' && typeof w.lng === 'number');
           if (validWps.length) url += `&waypoints=${encodeURIComponent(validWps.map(w => `${w.lng},${w.lat}`).join('|'))}`;
           const rt = (await (await fetch(url, { headers: { Authorization: `KakaoAK ${CONFIG.KAKAO_REST_KEY}` } })).json()).routes?.[0];
@@ -649,27 +656,40 @@
         const limitMin = Math.min(180, Math.max(1, Number(r.eta_limit_minutes) || 15));
         const isPicked = r.status === 'picked_up';
         const anchorStr = isPicked ? (r.picked_up_at || r.updated_at || r.created_at) : (r.accepted_at || r.created_at);
-        const elapsedSec = Math.max(0, Math.floor((nowMs - new Date(anchorStr).getTime()) / 1000));
+        const anchorMs = new Date(anchorStr).getTime();
+        const elapsedSec = Math.max(0, Math.floor((nowMs - anchorMs) / 1000));
         const isOverdue = elapsedSec > limitMin * 60;
 
-        let travelSec = 0, labelType = '탑승 도착 예정', hasExactGps = false;
+        let travelSec = 600;
+        let etaBaseMs = anchorMs;
+        let labelType = '손님 탑승 도착 예정';
+        let hasExactGps = false;
+
         if (isPicked) {
           labelType = '목적지 도착 예정';
-          travelSec = this.roadTimeCache.get(`trip-${r.id}`) || r.duration_seconds || 600;
+          travelSec = this.tripDurationCache.get(r.id) || r.duration_seconds || 600;
+          etaBaseMs = anchorMs;
           hasExactGps = true;
         } else {
           labelType = '손님 탑승 도착 예정';
-          if (typeof APP.currentLat === 'number' && typeof APP.currentLng === 'number' && typeof r.origin_lat === 'number') {
-            const key = `to-origin-${r.id}-${APP.currentLat.toFixed(3)}-${APP.currentLng.toFixed(3)}`;
-            travelSec = this.roadTimeCache.get(key) ?? Math.max(120, Math.round((haversineMeters(APP.currentLat, APP.currentLng, r.origin_lat, r.origin_lng) * 1.35) / (35000 / 3600)));
+          const cached = this.originEtaCache.get(r.id);
+          if (cached) {
+            travelSec = cached.sec;
+            etaBaseMs = cached.measuredAt;
+            hasExactGps = true;
+          } else if (typeof APP.currentLat === 'number' && typeof APP.currentLng === 'number' && typeof r.origin_lat === 'number') {
+            travelSec = Math.max(120, Math.round((haversineMeters(APP.currentLat, APP.currentLng, r.origin_lat, r.origin_lng) * 1.35) / (35000 / 3600)));
+            etaBaseMs = nowMs;
             hasExactGps = true;
           } else {
             travelSec = 600;
+            etaBaseMs = anchorMs;
             hasExactGps = false;
           }
         }
+
         const travelMin = Math.max(1, Math.round(travelSec / 60));
-        const etaClockStr = formatClock(nowMs + travelSec * 1000);
+        const etaClockStr = formatClock(etaBaseMs + travelSec * 1000);
         return { elapsedSec, limitMin, isOverdue, isPicked, labelType, travelMin, etaClockStr, hasExactGps };
       },
 
@@ -684,12 +704,35 @@
             notifiedOverdueIds.add(r.id);
             newlyOverdue = true;
           }
+
+          const cardEl = document.querySelector(`[data-active-card="${r.id}"]`);
+          if (cardEl) cardEl.classList.toggle('overdue', info.isOverdue);
+
+          const boxEl = document.querySelector(`[data-eta-box="${r.id}"]`);
+          if (boxEl) boxEl.classList.toggle('overdue', info.isOverdue);
+
+          const badgeEl = document.querySelector(`[data-overdue-badge="${r.id}"]`);
+          if (badgeEl) badgeEl.style.display = info.isOverdue ? 'inline-block' : 'none';
+
+          const elapsedEl = document.querySelector(`[data-elapsed-val="${r.id}"]`);
+          if (elapsedEl) {
+            elapsedEl.textContent = formatElapsed(info.elapsedSec);
+            elapsedEl.classList.toggle('overdue', info.isOverdue);
+          }
+
+          const etaClockEl = document.querySelector(`[data-eta-clock="${r.id}"]`);
+          if (etaClockEl) etaClockEl.textContent = info.etaClockStr;
+
+          const noteEl = document.querySelector(`[data-travel-note="${r.id}"]`);
+          if (noteEl) {
+            noteEl.innerHTML = info.hasExactGps ? `예상 이동 약 <strong>${info.travelMin}분</strong>` : 'GPS 확인 중 (약 10분 기준)';
+          }
         });
+
         if (newlyOverdue) {
           playOverdueAlert();
           toast('🚨 설정된 도착 제한 시간을 초과했습니다!');
         }
-        this.render();
       },
 
       render() {
@@ -722,17 +765,16 @@
           const info = this.computeScheduleInfo(r, Date.now());
           cardOverdue = info.isOverdue;
           const stageBadge = info.isPicked ? '<span class="tag-stage">🚖 픽업완료 · 목적지 이동중</span>' : '<span class="tag-stage">📍 픽업대기 · 탑승이동중</span>';
-          const overdueBadge = info.isOverdue ? '<span class="tag-overdue">⚠️ 제한시간 초과</span>' : '';
           const gpsNote = info.hasExactGps ? `예상 이동 약 <strong>${info.travelMin}분</strong>` : 'GPS 확인 중 (약 10분 기준)';
           schedHtml = `
-            <div class="eta-box ${info.isPicked ? 'picked' : ''} ${info.isOverdue ? 'overdue' : ''}">
+            <div data-eta-box="${r.id}" class="eta-box ${info.isPicked ? 'picked' : ''} ${info.isOverdue ? 'overdue' : ''}">
               <div>
-                ${stageBadge} ${overdueBadge}
-                <div style="margin-top:4px;">경과: <span class="elapsed-val ${info.isOverdue ? 'overdue' : ''}">${formatElapsed(info.elapsedSec)}</span> / 제한 ${info.limitMin}분</div>
+                ${stageBadge} <span data-overdue-badge="${r.id}" class="tag-overdue" style="display:${info.isOverdue ? 'inline-block' : 'none'};">⚠️ 제한시간 초과</span>
+                <div style="margin-top:4px;">경과: <span data-elapsed-val="${r.id}" class="elapsed-val ${info.isOverdue ? 'overdue' : ''}">${formatElapsed(info.elapsedSec)}</span> / 제한 ${info.limitMin}분</div>
               </div>
               <div style="text-align:right;">
-                <div>${info.labelType}: <strong style="font-size:0.95rem;color:#1d4ed8;">${info.etaClockStr}</strong></div>
-                <div style="font-size:0.75rem;color:var(--muted);">${gpsNote}</div>
+                <div>${info.labelType}: <strong data-eta-clock="${r.id}" style="font-size:0.95rem;color:#1d4ed8;">${info.etaClockStr}</strong></div>
+                <div data-travel-note="${r.id}" style="font-size:0.75rem;color:var(--muted);">${gpsNote}</div>
               </div>
             </div>`;
         }
@@ -752,7 +794,7 @@
               : `<button type="button" class="btn-primary btn-span-full" onclick="DISPATCH.completeCall(${r.id})">✅ 완료 (목적지 도착)</button>`}`;
         }
 
-        return `<div class="dispatch-card ${r.dispatch_type === 'forced' ? 'forced' : ''} ${cardOverdue ? 'overdue' : ''}">
+        return `<div data-active-card="${r.id}" class="dispatch-card ${r.dispatch_type === 'forced' ? 'forced' : ''} ${cardOverdue ? 'overdue' : ''}">
           <div class="dc-top"><div>${typeTag} <span style="font-size:0.76rem;color:var(--muted);margin-left:4px;">#${r.id} · ${timeStr} · 제한 ${limitMin}분</span></div><div class="dc-fare">${(r.total_fare || 0).toLocaleString()}원</div></div>
           <div class="dc-route">🔵 ${esc(r.origin_name)}<br/>🔴 ${esc(r.dest_name)}</div>
           ${wpText ? `<div class="dc-wp">🟡 ${esc(wpText)}</div>` : ''}
@@ -774,6 +816,7 @@
         }).eq('id', id).eq('status', 'waiting').is('deleted_at', null).select();
         if (error || !data || !data.length) { toast('이미 다른 기사가 배차를 잡았거나 취소된 건입니다.'); return this.loadAll(); }
         notifiedOverdueIds.delete(id);
+        this.originEtaCache.delete(id);
         toast('배차를 잡았습니다! [진행중] 탭으로 이동합니다.');
         await this.loadAll();
         APP.switchTab('active');
@@ -792,7 +835,7 @@
         } else if (!tripSec && typeof row.origin_lat === 'number' && typeof row.dest_lat === 'number') {
           tripSec = await this.fetchDriveSeconds(row.origin_lng, row.origin_lat, row.dest_lng, row.dest_lat, wps);
         }
-        this.roadTimeCache.set(`trip-${id}`, tripSec);
+        this.tripDurationCache.set(id, tripSec);
         notifiedOverdueIds.delete(id);
         const { error } = await APP.getSupabase().from('yeoju_dispatches').update({
           status: 'picked_up', picked_up_at: nowIso, updated_at: nowIso
@@ -813,6 +856,8 @@
         await APP.getSupabase().from('yeoju_dispatches').update({
           status: 'waiting', dispatch_type: 'normal', driver_code: null, driver_name: null, accepted_at: null, picked_up_at: null, forfeit_log: nextLog, updated_at: new Date().toISOString()
         }).eq('id', id).eq('driver_code', APP.driver.code).eq('status', 'accepted');
+        this.originEtaCache.delete(id);
+        this.tripDurationCache.delete(id);
         toast('배차를 포기했습니다. 대기 목록으로 복귀되었습니다.');
         await this.loadAll();
         APP.switchTab('waiting');
@@ -821,6 +866,8 @@
       async completeCall(id) {
         if (!confirm('목적지에 도착하여 운행 완료 처리하시겠습니까?')) return;
         await APP.getSupabase().from('yeoju_dispatches').update({ status: 'completed', updated_at: new Date().toISOString() }).eq('id', id).eq('driver_code', APP.driver.code);
+        this.originEtaCache.delete(id);
+        this.tripDurationCache.delete(id);
         toast('✅ 운행 완료 처리되었습니다.');
         await this.loadAll();
       },
@@ -927,7 +974,7 @@
         ['preset-origin', 'preset-dest'].forEach(id => { document.getElementById(id).innerHTML = '<option value="">거점 선택</option>' + YEOJU_PRESETS.map(p => `<option value="${p.id}">${p.name}</option>`).join(''); });
         try { this.localRows = JSON.parse(safeStorageGet('yeoju_local_rows_v1', '[]')); } catch { this.localRows = []; }
         this.renderLocalTable(); this.updateVerifyGrid();
-        const s = document.createElement('script'); s.src = `https://dapi.kakao.com/v2/maps/sdk.js?appkey=${CONFIG.KAKAO_JS_KEY}&libraries=services&autoload=false`;
+        const s = document.createElement('script'); s.src = `[https://dapi.kakao.com/v2/maps/sdk.js?appkey=$](https://dapi.kakao.com/v2/maps/sdk.js?appkey=$){CONFIG.KAKAO_JS_KEY}&libraries=services&autoload=false`;
         s.onload = () => MAP.init(); s.onerror = () => MAP.init(); document.head.appendChild(s);
         await this.calcRoute();
       },
@@ -936,8 +983,8 @@
         try {
           const headers = { Authorization: `KakaoAK ${CONFIG.KAKAO_REST_KEY}` };
           const [kr, ar] = await Promise.allSettled([
-            fetch(`https://dapi.kakao.com/v2/local/search/keyword.json?query=${encodeURIComponent(q)}&x=127.637518&y=37.298344&size=10`, { headers }),
-            fetch(`https://dapi.kakao.com/v2/local/search/address.json?query=${encodeURIComponent(q)}&size=5`, { headers })
+            fetch(`[https://dapi.kakao.com/v2/local/search/keyword.json?query=$](https://dapi.kakao.com/v2/local/search/keyword.json?query=$){encodeURIComponent(q)}&x=127.637518&y=37.298344&size=10`, { headers }),
+            fetch(`[https://dapi.kakao.com/v2/local/search/address.json?query=$](https://dapi.kakao.com/v2/local/search/address.json?query=$){encodeURIComponent(q)}&size=5`, { headers })
           ]);
           if (kr.status === 'fulfilled' && kr.value.ok) (await kr.value.json()).documents?.forEach(d => res.push({ name: d.place_name, roadAddr: d.road_address_name || '-', jibunAddr: d.address_name || '-', lat: parseFloat(d.y), lng: parseFloat(d.x), source: '카카오 장소검색' }));
           if (ar.status === 'fulfilled' && ar.value.ok) (await ar.value.json()).documents?.forEach(d => { const road = d.road_address?.address_name || '-', jibun = d.address?.address_name || '-'; res.push({ name: road !== '-' ? road : jibun, roadAddr: road, jibunAddr: jibun, lat: parseFloat(d.y), lng: parseFloat(d.x), source: '카카오 주소검색' }); });
@@ -963,7 +1010,7 @@
       async searchPoint(t) { const q = document.getElementById(`input-${t}`)?.value.trim(); if (!q) return; const list = await this.searchPlaces(q); if (list.length) this.setPoint(t, list[0]); else toast('검색 결과가 없습니다.'); },
       async setCoord(t, lat, lng) {
         try {
-          const r = await fetch(`https://dapi.kakao.com/v2/local/geo/coord2address.json?x=${lng}&y=${lat}`, { headers: { Authorization: `KakaoAK ${CONFIG.KAKAO_REST_KEY}` } });
+          const r = await fetch(`[https://dapi.kakao.com/v2/local/geo/coord2address.json?x=$](https://dapi.kakao.com/v2/local/geo/coord2address.json?x=$){lng}&y=${lat}`, { headers: { Authorization: `KakaoAK ${CONFIG.KAKAO_REST_KEY}` } });
           const doc = (await r.json()).documents?.[0], road = doc?.road_address?.address_name || '-', jibun = doc?.address?.address_name || '-', bName = doc?.road_address?.building_name || '';
           const name = bName ? `${bName} (${road !== '-' ? road : jibun})` : (road !== '-' ? road : (jibun !== '-' ? jibun : `좌표(${lat.toFixed(5)}, ${lng.toFixed(5)})`));
           this.setPoint(t, { name, roadAddr: road, jibunAddr: jibun, lat, lng, source: '지도 좌표/드래그 지정' });
@@ -990,7 +1037,7 @@
         const tag = document.getElementById('route-engine-tag'); if (tag) tag.textContent = '실도로 경로 탐색 중...';
         const wps = this.waypoints.filter(w => typeof w.lat === 'number');
         try {
-          let url = `https://apis-navi.kakaomobility.com/v1/directions?origin=${this.origin.lng},${this.origin.lat}&destination=${this.dest.lng},${this.dest.lat}&priority=RECOMMEND`;
+          let url = `[https://apis-navi.kakaomobility.com/v1/directions?origin=$](https://apis-navi.kakaomobility.com/v1/directions?origin=$){this.origin.lng},${this.origin.lat}&destination=${this.dest.lng},${this.dest.lat}&priority=RECOMMEND`;
           if (wps.length) url += `&waypoints=${encodeURIComponent(wps.map(w => `${w.lng},${w.lat}`).join('|'))}`;
           const rt = (await (await fetch(url, { headers: { Authorization: `KakaoAK ${CONFIG.KAKAO_REST_KEY}` } })).json()).routes?.[0];
           if (rt && rt.result_code === 0) {
@@ -1002,7 +1049,7 @@
           }
         } catch {}
         const pts = [this.origin, ...wps, this.dest];
-        const oRt = (await (await fetch(`https://router.project-osrm.org/route/v1/driving/${pts.map(p=>`${p.lng},${p.lat}`).join(';')}?overview=full&geometries=geojson`)).json()).routes?.[0];
+        const oRt = (await (await fetch(`[https://router.project-osrm.org/route/v1/driving/$](https://router.project-osrm.org/route/v1/driving/$){pts.map(p=>`${p.lng},${p.lat}`).join(';')}?overview=full&geometries=geojson`)).json()).routes?.[0];
         if (oRt) {
           this.route = { dist: Math.round(oRt.distance), dur: Math.round(oRt.duration), toll: 0, path: oRt.geometry.coordinates.map(c=>[c[1],c[0]]) };
           if (tag) tag.textContent = wps.length ? `엔진: OSRM 실도로 (경유 ${wps.length}곳)` : '엔진: OSRM 실도로';
@@ -1033,7 +1080,7 @@
       async shareMessage() { const text = this.buildShareText(); if (navigator.share) { try { await navigator.share({ title: '여주시 배차 안내', text }); } catch {} } else { await navigator.clipboard.writeText(text); toast('안내 문구가 복사되었습니다. 카톡에 붙여넣으세요.'); } },
       sendSMS() { location.href = `sms:${/iPhone|iPad|iPod/i.test(navigator.userAgent) ? '&' : '?'}body=${encodeURIComponent(this.buildShareText())}`; },
       buildMapUrl(o, wps, d) {
-        let u = `https://map.kakao.com/link/from/${encodeURIComponent(o.name)},${o.lat},${o.lng}`;
+        let u = `[https://map.kakao.com/link/from/$](https://map.kakao.com/link/from/$){encodeURIComponent(o.name)},${o.lat},${o.lng}`;
         (wps || []).forEach(w => { if (w.lat) u += `/by/${encodeURIComponent(w.name)},${w.lat},${w.lng}`; });
         return `${u}/to/${encodeURIComponent(d.name)},${d.lat},${d.lng}`;
       },
