@@ -42,7 +42,8 @@
       font-family: inherit; cursor: pointer; border: none; border-radius: 8px; font-weight: 700;
       font-size: 0.84rem; padding: 8px 12px; display: inline-flex; align-items: center; justify-content: center; gap: 5px;
     }
-    button:active { transform: scale(0.98); }
+    button:disabled { opacity: 0.48; cursor: not-allowed; }
+    button:active:not(:disabled) { transform: scale(0.98); }
     .btn-primary { background: var(--primary); color: #fff; }
     .btn-danger { background: var(--danger); color: #fff; }
     .btn-danger-outline { background: #fff; color: var(--danger); border: 1px solid #fecaca; }
@@ -60,6 +61,7 @@
       font-size: 0.9rem; background: #fff; outline: none;
     }
     input:focus, select:focus { border-color: var(--primary); }
+    input[type="checkbox"] { width: 17px; height: 17px; margin: 0; cursor: pointer; accent-color: var(--primary); vertical-align: middle; flex-shrink: 0; }
     input[type="color"] { width: 36px; height: 34px; padding: 2px; border: 1px solid var(--border); border-radius: 6px; background: #fff; cursor: pointer; flex-shrink: 0; }
     label { display: block; font-size: 0.75rem; font-weight: 700; color: var(--muted); margin-bottom: 4px; }
 
@@ -106,7 +108,12 @@
     .filter-panel { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 10px; padding: 10px; margin-bottom: 10px; display: flex; flex-direction: column; gap: 8px; }
     .filter-row { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
     .date-range-box { display: flex; align-items: center; gap: 5px; flex: 1; min-width: 220px; }
-    .summary-strip { background: var(--primary-light); border: 1px solid #bfdbfe; border-radius: 8px; padding: 8px 10px; font-size: 0.82rem; font-weight: 700; color: #1e3a8a; display: flex; flex-wrap: wrap; gap: 10px; align-items: center; }
+    .summary-strip { background: var(--primary-light); border: 1px solid #bfdbfe; border-radius: 8px; padding: 8px 10px; font-size: 0.82rem; font-weight: 700; color: #1e3a8a; display: flex; flex-wrap: wrap; gap: 10px; align-items: center; justify-content: space-between; }
+    .bulk-bar {
+      display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px;
+      background: #fff; border: 1px solid #cbd5e1; border-radius: 8px; padding: 7px 10px;
+    }
+    .bulk-check-label { display: inline-flex; align-items: center; gap: 6px; margin: 0; cursor: pointer; font-size: 0.82rem; font-weight: 800; color: var(--dark); }
     .trash-banner { background: #fef2f2; border: 1.5px solid #fecaca; border-radius: 10px; padding: 10px 12px; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px; color: #991b1b; font-size: 0.82rem; font-weight: 700; }
 
     .table-wrap { overflow-x: auto; width: 100%; }
@@ -114,9 +121,11 @@
     th, td { padding: 8px 6px; border-bottom: 1px solid #e2e8f0; text-align: left; vertical-align: middle; }
     th { background: #f8fafc; color: var(--muted); white-space: nowrap; }
     tfoot td { background: #eff6ff; font-weight: 800; color: #1e3a8a; border-top: 2px solid #93c5fd; }
+    tr.selected-row { background: #eff6ff !important; }
     tr.trashed-row { background: #fff8f8; }
     tr.overdue-row { background: #fef2f2; }
     .num { text-align: right; white-space: nowrap; }
+    .chk-col { width: 32px; text-align: center; }
 
     .badge { padding: 3px 7px; border-radius: 6px; font-size: 0.72rem; font-weight: 800; white-space: nowrap; display: inline-block; }
     .st-waiting { background: #dbeafe; color: #1e40af; }
@@ -131,6 +140,7 @@
 
     .mobile-record-list { display: none; flex-direction: column; gap: 8px; }
     .m-rec-card { border: 1.5px solid #cbd5e1; border-radius: 10px; padding: 11px; background: #fff; }
+    .m-rec-card.selected { border-color: var(--primary); background: #eff6ff; }
     .m-rec-card.trashed { border-color: #fecaca; background: #fff8f8; }
     .m-rec-card.overdue { border-color: #ef4444; background: #fef2f2; }
     .m-rec-top { display: flex; justify-content: space-between; align-items: center; gap: 6px; margin-bottom: 6px; flex-wrap: wrap; }
@@ -297,7 +307,7 @@
           <div id="kakao-map" style="display:none;"></div>
           <div id="leaflet-map"></div>
         </div>
-        <div style="font-size:0.74rem; color:var(--muted); margin-top:8px;">지도 아이콘 또는 아래 기사 칩을 터치하면 강제배차 대상으로 선택됩니다.</div>
+        <div style="font-size:0.74rem; color:var(--muted); margin-top:8px;">지도 아이콘 또는 아래 기사 칩을 터치하면 강제배차 대상으로 선택되며, 출발·도착 핀은 드래그로 이동할 수 있습니다.</div>
         <div class="driver-chips" id="driver-chips"></div>
       </section>
     </div>
@@ -378,21 +388,36 @@
           <div class="summary-strip" id="dispatch-summary-strip">
             <span>조회 결과: 0건 | 합계 요금: 0원</span>
           </div>
+          <div class="bulk-bar" id="normal-bulk-bar">
+            <label class="bulk-check-label" for="chk-select-all-bar">
+              <input type="checkbox" id="chk-select-all-bar" onchange="DISPATCH_MGR.toggleSelectAll(this.checked)" />
+              <span>현재 목록 전체 선택 (<span id="selected-count-txt">0</span>건 선택됨)</span>
+            </label>
+            <div style="display:flex; gap:6px; flex-wrap:wrap;">
+              <button type="button" class="btn-danger-outline btn-xs" id="btn-bulk-trash" disabled onclick="DISPATCH_MGR.bulkMoveToTrash()">🗑️ 선택 일괄 휴지통 (0건)</button>
+            </div>
+          </div>
         </div>
 
         <div class="trash-banner" id="trash-banner" style="display:none;">
-          <span>🗑️ 휴지통 — [↩ 복원] 시 원래 상태와 날짜로 즉시 복구됩니다.</span>
-          <div style="display:flex; gap:6px;">
+          <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
+            <label class="bulk-check-label" for="chk-trash-select-all" style="color:#991b1b;">
+              <input type="checkbox" id="chk-trash-select-all" onchange="DISPATCH_MGR.toggleSelectAll(this.checked)" />
+              <span>전체 선택 (<span id="trash-selected-count">0</span>건)</span>
+            </label>
+            <span>— 복원 시 원래 상태와 날짜로 복구됩니다.</span>
+          </div>
+          <div style="display:flex; gap:6px; flex-wrap:wrap;">
+            <button type="button" class="btn-success btn-xs" id="btn-bulk-restore" disabled onclick="DISPATCH_MGR.bulkRestore()">↩ 선택 복원</button>
+            <button type="button" class="btn-danger-outline btn-xs" id="btn-bulk-hard-del" disabled onclick="DISPATCH_MGR.bulkHardDelete()">선택 영구삭제</button>
             <button type="button" class="btn-outline btn-xs" onclick="DISPATCH_MGR.toggleTrash(false)">← 목록 복귀</button>
-            <button type="button" class="btn-danger btn-xs" onclick="DISPATCH_MGR.emptyTrash()">🧹 비우기</button>
+            <button type="button" class="btn-danger btn-xs" onclick="DISPATCH_MGR.emptyTrash()">🧹 전체 비우기</button>
           </div>
         </div>
 
         <div class="table-wrap" id="dispatch-desktop-wrap">
           <table>
-            <thead id="dispatch-table-head">
-              <tr><th>번호/시각</th><th>구분</th><th>상태</th><th>경과/제한</th><th>담당기사</th><th>손님번호</th><th>출발 → 경유 → 도착</th><th>거리/요금</th><th>포기/메모</th><th>통제/휴지통</th></tr>
-            </thead>
+            <thead id="dispatch-table-head"></thead>
             <tbody id="dispatch-table-body"></tbody>
           </table>
         </div>
@@ -611,23 +636,33 @@
       },
       initLeaflet() { if (this.lMap) return; this.lMap = L.map('leaflet-map').setView([CONFIG.YEOJU_CENTER.lat, CONFIG.YEOJU_CENTER.lng], 12); L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(this.lMap); },
       drawRoute(o, wps, d, path) {
-        const pts = [o, ...wps.filter(w => typeof w.lat === 'number'), d];
+        const activeWps = (wps || []).map((w, idx) => ({ ...w, wpIdx: idx })).filter(w => typeof w.lat === 'number');
+        const nodes = [
+          { target: 'origin', label: '출발', bg: '#1d4ed8', pt: o },
+          ...activeWps.map((w, i) => ({ target: `wp-${w.wpIdx}`, label: `경유${i + 1}`, bg: '#d97706', pt: w })),
+          { target: 'dest', label: '도착', bg: '#dc2626', pt: d }
+        ];
         if (this.mode === 'kakao' && this.kMap) {
           this.routeOverlays.forEach(x => x.setMap(null)); this.routeOverlays = [];
           const bounds = new window.kakao.maps.LatLngBounds();
-          pts.forEach((p, idx) => {
-            const pos = new window.kakao.maps.LatLng(p.lat, p.lng);
-            const label = idx === 0 ? '출발' : (idx === pts.length - 1 ? '도착' : `경유${idx}`);
-            const bg = idx === 0 ? '#1d4ed8' : (idx === pts.length - 1 ? '#dc2626' : '#d97706');
-            this.routeOverlays.push(new window.kakao.maps.CustomOverlay({ map: this.kMap, position: pos, yAnchor: 1.3, content: `<div style="background:${bg};color:#fff;font-size:11px;font-weight:800;padding:3px 7px;border-radius:999px;border:1.5px solid #fff;box-shadow:0 2px 5px rgba(0,0,0,0.3);">${label}</div>` }));
+          nodes.forEach(n => {
+            const pos = new window.kakao.maps.LatLng(n.pt.lat, n.pt.lng);
+            const marker = new window.kakao.maps.Marker({ map: this.kMap, position: pos, draggable: true });
+            const overlay = new window.kakao.maps.CustomOverlay({ map: this.kMap, position: pos, yAnchor: 2.35, content: `<div style="background:${n.bg};color:#fff;font-size:11px;font-weight:800;padding:3px 7px;border-radius:999px;border:1.5px solid #fff;box-shadow:0 2px 5px rgba(0,0,0,0.3);">${n.label}</div>` });
+            window.kakao.maps.event.addListener(marker, 'dragend', () => { const p = marker.getPosition(); DISPATCH_FORM.setCoord(n.target, p.getLat(), p.getLng()); });
+            this.routeOverlays.push(marker, overlay);
             bounds.extend(pos);
           });
-          const line = new window.kakao.maps.Polyline({ path: (path?.length ? path : pts.map(p => [p.lat, p.lng])).map(c => new window.kakao.maps.LatLng(c[0], c[1])), strokeWeight: 5, strokeColor: '#1d4ed8', strokeOpacity: 0.85 });
+          const line = new window.kakao.maps.Polyline({ path: (path?.length ? path : nodes.map(n => [n.pt.lat, n.pt.lng])).map(c => new window.kakao.maps.LatLng(c[0], c[1])), strokeWeight: 5, strokeColor: '#1d4ed8', strokeOpacity: 0.85 });
           line.setMap(this.kMap); this.routeOverlays.push(line); this.kMap.setBounds(bounds);
         } else if (this.lMap) {
           this.routeOverlays.forEach(x => this.lMap.removeLayer(x)); this.routeOverlays = [];
-          pts.forEach(p => this.routeOverlays.push(L.marker([p.lat, p.lng]).addTo(this.lMap)));
-          const line = L.polyline(path?.length ? path : pts.map(p => [p.lat, p.lng]), { color: '#1d4ed8', weight: 5 }).addTo(this.lMap);
+          nodes.forEach(n => {
+            const icon = L.divIcon({ html: `<div style="background:${n.bg};color:#fff;font-weight:800;font-size:11px;padding:3px 7px;border-radius:999px;border:2px solid #fff;box-shadow:0 2px 6px rgba(0,0,0,0.3);white-space:nowrap;">${n.label}</div>`, className: '', iconAnchor: [20, 12] });
+            const m = L.marker([n.pt.lat, n.pt.lng], { icon, draggable: true }).addTo(this.lMap).on('dragend', e => { const p = e.target.getLatLng(); DISPATCH_FORM.setCoord(n.target, p.lat, p.lng); });
+            this.routeOverlays.push(m);
+          });
+          const line = L.polyline(path?.length ? path : nodes.map(n => [n.pt.lat, n.pt.lng]), { color: '#1d4ed8', weight: 5 }).addTo(this.lMap);
           this.routeOverlays.push(line); this.lMap.fitBounds(line.getBounds(), { padding: [30, 30] });
         }
       },
@@ -681,6 +716,22 @@
           document.getElementById('f-eta-limit').value = this.etaLimit;
           document.querySelectorAll('.limit-btn').forEach(b => b.classList.toggle('active', Number(b.dataset.min) === this.etaLimit));
         }
+      },
+      async setCoord(t, lat, lng) {
+        let name = `좌표(${lat.toFixed(5)}, ${lng.toFixed(5)})`;
+        try {
+          const r = await fetch(`https://dapi.kakao.com/v2/local/geo/coord2address.json?x=${lng}&y=${lat}`, { headers: { Authorization: `KakaoAK ${CONFIG.KAKAO_REST_KEY}` } });
+          const doc = (await r.json()).documents?.[0], road = doc?.road_address?.address_name || '', jibun = doc?.address?.address_name || '', bName = doc?.road_address?.building_name || '';
+          if (bName || road || jibun) name = bName ? `${bName} (${road || jibun})` : (road || jibun);
+        } catch {}
+        if (t === 'origin' || t === 'dest') {
+          this[t] = { name, lat, lng };
+          document.getElementById(`f-${t}`).value = name;
+        } else if (t.startsWith('wp-')) {
+          const idx = Number(t.split('-')[1]);
+          if (this.waypoints[idx]) { this.waypoints[idx] = { name, lat, lng }; this.renderWps(); }
+        }
+        this.calcRoute();
       },
       selectPreset(t, id) { const f = YEOJU_PRESETS.find(p => p.id === id); if (f) { this[t] = { ...f }; document.getElementById(`f-${t}`).value = f.name; this.calcRoute(); } },
       addWp() { if (this.waypoints.length >= 5) return toast('경유지는 최대 5곳까지 가능합니다.'); this.waypoints.push({ name: '', lat: null, lng: null }); this.renderWps(); },
@@ -745,7 +796,7 @@
             (rt.sections || []).forEach(s => (s.roads || []).forEach(rd => { for (let i = 0; i < (rd.vertexes || []).length; i += 2) path.push([rd.vertexes[i+1], rd.vertexes[i]]); }));
             this.route = { dist: rt.summary.distance, dur: rt.summary.duration, toll: rt.summary.fare?.toll || 0, path };
             document.getElementById('cfg-manual-toll').value = this.route.toll;
-            ADMIN_MAP.drawRoute(this.origin, wps, this.dest, path);
+            ADMIN_MAP.drawRoute(this.origin, this.waypoints, this.dest, path);
             this.renderFare();
             return;
           }
@@ -754,7 +805,7 @@
         const oRt = (await (await fetch(`https://router.project-osrm.org/route/v1/driving/${pts.map(p=>`${p.lng},${p.lat}`).join(';')}?overview=full&geometries=geojson`)).json()).routes?.[0];
         if (oRt) {
           this.route = { dist: Math.round(oRt.distance), dur: Math.round(oRt.duration), toll: 0, path: oRt.geometry.coordinates.map(c=>[c[1],c[0]]) };
-          ADMIN_MAP.drawRoute(this.origin, wps, this.dest, this.route.path);
+          ADMIN_MAP.drawRoute(this.origin, this.waypoints, this.dest, this.route.path);
           this.renderFare();
         }
       },
@@ -873,7 +924,7 @@
     };
 
     const DISPATCH_MGR = {
-      rows: [], filter: 'all', viewMode: 'normal',
+      rows: [], filter: 'all', viewMode: 'normal', selectedIds: new Set(),
 
       async loadAll() {
         const sb = ADMIN.getSupabase(); if (!sb) return;
@@ -881,6 +932,76 @@
         this.rows = data || [];
         this.syncDriverFilterOptions();
         this.render();
+      },
+
+      getVisibleRows() {
+        if (this.viewMode === 'trash') {
+          return this.rows.filter(r => Boolean(r.deleted_at)).sort((a, b) => new Date(b.deleted_at) - new Date(a.deleted_at));
+        }
+        return this.getNormalFilteredRows();
+      },
+
+      toggleSelect(id, checked) {
+        const numId = Number(id);
+        if (checked) this.selectedIds.add(numId);
+        else this.selectedIds.delete(numId);
+        this.syncBulkUI();
+      },
+
+      toggleSelectAll(checked) {
+        const visible = this.getVisibleRows();
+        if (checked) visible.forEach(r => this.selectedIds.add(Number(r.id)));
+        else this.selectedIds.clear();
+        document.querySelectorAll('.row-chk').forEach(el => { el.checked = checked; });
+        document.querySelectorAll('#dispatch-table-body tr').forEach(tr => tr.classList.toggle('selected-row', checked));
+        document.querySelectorAll('#dispatch-mobile-list .m-rec-card').forEach(card => card.classList.toggle('selected', checked));
+        this.syncBulkUI();
+      },
+
+      syncBulkUI() {
+        const visible = this.getVisibleRows();
+        const visibleIds = new Set(visible.map(r => Number(r.id)));
+        for (const id of Array.from(this.selectedIds)) {
+          if (!visibleIds.has(id)) this.selectedIds.delete(id);
+        }
+        const count = this.selectedIds.size;
+        const allChecked = visible.length > 0 && count === visible.length;
+
+        ['chk-head-all', 'chk-select-all-bar', 'chk-trash-select-all'].forEach(id => {
+          const el = document.getElementById(id);
+          if (el) {
+            el.checked = allChecked;
+            el.indeterminate = count > 0 && count < visible.length;
+          }
+        });
+
+        const cntEl = document.getElementById('selected-count-txt');
+        if (cntEl) cntEl.textContent = count;
+        const bulkTrashBtn = document.getElementById('btn-bulk-trash');
+        if (bulkTrashBtn) {
+          bulkTrashBtn.disabled = count === 0;
+          bulkTrashBtn.textContent = `🗑️ 선택 일괄 휴지통 (${count}건)`;
+        }
+
+        const tCntEl = document.getElementById('trash-selected-count');
+        if (tCntEl) tCntEl.textContent = count;
+        const bulkRestoreBtn = document.getElementById('btn-bulk-restore');
+        if (bulkRestoreBtn) {
+          bulkRestoreBtn.disabled = count === 0;
+          bulkRestoreBtn.textContent = `↩ 선택 복원 (${count}건)`;
+        }
+        const bulkHardBtn = document.getElementById('btn-bulk-hard-del');
+        if (bulkHardBtn) {
+          bulkHardBtn.disabled = count === 0;
+          bulkHardBtn.textContent = `선택 영구삭제 (${count}건)`;
+        }
+
+        document.querySelectorAll('#dispatch-table-body tr[data-row-id]').forEach(tr => {
+          tr.classList.toggle('selected-row', this.selectedIds.has(Number(tr.dataset.rowId)));
+        });
+        document.querySelectorAll('#dispatch-mobile-list .m-rec-card[data-row-id]').forEach(card => {
+          card.classList.toggle('selected', this.selectedIds.has(Number(card.dataset.rowId)));
+        });
       },
 
       tickClocks() {
@@ -911,6 +1032,7 @@
 
       toggleTrash(forceMode) {
         this.viewMode = typeof forceMode === 'boolean' ? (forceMode ? 'trash' : 'normal') : (this.viewMode === 'trash' ? 'normal' : 'trash');
+        this.selectedIds.clear();
         const isTrash = this.viewMode === 'trash';
         document.getElementById('btn-toggle-trash').classList.toggle('active', isTrash);
         document.getElementById('normal-filter-panel').style.display = isTrash ? 'none' : 'flex';
@@ -931,6 +1053,7 @@
 
       setFilter(f) {
         this.filter = f;
+        this.selectedIds.clear();
         ['all', 'waiting', 'accepted', 'picked_up', 'completed', 'cancelled'].forEach(k => document.getElementById(`flt-${k}`)?.classList.toggle('active', k === f));
         this.render();
       },
@@ -940,6 +1063,7 @@
         if (preset === 'today') { const t = toLocalYMD(now); startEl.value = t; endEl.value = t; }
         else if (preset === 'month') { startEl.value = toLocalYMD(new Date(now.getFullYear(), now.getMonth(), 1)); endEl.value = toLocalYMD(now); }
         else { startEl.value = ''; endEl.value = ''; }
+        this.selectedIds.clear();
         this.render();
       },
 
@@ -1015,10 +1139,11 @@
         const mobileBox = document.getElementById('dispatch-mobile-list');
 
         if (this.viewMode === 'trash') {
-          document.getElementById('dispatch-table-head').innerHTML = '<tr><th>번호/접수시각</th><th>삭제시각</th><th>원래상태</th><th>담당기사</th><th>손님번호</th><th>출발 → 경유 → 도착</th><th>거리/요금</th><th>복원 / 영구삭제</th></tr>';
+          document.getElementById('dispatch-table-head').innerHTML = '<tr><th class="chk-col"><input type="checkbox" id="chk-head-all" title="전체 선택" onchange="DISPATCH_MGR.toggleSelectAll(this.checked)" /></th><th>번호/접수시각</th><th>삭제시각</th><th>원래상태</th><th>담당기사</th><th>손님번호</th><th>출발 → 경유 → 도착</th><th>거리/요금</th><th>복원 / 영구삭제</th></tr>';
           if (!trashedRows.length) {
-            document.getElementById('dispatch-table-body').innerHTML = '<tr><td colspan="8" style="text-align:center;padding:28px;color:var(--muted);">휴지통이 비어 있습니다.</td></tr>';
+            document.getElementById('dispatch-table-body').innerHTML = '<tr><td colspan="9" style="text-align:center;padding:28px;color:var(--muted);">휴지통이 비어 있습니다.</td></tr>';
             mobileBox.innerHTML = '<div style="text-align:center;padding:24px;color:var(--muted);font-size:0.84rem;">휴지통이 비어 있습니다.</div>';
+            this.syncBulkUI();
             return;
           }
           document.getElementById('dispatch-table-body').innerHTML = trashedRows.map(r => {
@@ -1027,29 +1152,43 @@
             const routeStr = `${r.origin_name}${wps.length ? ` → [경유:${wps.map(w=>w.name).join(',')}]` : ''} → ${r.dest_name}`;
             const time = new Date(r.created_at).toLocaleString('ko-KR', { month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' });
             const delTime = new Date(r.deleted_at).toLocaleString('ko-KR', { month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' });
-            return `<tr class="trashed-row"><td><strong>#${r.id}</strong><br/><span style="font-size:0.74rem;color:var(--muted);">${time}</span></td><td style="font-size:0.75rem;color:#991b1b;font-weight:700;">${delTime}</td><td><span class="badge ${cls}">${txt}</span></td><td>${r.driver_name ? `<strong>${esc(r.driver_name)}</strong>(${esc(r.driver_code)})` : '-'}</td><td>${esc(r.customer_phone || '-')}</td><td style="max-width:250px;word-break:keep-all;">${esc(routeStr)}</td><td style="white-space:nowrap;">${(r.distance_meters/1000).toFixed(2)}km<br/><strong style="color:var(--primary);">${(r.total_fare||0).toLocaleString()}원</strong></td><td><div style="display:flex;gap:4px;flex-wrap:wrap;"><button type="button" class="btn-success btn-xs" onclick="DISPATCH_MGR.restoreDispatch(${r.id})">↩ 복원</button><button type="button" class="btn-danger-outline btn-xs" onclick="DISPATCH_MGR.hardDeleteDispatch(${r.id})">영구삭제</button></div></td></tr>`;
+            const checked = this.selectedIds.has(Number(r.id));
+            return `<tr data-row-id="${r.id}" class="trashed-row ${checked ? 'selected-row' : ''}">
+              <td class="chk-col"><input type="checkbox" class="row-chk" data-id="${r.id}" ${checked ? 'checked' : ''} onchange="DISPATCH_MGR.toggleSelect(${r.id}, this.checked)" /></td>
+              <td><strong>#${r.id}</strong><br/><span style="font-size:0.74rem;color:var(--muted);">${time}</span></td>
+              <td style="font-size:0.75rem;color:#991b1b;font-weight:700;">${delTime}</td>
+              <td><span class="badge ${cls}">${txt}</span></td>
+              <td>${r.driver_name ? `<strong>${esc(r.driver_name)}</strong>(${esc(r.driver_code)})` : '-'}</td>
+              <td>${esc(r.customer_phone || '-')}</td>
+              <td style="max-width:250px;word-break:keep-all;">${esc(routeStr)}</td>
+              <td style="white-space:nowrap;">${(r.distance_meters/1000).toFixed(2)}km<br/><strong style="color:var(--primary);">${(r.total_fare||0).toLocaleString()}원</strong></td>
+              <td><div style="display:flex;gap:4px;flex-wrap:wrap;"><button type="button" class="btn-success btn-xs" onclick="DISPATCH_MGR.restoreDispatch(${r.id})">↩ 복원</button><button type="button" class="btn-danger-outline btn-xs" onclick="DISPATCH_MGR.hardDeleteDispatch(${r.id})">영구삭제</button></div></td>
+            </tr>`;
           }).join('');
           mobileBox.innerHTML = trashedRows.map(r => {
             const [txt, cls] = stLabel[r.status] || [r.status, ''];
             const wps = Array.isArray(r.waypoints) ? r.waypoints : [];
             const time = new Date(r.created_at).toLocaleString('ko-KR', { month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' });
             const delTime = new Date(r.deleted_at).toLocaleString('ko-KR', { month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' });
-            return `<div class="m-rec-card trashed"><div class="m-rec-top"><div><span class="badge ${cls}">${txt}</span> <strong style="font-size:0.82rem;">#${r.id}</strong> <span style="font-size:0.72rem;color:#991b1b;">(삭제 ${delTime})</span></div><strong style="color:var(--primary);font-size:0.95rem;">${(r.total_fare||0).toLocaleString()}원</strong></div><div class="m-rec-route">🔵 ${esc(r.origin_name)}<br/>${wps.length ? `🟡 경유: ${esc(wps.map(w=>w.name).join(' → '))}<br/>` : ''}🔴 ${esc(r.dest_name)}</div><div class="m-rec-meta"><span>접수: ${time}</span><span>기사: <strong>${r.driver_name ? `${esc(r.driver_name)}(${esc(r.driver_code)})` : '미배정'}</strong></span><span>손님: ${esc(r.customer_phone || '-')}</span></div><div class="m-rec-actions"><button type="button" class="btn-success btn-sm" onclick="DISPATCH_MGR.restoreDispatch(${r.id})">↩ 복원하기</button><button type="button" class="btn-danger-outline btn-sm" onclick="DISPATCH_MGR.hardDeleteDispatch(${r.id})">영구삭제</button></div></div>`;
+            const checked = this.selectedIds.has(Number(r.id));
+            return `<div data-row-id="${r.id}" class="m-rec-card trashed ${checked ? 'selected' : ''}"><div class="m-rec-top"><div style="display:flex;align-items:center;gap:6px;"><input type="checkbox" class="row-chk" data-id="${r.id}" ${checked ? 'checked' : ''} onchange="DISPATCH_MGR.toggleSelect(${r.id}, this.checked)" /><span class="badge ${cls}">${txt}</span> <strong style="font-size:0.82rem;">#${r.id}</strong> <span style="font-size:0.72rem;color:#991b1b;">(삭제 ${delTime})</span></div><strong style="color:var(--primary);font-size:0.95rem;">${(r.total_fare||0).toLocaleString()}원</strong></div><div class="m-rec-route">🔵 ${esc(r.origin_name)}<br/>${wps.length ? `🟡 경유: ${esc(wps.map(w=>w.name).join(' → '))}<br/>` : ''}🔴 ${esc(r.dest_name)}</div><div class="m-rec-meta"><span>접수: ${time}</span><span>기사: <strong>${r.driver_name ? `${esc(r.driver_name)}(${esc(r.driver_code)})` : '미배정'}</strong></span><span>손님: ${esc(r.customer_phone || '-')}</span></div><div class="m-rec-actions"><button type="button" class="btn-success btn-sm" onclick="DISPATCH_MGR.restoreDispatch(${r.id})">↩ 복원하기</button><button type="button" class="btn-danger-outline btn-sm" onclick="DISPATCH_MGR.hardDeleteDispatch(${r.id})">영구삭제</button></div></div>`;
           }).join('');
+          this.syncBulkUI();
           return;
         }
 
-        document.getElementById('dispatch-table-head').innerHTML = '<tr><th>번호/시각</th><th>구분</th><th>상태</th><th>경과/제한</th><th>담당기사</th><th>손님번호</th><th>출발 → 경유 → 도착</th><th>거리/요금</th><th>포기/메모</th><th>통제/휴지통</th></tr>';
+        document.getElementById('dispatch-table-head').innerHTML = '<tr><th class="chk-col"><input type="checkbox" id="chk-head-all" title="전체 선택" onchange="DISPATCH_MGR.toggleSelectAll(this.checked)" /></th><th>번호/시각</th><th>구분</th><th>상태</th><th>경과/제한</th><th>담당기사</th><th>손님번호</th><th>출발 → 경유 → 도착</th><th>거리/요금</th><th>포기/메모</th><th>통제/휴지통</th></tr>';
         const list = this.getNormalFilteredRows();
         const totalFareSum = list.reduce((acc, r) => acc + (r.total_fare || 0), 0);
         const completedList = list.filter(r => r.status === 'completed');
         const completedFareSum = completedList.reduce((acc, r) => acc + (r.total_fare || 0), 0);
 
-        document.getElementById('dispatch-summary-strip').innerHTML = `<span>조회: <strong>${list.length}건</strong></span><span>합계: <strong>${totalFareSum.toLocaleString()}원</strong></span><span style="color:#059669;">완료: <strong>${completedList.length}건 (${completedFareSum.toLocaleString()}원)</strong></span>`;
+        document.getElementById('dispatch-summary-strip').innerHTML = `<div><span>조회: <strong>${list.length}건</strong></span> · <span>합계: <strong>${totalFareSum.toLocaleString()}원</strong></span> · <span style="color:#059669;">완료: <strong>${completedList.length}건 (${completedFareSum.toLocaleString()}원)</strong></span></div>`;
 
         if (!list.length) {
-          document.getElementById('dispatch-table-body').innerHTML = '<tr><td colspan="10" style="text-align:center;padding:24px;color:var(--muted);">선택한 조건에 해당하는 운행 기록이 없습니다.</td></tr>';
+          document.getElementById('dispatch-table-body').innerHTML = '<tr><td colspan="11" style="text-align:center;padding:24px;color:var(--muted);">선택한 조건에 해당하는 운행 기록이 없습니다.</td></tr>';
           mobileBox.innerHTML = '<div style="text-align:center;padding:24px;color:var(--muted);font-size:0.84rem;">선택한 조건에 해당하는 운행 기록이 없습니다.</div>';
+          this.syncBulkUI();
           return;
         }
 
@@ -1060,7 +1199,9 @@
           const time = new Date(r.created_at).toLocaleString('ko-KR', { month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' });
           const canCancel = r.status === 'waiting' || r.status === 'accepted' || r.status === 'picked_up';
           const info = getElapsedInfo(r, nowMs);
-          return `<tr class="${info.isOverdue ? 'overdue-row' : ''}">
+          const checked = this.selectedIds.has(Number(r.id));
+          return `<tr data-row-id="${r.id}" class="${info.isOverdue ? 'overdue-row' : ''} ${checked ? 'selected-row' : ''}">
+            <td class="chk-col"><input type="checkbox" class="row-chk" data-id="${r.id}" ${checked ? 'checked' : ''} onchange="DISPATCH_MGR.toggleSelect(${r.id}, this.checked)" /></td>
             <td><strong>#${r.id}</strong><br/><span style="font-size:0.74rem;color:var(--muted);">${time}</span></td>
             <td>${r.dispatch_type === 'forced' ? '<span class="tag-forced">강제</span>' : '일반'}</td>
             <td><span class="badge ${cls}">${txt}</span></td>
@@ -1083,9 +1224,10 @@
           const time = new Date(r.created_at).toLocaleString('ko-KR', { month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' });
           const canCancel = r.status === 'waiting' || r.status === 'accepted' || r.status === 'picked_up';
           const info = getElapsedInfo(r, nowMs);
-          return `<div class="m-rec-card ${info.isOverdue ? 'overdue' : ''}">
+          const checked = this.selectedIds.has(Number(r.id));
+          return `<div data-row-id="${r.id}" class="m-rec-card ${info.isOverdue ? 'overdue' : ''} ${checked ? 'selected' : ''}">
             <div class="m-rec-top">
-              <div>${r.dispatch_type === 'forced' ? '<span class="tag-forced">강제</span> ' : ''}<span class="badge ${cls}">${txt}</span> <strong style="font-size:0.82rem;">#${r.id}</strong> <span style="font-size:0.73rem;color:var(--muted);">· ${time}</span></div>
+              <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;"><input type="checkbox" class="row-chk" data-id="${r.id}" ${checked ? 'checked' : ''} onchange="DISPATCH_MGR.toggleSelect(${r.id}, this.checked)" />${r.dispatch_type === 'forced' ? '<span class="tag-forced">강제</span>' : ''}<span class="badge ${cls}">${txt}</span> <strong style="font-size:0.82rem;">#${r.id}</strong> <span style="font-size:0.73rem;color:var(--muted);">· ${time}</span></div>
               <strong style="color:var(--primary);font-size:0.96rem;">${(r.total_fare||0).toLocaleString()}원</strong>
             </div>
             <div class="m-rec-route">🔵 ${esc(r.origin_name)}<br/>${wps.length ? `🟡 경유: ${esc(wps.map(w=>w.name).join(' → '))}<br/>` : ''}🔴 ${esc(r.dest_name)}</div>
@@ -1101,6 +1243,7 @@
             <div class="m-rec-actions">${canCancel ? `<button type="button" class="btn-warn btn-sm" onclick="DISPATCH_MGR.cancelDispatch(${r.id})">배차 취소</button>` : ''}<button type="button" class="btn-danger-outline btn-sm" onclick="DISPATCH_MGR.moveToTrash(${r.id})">🗑️ 휴지통 이동</button></div>
           </div>`;
         }).join('');
+        this.syncBulkUI();
       },
 
       async cancelDispatch(id) {
@@ -1113,18 +1256,51 @@
         if (!confirm(`#${id} 운행 기록을 휴지통으로 이동하시겠습니까?`)) return;
         const { error } = await ADMIN.getSupabase().from('yeoju_dispatches').update({ deleted_at: new Date().toISOString(), updated_at: new Date().toISOString() }).eq('id', id);
         if (error) return toast(`휴지통 이동 오류: ${error.message}`);
+        this.selectedIds.delete(Number(id));
         toast(`🗑️ #${id} 내역이 휴지통으로 이동되었습니다.`); await this.loadAll();
+      },
+      async bulkMoveToTrash() {
+        const ids = Array.from(this.selectedIds);
+        if (!ids.length) return toast('휴지통으로 이동할 항목을 먼저 선택하세요.');
+        if (!confirm(`선택한 ${ids.length}건의 운행 기록을 한 번에 휴지통으로 이동하시겠습니까?`)) return;
+        const nowIso = new Date().toISOString();
+        const { error } = await ADMIN.getSupabase().from('yeoju_dispatches').update({ deleted_at: nowIso, updated_at: nowIso }).in('id', ids);
+        if (error) return toast(`일괄 휴지통 이동 오류: ${error.message}`);
+        this.selectedIds.clear();
+        toast(`🗑️ 선택한 ${ids.length}건이 휴지통으로 이동되었습니다.`);
+        await this.loadAll();
       },
       async restoreDispatch(id) {
         const { error } = await ADMIN.getSupabase().from('yeoju_dispatches').update({ deleted_at: null, updated_at: new Date().toISOString() }).eq('id', id);
         if (error) return toast(`복원 오류: ${error.message}`);
+        this.selectedIds.delete(Number(id));
         toast(`↩ #${id} 운행 기록이 복원되었습니다.`); await this.loadAll();
+      },
+      async bulkRestore() {
+        const ids = Array.from(this.selectedIds);
+        if (!ids.length) return toast('복원할 항목을 먼저 선택하세요.');
+        const { error } = await ADMIN.getSupabase().from('yeoju_dispatches').update({ deleted_at: null, updated_at: new Date().toISOString() }).in('id', ids);
+        if (error) return toast(`일괄 복원 오류: ${error.message}`);
+        this.selectedIds.clear();
+        toast(`↩ 선택한 ${ids.length}건이 복원되었습니다.`);
+        await this.loadAll();
       },
       async hardDeleteDispatch(id) {
         if (!confirm(`#${id} 운행 기록을 영구 삭제하시겠습니까?`)) return;
         const { error } = await ADMIN.getSupabase().from('yeoju_dispatches').delete().eq('id', id);
         if (error) return toast(`영구 삭제 오류: ${error.message}`);
+        this.selectedIds.delete(Number(id));
         toast(`#${id} 기록이 영구 삭제되었습니다.`); await this.loadAll();
+      },
+      async bulkHardDelete() {
+        const ids = Array.from(this.selectedIds);
+        if (!ids.length) return toast('영구 삭제할 항목을 먼저 선택하세요.');
+        if (!confirm(`선택한 ${ids.length}건의 운행 기록을 영구 삭제하시겠습니까? 복구할 수 없습니다.`)) return;
+        const { error } = await ADMIN.getSupabase().from('yeoju_dispatches').delete().in('id', ids);
+        if (error) return toast(`일괄 영구 삭제 오류: ${error.message}`);
+        this.selectedIds.clear();
+        toast(`선택한 ${ids.length}건이 영구 삭제되었습니다.`);
+        await this.loadAll();
       },
       async emptyTrash() {
         const trashed = this.rows.filter(r => Boolean(r.deleted_at));
@@ -1132,6 +1308,7 @@
         if (!confirm(`휴지통에 있는 ${trashed.length}건의 기록을 모두 영구 삭제하시겠습니까?`)) return;
         const { error } = await ADMIN.getSupabase().from('yeoju_dispatches').delete().not('deleted_at', 'is', null);
         if (error) return toast(`휴지통 비우기 오류: ${error.message}`);
+        this.selectedIds.clear();
         toast(`🧹 휴지통 ${trashed.length}건이 영구 삭제되었습니다.`); await this.loadAll();
       },
       exportSettlementCSV() {
