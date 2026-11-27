@@ -2,7 +2,7 @@
 <html lang="ko">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, viewport-fit=cover" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
   <meta name="apple-mobile-web-app-title" content="여주 배차·요금" />
@@ -13,88 +13,161 @@
   <script src="https://t1.kakaocdn.net/kakao_js_sdk/2.7.4/kakao.min.js" crossorigin="anonymous"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <style>
-    :root { --primary:#1d4ed8; --primary-dark:#1e3a8a; --primary-light:#eff6ff; --kakao-yellow:#fee500; --kakao-brown:#191919; --navi-bg:#0f172a; --navi-text:#fde047; --success:#059669; --danger:#dc2626; --bg:#f1f5f9; --card:#ffffff; --text:#0f172a; --muted:#475569; --border:#cbd5e1; }
-    * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
-    body { margin:0; font-family:-apple-system,BlinkMacSystemFont,"Apple SD Gothic Neo","Malgun Gothic",sans-serif; background:var(--bg); color:var(--text); padding-bottom:calc(28px + env(safe-area-inset-bottom)); }
-    header { background:linear-gradient(135deg,var(--primary-dark),var(--primary)); color:#fff; padding:12px 16px; position:sticky; top:0; z-index:1000; box-shadow:0 2px 8px rgba(0,0,0,0.16); }
-    .header-inner { max-width:1180px; margin:0 auto; display:flex; justify-content:space-between; align-items:center; gap:8px; flex-wrap:wrap; }
-    .header-title h1 { margin:0; font-size:1.08rem; }
-    .header-title p { margin:2px 0 0; font-size:0.75rem; opacity:0.9; }
-    .header-right { display:flex; align-items:center; gap:6px; flex-wrap:wrap; }
-    .pill { font-size:0.74rem; font-weight:700; padding:4px 10px; border-radius:999px; background:rgba(255,255,255,0.2); color:#fff; }
-    .pill.live { background:#10b981; }
-    .container { max-width:1180px; margin:12px auto; padding:0 12px; }
-    .card { background:var(--card); border-radius:12px; border:1px solid #e2e8f0; box-shadow:0 2px 8px rgba(15,23,42,0.05); padding:15px; margin-bottom:12px; }
-    button { font-family:inherit; cursor:pointer; border:none; border-radius:8px; font-weight:700; font-size:0.85rem; padding:9px 13px; display:inline-flex; align-items:center; justify-content:center; gap:5px; }
-    button:active { transform:scale(0.98); }
-    .btn-primary { background:var(--primary); color:#fff; }
-    .btn-success { background:var(--success); color:#fff; }
-    .btn-danger-outline { background:#fff; color:var(--danger); border:1px solid #fecaca; }
-    .btn-warn { background:#fef3c7; color:#92400e; border:1px solid #fcd34d; }
-    .btn-kakao { background:var(--kakao-yellow); color:var(--kakao-brown); }
-    .btn-navi { background:var(--navi-bg); color:var(--navi-text); }
-    .btn-outline { background:#fff; color:var(--text); border:1px solid var(--border); }
-    .btn-outline.active { background:var(--primary-light); border-color:var(--primary); color:var(--primary); }
-    .btn-sm { padding:6px 10px; font-size:0.78rem; }
-    .btn-xs { padding:4px 7px; font-size:0.73rem; }
-    input, select { width:100%; padding:9px 11px; border:1px solid var(--border); border-radius:8px; font-size:16px; background:#fff; outline:none; }
-    input:focus, select:focus { border-color:var(--primary); }
-    label { display:block; font-size:0.76rem; font-weight:700; color:var(--muted); margin-bottom:4px; }
-    .login-box { max-width:420px; margin:36px auto; text-align:center; }
-    .login-box h2 { margin:0 0 6px; font-size:1.25rem; }
-    .login-box p { margin:0 0 18px; font-size:0.84rem; color:var(--muted); }
-    .tab-bar { display:grid; grid-template-columns:repeat(4,1fr); gap:6px; background:#e2e8f0; padding:5px; border-radius:12px; margin-bottom:12px; position:sticky; top:56px; z-index:900; }
-    .tab-btn { background:transparent; color:var(--muted); padding:9px 6px; border-radius:8px; font-size:0.82rem; }
-    .tab-btn.active { background:#fff; color:var(--primary); box-shadow:0 1px 4px rgba(0,0,0,0.1); }
-    .tab-badge { background:var(--danger); color:#fff; font-size:0.7rem; padding:1px 6px; border-radius:999px; margin-left:3px; }
-    .dispatch-card { border:1.5px solid #cbd5e1; border-radius:12px; padding:14px; margin-bottom:10px; background:#fff; }
-    .dispatch-card.forced { border-color:#f59e0b; background:#fffbeb; }
-    .dc-top { display:flex; justify-content:space-between; align-items:center; gap:6px; margin-bottom:8px; flex-wrap:wrap; }
-    .tag-forced { background:#dc2626; color:#fff; font-size:0.72rem; font-weight:800; padding:3px 8px; border-radius:6px; }
-    .tag-normal { background:#dbeafe; color:#1e40af; font-size:0.72rem; font-weight:800; padding:3px 8px; border-radius:6px; }
-    .dc-route { font-size:0.94rem; font-weight:700; margin:6px 0; line-height:1.45; }
-    .dc-wp { font-size:0.82rem; color:#b45309; font-weight:700; margin:3px 0; }
-    .dc-meta { display:flex; flex-wrap:wrap; gap:10px; font-size:0.82rem; color:var(--muted); margin:8px 0; padding:8px; background:#f8fafc; border-radius:8px; }
-    .dc-fare { font-size:1.05rem; font-weight:800; color:var(--primary); }
-    .dc-actions { display:flex; flex-wrap:wrap; gap:6px; margin-top:10px; }
-    .dc-actions > * { flex:1; min-width:110px; }
-    .grid-2 { display:grid; grid-template-columns:1fr 1fr; gap:12px; align-items:start; }
-    .route-box { background:#f8fafc; border:1px solid #e2e8f0; border-radius:10px; padding:10px; margin-bottom:9px; position:relative; }
-    .route-box.wp { background:#fffbeb; border-color:#fde68a; }
-    .route-hdr { display:flex; justify-content:space-between; align-items:center; gap:5px; flex-wrap:wrap; }
-    .input-wrap { position:relative; margin-top:6px; }
-    .input-row { display:grid; grid-template-columns:1fr auto auto; gap:5px; }
-    .suggest-dropdown { position:absolute; top:calc(100% + 4px); left:0; right:0; background:#fff; border:1.5px solid #3b82f6; border-radius:10px; box-shadow:0 10px 24px rgba(0,0,0,0.16); max-height:250px; overflow-y:auto; z-index:1500; display:none; }
-    .suggest-dropdown.open { display:block; }
-    .suggest-item { padding:9px 11px; border-bottom:1px solid #f1f5f9; cursor:pointer; }
-    .suggest-item:hover { background:var(--primary-light); }
-    .suggest-title { font-weight:700; font-size:0.88rem; }
-    .suggest-sub { font-size:0.74rem; color:var(--muted); }
-    .pt-status { font-size:0.76rem; margin-top:6px; padding:5px 8px; border-radius:6px; background:#fff; border:1px solid #e2e8f0; }
-    #map-wrapper { width:100%; height:290px; border-radius:10px; overflow:hidden; border:1px solid var(--border); margin:8px 0; }
-    #kakao-map, #leaflet-map { width:100%; height:100%; }
-    .stat-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:6px; margin-top:8px; }
-    .stat-box { background:#f8fafc; border:1px solid #e2e8f0; border-radius:8px; padding:8px; text-align:center; }
-    .stat-box.hi { background:var(--primary-light); border-color:#93c5fd; }
-    .stat-lbl { font-size:0.72rem; color:var(--muted); font-weight:600; }
-    .stat-val { font-size:0.98rem; font-weight:800; margin-top:2px; }
-    .stat-sub { font-size:0.69rem; color:var(--muted); margin-top:2px; }
-    .stat-box.hi .stat-val { color:var(--primary); }
-    .verify-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(200px,1fr)); gap:8px; font-size:0.76rem; }
-    .verify-item { background:#f8fafc; border:1px solid #e2e8f0; border-radius:8px; padding:9px; }
-    .verify-item.wp { background:#fffbeb; border-color:#fde68a; }
-    .verify-item strong { display:block; margin-bottom:4px; font-size:0.8rem; }
-    .verify-line { color:var(--muted); margin:2px 0; word-break:keep-all; }
-    table { width:100%; border-collapse:collapse; font-size:0.82rem; margin-top:8px; }
-    th, td { padding:8px 6px; border-bottom:1px solid #e2e8f0; text-align:left; }
-    th { background:#f8fafc; color:var(--muted); }
-    #toast { position:fixed; bottom:22px; left:50%; transform:translateX(-50%) translateY(80px); background:#0f172a; color:#fff; padding:10px 18px; border-radius:999px; font-size:0.84rem; font-weight:700; z-index:9999; opacity:0; transition:all 0.25s; max-width:92vw; text-align:center; }
-    #toast.show { opacity:1; transform:translateX(-50%) translateY(0); }
-    @media (max-width:780px) { .grid-2 { grid-template-columns:1fr; } .stat-grid { grid-template-columns:repeat(2,1fr); } }
+    :root {
+      --primary: #1d4ed8; --primary-dark: #1e3a8a; --primary-light: #eff6ff;
+      --kakao-yellow: #fee500; --kakao-brown: #191919; --navi-bg: #0f172a; --navi-text: #fde047;
+      --success: #059669; --danger: #dc2626;
+      --bg: #f1f5f9; --card: #ffffff; --text: #0f172a; --muted: #475569; --border: #cbd5e1;
+    }
+    * {
+      box-sizing: border-box;
+      -webkit-tap-highlight-color: transparent;
+      -webkit-user-select: none;
+      user-select: none;
+      -webkit-touch-callout: none;
+    }
+    input, textarea {
+      -webkit-user-select: text !important;
+      user-select: text !important;
+      -webkit-touch-callout: default !important;
+    }
+    html {
+      max-width: 100%;
+      overflow-x: hidden;
+      overscroll-behavior: none;
+      background: var(--primary-dark);
+      touch-action: pan-x pan-y;
+    }
+    body {
+      margin: 0;
+      max-width: 100%;
+      min-height: 100dvh;
+      overflow-x: hidden;
+      overscroll-behavior: none;
+      touch-action: pan-x pan-y;
+      font-family: -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo", "Malgun Gothic", sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      padding-bottom: calc(28px + env(safe-area-inset-bottom));
+    }
+    header {
+      background: linear-gradient(135deg, var(--primary-dark), var(--primary));
+      color: #fff;
+      padding: calc(11px + env(safe-area-inset-top)) 14px 11px;
+      position: sticky;
+      top: 0;
+      z-index: 1000;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.16);
+    }
+    .header-inner { max-width: 1180px; margin: 0 auto; display: flex; justify-content: space-between; align-items: center; gap: 6px; flex-wrap: wrap; }
+    .header-title h1 { margin: 0; font-size: 1.04rem; }
+    .header-title p { margin: 2px 0 0; font-size: 0.74rem; opacity: 0.9; }
+    .header-right { display: flex; align-items: center; gap: 5px; flex-wrap: wrap; }
+    .pill { font-size: 0.73rem; font-weight: 700; padding: 4px 9px; border-radius: 999px; background: rgba(255,255,255,0.2); color: #fff; white-space: nowrap; }
+    .pill.live { background: #10b981; }
+    .container { max-width: 1180px; margin: 10px auto; padding: 0 10px; }
+    .card { background: var(--card); border-radius: 12px; border: 1px solid #e2e8f0; box-shadow: 0 2px 8px rgba(15,23,42,0.05); padding: 14px; margin-bottom: 10px; min-width: 0; }
+    button { font-family: inherit; cursor: pointer; border: none; border-radius: 8px; font-weight: 700; font-size: 0.84rem; padding: 9px 12px; display: inline-flex; align-items: center; justify-content: center; gap: 4px; }
+    button:active { transform: scale(0.98); }
+    .btn-primary { background: var(--primary); color: #fff; }
+    .btn-success { background: var(--success); color: #fff; }
+    .btn-danger-outline { background: #fff; color: var(--danger); border: 1px solid #fecaca; }
+    .btn-warn { background: #fef3c7; color: #92400e; border: 1px solid #fcd34d; }
+    .btn-kakao { background: var(--kakao-yellow); color: var(--kakao-brown); }
+    .btn-navi { background: var(--navi-bg); color: var(--navi-text); }
+    .btn-outline { background: #fff; color: var(--text); border: 1px solid var(--border); }
+    .btn-outline.active { background: var(--primary-light); border-color: var(--primary); color: var(--primary); }
+    .btn-sm { padding: 6px 9px; font-size: 0.77rem; }
+    .btn-xs { padding: 4px 7px; font-size: 0.72rem; }
+    input, select { width: 100%; min-width: 0; padding: 9px 11px; border: 1px solid var(--border); border-radius: 8px; font-size: 16px; background: #fff; outline: none; }
+    input:focus, select:focus { border-color: var(--primary); }
+    label { display: block; font-size: 0.76rem; font-weight: 700; color: var(--muted); margin-bottom: 4px; }
+
+    .login-box { max-width: 420px; margin: 32px auto; text-align: center; }
+    .login-box h2 { margin: 0 0 6px; font-size: 1.22rem; }
+    .login-box p { margin: 0 0 18px; font-size: 0.84rem; color: var(--muted); }
+
+    .tab-bar {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 4px;
+      background: #e2e8f0;
+      padding: 4px;
+      border-radius: 12px;
+      margin-bottom: 10px;
+      position: sticky;
+      top: 54px;
+      z-index: 900;
+    }
+    .tab-btn { background: transparent; color: var(--muted); padding: 8px 3px; border-radius: 8px; font-size: 0.8rem; white-space: nowrap; }
+    .tab-btn.active { background: #fff; color: var(--primary); box-shadow: 0 1px 4px rgba(0,0,0,0.1); }
+    .tab-badge { background: var(--danger); color: #fff; font-size: 0.68rem; padding: 1px 5px; border-radius: 999px; margin-left: 2px; }
+
+    .dispatch-card { border: 1.5px solid #cbd5e1; border-radius: 12px; padding: 13px; margin-bottom: 10px; background: #fff; }
+    .dispatch-card.forced { border-color: #f59e0b; background: #fffbeb; }
+    .dc-top { display: flex; justify-content: space-between; align-items: center; gap: 6px; margin-bottom: 8px; flex-wrap: wrap; }
+    .tag-forced { background: #dc2626; color: #fff; font-size: 0.72rem; font-weight: 800; padding: 3px 8px; border-radius: 6px; }
+    .tag-normal { background: #dbeafe; color: #1e40af; font-size: 0.72rem; font-weight: 800; padding: 3px 8px; border-radius: 6px; }
+    .dc-route { font-size: 0.93rem; font-weight: 700; margin: 6px 0; line-height: 1.45; word-break: keep-all; }
+    .dc-wp { font-size: 0.81rem; color: #b45309; font-weight: 700; margin: 3px 0; }
+    .dc-meta { display: flex; flex-wrap: wrap; gap: 8px; font-size: 0.81rem; color: var(--muted); margin: 8px 0; padding: 8px; background: #f8fafc; border-radius: 8px; }
+    .dc-fare { font-size: 1.05rem; font-weight: 800; color: var(--primary); }
+    .dc-actions { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 10px; }
+    .dc-actions > * { flex: 1; min-width: 105px; }
+
+    .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; align-items: start; }
+    .grid-2 > * { min-width: 0; }
+    .route-box { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 10px; padding: 10px; margin-bottom: 9px; position: relative; }
+    .route-box.wp { background: #fffbeb; border-color: #fde68a; }
+    .route-hdr { display: flex; justify-content: space-between; align-items: center; gap: 5px; flex-wrap: wrap; }
+    .input-wrap { position: relative; margin-top: 6px; }
+    .input-row { display: grid; grid-template-columns: 1fr auto auto; gap: 5px; }
+    .suggest-dropdown { position: absolute; top: calc(100% + 4px); left: 0; right: 0; background: #fff; border: 1.5px solid #3b82f6; border-radius: 10px; box-shadow: 0 10px 24px rgba(0,0,0,0.16); max-height: 250px; overflow-y: auto; z-index: 1500; display: none; }
+    .suggest-dropdown.open { display: block; }
+    .suggest-item { padding: 9px 11px; border-bottom: 1px solid #f1f5f9; cursor: pointer; }
+    .suggest-item:hover { background: var(--primary-light); }
+    .suggest-title { font-weight: 700; font-size: 0.88rem; }
+    .suggest-sub { font-size: 0.74rem; color: var(--muted); }
+    .pt-status { font-size: 0.76rem; margin-top: 6px; padding: 5px 8px; border-radius: 6px; background: #fff; border: 1px solid #e2e8f0; word-break: keep-all; }
+
+    /* 지도 영역만 핀치 확대·축소 허용 */
+    #map-wrapper { width: 100%; height: 280px; border-radius: 10px; overflow: hidden; border: 1px solid var(--border); margin: 8px 0; touch-action: auto; }
+    #map-wrapper * { touch-action: auto; }
+    #kakao-map, #leaflet-map { width: 100%; height: 100%; }
+
+    .stat-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; margin-top: 8px; }
+    .stat-box { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 8px 5px; text-align: center; }
+    .stat-box.hi { background: var(--primary-light); border-color: #93c5fd; }
+    .stat-lbl { font-size: 0.71rem; color: var(--muted); font-weight: 600; }
+    .stat-val { font-size: 0.95rem; font-weight: 800; margin-top: 2px; }
+    .stat-sub { font-size: 0.68rem; color: var(--muted); margin-top: 2px; }
+    .stat-box.hi .stat-val { color: var(--primary); }
+
+    .verify-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 8px; font-size: 0.76rem; }
+    .verify-item { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 9px; }
+    .verify-item.wp { background: #fffbeb; border-color: #fde68a; }
+    .verify-item strong { display: block; margin-bottom: 4px; font-size: 0.8rem; }
+    .verify-line { color: var(--muted); margin: 2px 0; word-break: keep-all; }
+
+    table { width: 100%; border-collapse: collapse; font-size: 0.81rem; margin-top: 8px; }
+    th, td { padding: 8px 6px; border-bottom: 1px solid #e2e8f0; text-align: left; }
+    th { background: #f8fafc; color: var(--muted); white-space: nowrap; }
+
+    #toast { position: fixed; bottom: 22px; left: 50%; transform: translateX(-50%) translateY(80px); background: #0f172a; color: #fff; padding: 10px 18px; border-radius: 999px; font-size: 0.84rem; font-weight: 700; z-index: 9999; opacity: 0; transition: all 0.25s; max-width: 92vw; text-align: center; }
+    #toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+    @media (max-width: 780px) {
+      .grid-2 { grid-template-columns: 1fr; }
+      .stat-grid { grid-template-columns: repeat(2, 1fr); }
+    }
+    @media (max-width: 440px) {
+      .tab-btn { font-size: 0.74rem; padding: 8px 2px; }
+      .tab-badge { font-size: 0.64rem; padding: 1px 4px; }
+    }
   </style>
 </head>
 <body>
-  <header>
+  <header id="app-header">
     <div class="header-inner">
       <div class="header-title">
         <h1>여주시 기사 배차 &amp; 요금표</h1>
@@ -102,46 +175,36 @@
       </div>
       <div class="header-right" id="header-controls" style="display:none;">
         <span class="pill live" id="driver-badge">기사 로그인됨</span>
-        <button type="button" class="btn-kakao btn-sm" id="btn-wakelock" onclick="APP.toggleWakeLock()">☀️ 화면켜짐 유지</button>
-        <button type="button" class="btn-outline btn-sm" onclick="APP.logout()">로그아웃</button>
+        <button type="button" class="btn-kakao btn-xs" id="btn-wakelock" onclick="APP.toggleWakeLock()">☀️ 화면유지</button>
+        <button type="button" class="btn-outline btn-xs" onclick="APP.logout()">로그아웃</button>
       </div>
     </div>
   </header>
 
   <main class="container">
+    <!-- 기사 고유 코드 로그인 창 (서버 설정 완전 숨김) -->
     <section id="login-view" class="card login-box">
       <h2>🚕 기사 고유 코드 로그인</h2>
-      <p>관리자(상황실)에서 발급받은 본인 고유 코드를 입력하세요.</p>
-      <div style="text-align:left; margin-bottom:12px;">
+      <p>상황실에서 발급받은 본인 고유 코드를 입력하세요.</p>
+      <div style="text-align:left; margin-bottom:14px;">
         <label for="login-code">기사 고유 코드</label>
         <input type="text" id="login-code" placeholder="예: 101" autocomplete="off" onkeydown="if(event.key==='Enter') APP.login()" />
       </div>
       <button type="button" class="btn-primary" style="width:100%; padding:12px;" onclick="APP.login()">로그인 및 배차 대기 시작</button>
-
-      <div style="margin-top:16px; border-top:1px solid #e2e8f0; padding-top:12px; text-align:left;">
-        <button type="button" class="btn-outline btn-sm" style="width:100%;" onclick="document.getElementById('sb-config-box').style.display = document.getElementById('sb-config-box').style.display === 'none' ? 'block' : 'none'">⚙️ 서버(Supabase) 연결 정보 확인</button>
-        <div id="sb-config-box" style="display:none; margin-top:10px;">
-          <label>Supabase Project URL</label>
-          <input type="text" id="cfg-sb-url" style="margin-bottom:8px;" />
-          <label>Supabase Publishable Key</label>
-          <input type="password" id="cfg-sb-key" style="margin-bottom:8px;" />
-          <button type="button" class="btn-success btn-sm" style="width:100%;" onclick="APP.saveSupabaseConfig()">연결 정보 저장</button>
-        </div>
-      </div>
     </section>
 
     <div id="main-view" style="display:none;">
-      <div class="tab-bar">
-        <button type="button" class="tab-btn active" id="tab-btn-waiting" onclick="APP.switchTab('waiting')">📢 배차 대기 <span class="tab-badge" id="cnt-waiting">0</span></button>
-        <button type="button" class="tab-btn" id="tab-btn-active" onclick="APP.switchTab('active')">🚕 진행중 <span class="tab-badge" id="cnt-active">0</span></button>
-        <button type="button" class="tab-btn" id="tab-btn-done" onclick="APP.switchTab('done')">✅ 완료 내역</button>
-        <button type="button" class="tab-btn" id="tab-btn-calc" onclick="APP.switchTab('calc')">🧮 요금 계산기</button>
+      <div class="tab-bar" id="main-tab-bar">
+        <button type="button" class="tab-btn active" id="tab-btn-waiting" onclick="APP.switchTab('waiting')">📢 배차대기<span class="tab-badge" id="cnt-waiting">0</span></button>
+        <button type="button" class="tab-btn" id="tab-btn-active" onclick="APP.switchTab('active')">🚕 진행중<span class="tab-badge" id="cnt-active">0</span></button>
+        <button type="button" class="tab-btn" id="tab-btn-done" onclick="APP.switchTab('done')">✅ 완료내역</button>
+        <button type="button" class="tab-btn" id="tab-btn-calc" onclick="APP.switchTab('calc')">🧮 요금계산</button>
       </div>
 
       <section id="tab-waiting">
-        <div class="card" style="padding:11px 14px; display:flex; justify-content:space-between; align-items:center;">
-          <span style="font-size:0.84rem; font-weight:700;">원하는 콜을 선택해 [배차 잡기]를 누르세요.</span>
-          <button type="button" class="btn-outline btn-sm" onclick="DISPATCH.loadAll()">🔄 새로고침</button>
+        <div class="card" style="padding:10px 12px; display:flex; justify-content:space-between; align-items:center; gap:6px;">
+          <span style="font-size:0.82rem; font-weight:700;">원하는 콜을 선택해 [배차 잡기]를 누르세요.</span>
+          <button type="button" class="btn-outline btn-xs" onclick="DISPATCH.loadAll()">🔄 새로고침</button>
         </div>
         <div id="list-waiting"></div>
       </section>
@@ -151,7 +214,7 @@
       </section>
 
       <section id="tab-done" style="display:none;">
-        <div class="card" id="done-summary" style="font-weight:700; font-size:0.9rem;"></div>
+        <div class="card" id="done-summary" style="font-weight:700; font-size:0.88rem;"></div>
         <div id="list-done"></div>
       </section>
 
@@ -160,10 +223,10 @@
           <div>
             <div class="card">
               <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px; gap:6px; flex-wrap:wrap;">
-                <strong style="font-size:0.95rem;">📍 출발지 · 경유지 · 도착지</strong>
+                <strong style="font-size:0.93rem;">📍 출발지 · 경유지 · 도착지</strong>
                 <div style="display:flex; gap:5px;">
-                  <button type="button" class="btn-warn btn-sm" onclick="CALC.addWaypoint()">➕ 경유지 추가</button>
-                  <button type="button" class="btn-outline btn-sm" onclick="CALC.swapPoints()">⇅ 반전</button>
+                  <button type="button" class="btn-warn btn-xs" onclick="CALC.addWaypoint()">➕ 경유지 추가</button>
+                  <button type="button" class="btn-outline btn-xs" onclick="CALC.swapPoints()">⇅ 반전</button>
                 </div>
               </div>
 
@@ -231,15 +294,15 @@
           <div>
             <div class="card">
               <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px; flex-wrap:wrap; gap:6px;">
-                <strong style="font-size:0.94rem;">🗺️ 실도로 길찾기 &amp; 요금 산출</strong>
-                <span id="route-engine-tag" style="font-size:0.75rem; color:var(--muted); font-weight:700;">탐색 대기 중</span>
+                <strong style="font-size:0.93rem;">🗺️ 실도로 길찾기 &amp; 요금 산출</strong>
+                <span id="route-engine-tag" style="font-size:0.74rem; color:var(--muted); font-weight:700;">탐색 대기 중</span>
               </div>
               <div style="display:flex; gap:5px; flex-wrap:wrap; margin-bottom:6px;">
-                <button type="button" class="btn-outline btn-sm" id="btn-pick-origin" onclick="MAP.setPickMode('origin')">📌 지도 출발찍기</button>
-                <button type="button" class="btn-outline btn-sm" id="btn-pick-dest" onclick="MAP.setPickMode('dest')">📌 지도 도착찍기</button>
-                <button type="button" class="btn-primary btn-sm" onclick="CALC.calcRoute()">🔄 재탐색</button>
-                <button type="button" class="btn-kakao btn-sm" onclick="CALC.openKakaoMap()">카카오맵 ↗</button>
-                <button type="button" class="btn-navi btn-sm" onclick="CALC.openKakaoNavi()">🧭 카카오내비 ↗</button>
+                <button type="button" class="btn-outline btn-xs" id="btn-pick-origin" onclick="MAP.setPickMode('origin')">📌 출발찍기</button>
+                <button type="button" class="btn-outline btn-xs" id="btn-pick-dest" onclick="MAP.setPickMode('dest')">📌 도착찍기</button>
+                <button type="button" class="btn-primary btn-xs" onclick="CALC.calcRoute()">🔄 재탐색</button>
+                <button type="button" class="btn-kakao btn-xs" onclick="CALC.openKakaoMap()">카카오맵 ↗</button>
+                <button type="button" class="btn-navi btn-xs" onclick="CALC.openKakaoNavi()">🧭 카카오내비 ↗</button>
               </div>
               <div style="font-size:0.73rem; color:var(--muted); margin-bottom:4px;">💡 지도의 <strong>출발 · 경유 · 도착 핀을 드래그</strong>하면 위치와 요금이 자동 재계산됩니다.</div>
               <div id="map-wrapper">
@@ -273,8 +336,8 @@
 
             <div class="card">
               <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
-                <strong style="font-size:0.92rem;">✅ 선택 지점 상세 주소 · GPS 좌표</strong>
-                <span style="font-size:0.73rem; color:var(--muted);">경유지 포함 실좌표 확인</span>
+                <strong style="font-size:0.9rem;">✅ 선택 지점 상세 주소 · GPS 좌표</strong>
+                <span style="font-size:0.72rem; color:var(--muted);">경유지 포함 실좌표 확인</span>
               </div>
               <div class="verify-grid" id="verify-grid"></div>
             </div>
@@ -285,8 +348,8 @@
           <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:6px;">
             <strong>📋 개인 누적 요금표 (<span id="local-cnt">0</span>건)</strong>
             <div style="display:flex; gap:5px;">
-              <button type="button" class="btn-outline btn-sm" onclick="CALC.exportCSV()">📥 CSV 저장</button>
-              <button type="button" class="btn-danger-outline btn-sm" onclick="CALC.clearTable()">전체 삭제</button>
+              <button type="button" class="btn-outline btn-xs" onclick="CALC.exportCSV()">📥 CSV 저장</button>
+              <button type="button" class="btn-danger-outline btn-xs" onclick="CALC.clearTable()">전체 삭제</button>
             </div>
           </div>
           <div style="overflow-x:auto;">
@@ -310,6 +373,33 @@
       SUPABASE_ANON_KEY: 'sb_publishable_kTviyUA-HeO4-_Us2--PWA_8yhpZ2XP',
       YEOJU_CENTER: { lat: 37.298344, lng: 127.637518 }
     };
+
+    /* 입력칸 외 선택/복사/드래그 차단 & 지도 외 확대/축소 차단 */
+    (function setupGuards() {
+      const isInput = el => el && el.closest && el.closest('input, textarea');
+      const isMap = el => el && el.closest && el.closest('#map-wrapper');
+
+      document.addEventListener('selectstart', e => { if (!isInput(e.target)) e.preventDefault(); });
+      document.addEventListener('copy', e => { if (!isInput(e.target)) e.preventDefault(); });
+      document.addEventListener('cut', e => { if (!isInput(e.target)) e.preventDefault(); });
+      document.addEventListener('contextmenu', e => { if (!isInput(e.target)) e.preventDefault(); });
+      document.addEventListener('dragstart', e => { if (!isInput(e.target) && !isMap(e.target)) e.preventDefault(); });
+
+      ['gesturestart', 'gesturechange', 'gestureend'].forEach(evt => {
+        document.addEventListener(evt, e => { if (!isMap(e.target)) e.preventDefault(); }, { passive: false });
+      });
+      document.addEventListener('touchmove', e => {
+        if (e.touches && e.touches.length > 1 && !isMap(e.target)) e.preventDefault();
+      }, { passive: false });
+
+      let lastTouchEnd = 0;
+      document.addEventListener('touchend', e => {
+        if (e.target.closest('#map-wrapper, button, input, select, a')) return;
+        const now = Date.now();
+        if (now - lastTouchEnd <= 300) e.preventDefault();
+        lastTouchEnd = now;
+      }, { passive: false });
+    })();
 
     const YEOJU_PRESETS = [
       { id: 'cityhall', name: '여주시청', roadAddr: '경기도 여주시 세종로 1', jibunAddr: '경기도 여주시 홍문동 1', lat: 37.298344, lng: 127.637518 },
@@ -339,25 +429,19 @@
     const APP = {
       sb: null, driver: null, gpsTimer: null, wakeLock: null,
       getSupabase() {
-        const saved = JSON.parse(localStorage.getItem('yeoju_sb_cfg') || '{}');
-        const url = (CONFIG.SUPABASE_URL || saved.url || '').trim();
-        const key = (CONFIG.SUPABASE_ANON_KEY || saved.key || '').trim();
-        if (!url || !key || !window.supabase) return null;
-        if (!this.sb) this.sb = window.supabase.createClient(url, key);
+        if (!CONFIG.SUPABASE_URL || !CONFIG.SUPABASE_ANON_KEY || !window.supabase) return null;
+        if (!this.sb) this.sb = window.supabase.createClient(CONFIG.SUPABASE_URL, CONFIG.SUPABASE_ANON_KEY);
         return this.sb;
       },
-      saveSupabaseConfig() {
-        const url = document.getElementById('cfg-sb-url').value.trim(), key = document.getElementById('cfg-sb-key').value.trim();
-        if (!url || !key) return toast('URL과 Publishable Key를 모두 입력하세요.');
-        localStorage.setItem('yeoju_sb_cfg', JSON.stringify({ url, key }));
-        this.sb = null;
-        toast('서버 연결 정보가 저장되었습니다.');
+      syncHeaderOffset() {
+        const hdr = document.getElementById('app-header');
+        const tab = document.getElementById('main-tab-bar');
+        if (hdr && tab) tab.style.top = `${hdr.offsetHeight + 4}px`;
       },
       async init() {
-        const savedCfg = JSON.parse(localStorage.getItem('yeoju_sb_cfg') || '{}');
-        document.getElementById('cfg-sb-url').value = CONFIG.SUPABASE_URL || savedCfg.url || '';
-        document.getElementById('cfg-sb-key').value = CONFIG.SUPABASE_ANON_KEY || savedCfg.key || '';
         if (window.Kakao && !window.Kakao.isInitialized()) { try { window.Kakao.init(CONFIG.KAKAO_JS_KEY); } catch {} }
+        this.syncHeaderOffset();
+        window.addEventListener('resize', () => this.syncHeaderOffset());
         const savedDriver = JSON.parse(localStorage.getItem('yeoju_driver_session') || 'null');
         if (savedDriver && savedDriver.code) {
           document.getElementById('login-code').value = savedDriver.code;
@@ -366,10 +450,7 @@
       },
       async login(silent = false) {
         const sb = this.getSupabase();
-        if (!sb) {
-          document.getElementById('sb-config-box').style.display = 'block';
-          return toast('Supabase 연결 정보를 확인해 주세요.');
-        }
+        if (!sb) return toast('서버 연결 중입니다. 잠시 후 다시 시도해 주세요.');
         const code = document.getElementById('login-code').value.trim();
         if (!code) return toast('기사 고유 코드를 입력하세요.');
         const { data, error } = await sb.from('yeoju_drivers').select('*').eq('code', code).eq('active', true).maybeSingle();
@@ -383,8 +464,9 @@
         document.getElementById('login-view').style.display = 'none';
         document.getElementById('main-view').style.display = 'block';
         document.getElementById('header-controls').style.display = 'flex';
-        document.getElementById('driver-badge').textContent = `${data.name} (${data.code})`;
-        document.getElementById('header-sub').textContent = '실시간 배차 수신 및 GPS 위치 공유 중';
+        document.getElementById('driver-badge').textContent = `${data.name}(${data.code})`;
+        document.getElementById('header-sub').textContent = '실시간 배차 수신 및 GPS 공유 중';
+        this.syncHeaderOffset();
         this.startGpsTracking();
         await DISPATCH.init();
         await CALC.init();
@@ -398,6 +480,7 @@
         document.getElementById('main-view').style.display = 'none';
         document.getElementById('header-controls').style.display = 'none';
         document.getElementById('login-view').style.display = 'block';
+        document.getElementById('header-sub').textContent = '고유 코드 로그인 후 실시간 배차 수신';
       },
       startGpsTracking() {
         const sendLoc = () => {
@@ -414,9 +497,9 @@
       },
       async toggleWakeLock() {
         const btn = document.getElementById('btn-wakelock');
-        if (this.wakeLock) { await this.wakeLock.release(); this.wakeLock = null; btn.textContent = '☀️ 화면켜짐 유지'; return toast('화면 꺼짐 방지가 해제되었습니다.'); }
+        if (this.wakeLock) { await this.wakeLock.release(); this.wakeLock = null; btn.textContent = '☀️ 화면유지'; return toast('화면 꺼짐 방지가 해제되었습니다.'); }
         try {
-          if ('wakeLock' in navigator) { this.wakeLock = await navigator.wakeLock.request('screen'); btn.textContent = '🔆 화면유지 ON'; toast('배차 대기 중 화면이 꺼지지 않도록 유지합니다.'); }
+          if ('wakeLock' in navigator) { this.wakeLock = await navigator.wakeLock.request('screen'); btn.textContent = '🔆 유지ON'; toast('대기 중 화면이 꺼지지 않도록 유지합니다.'); }
           else toast('이 브라우저는 화면 유지 기능을 지원하지 않습니다.');
         } catch { toast('화면 유지 권한을 허용할 수 없습니다.'); }
       },
