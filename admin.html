@@ -96,7 +96,6 @@
     .force-box { display: grid; grid-template-columns: 1fr auto; gap: 6px; }
     .grid-driver-add { display: grid; grid-template-columns: 0.75fr 1fr auto auto; gap: 6px; margin-bottom: 10px; align-items: center; }
 
-    /* 지도 영역만 핀치 확대·축소 허용 */
     #map-box { position: relative; width: 100%; height: 340px; border-radius: 10px; overflow: hidden; border: 1px solid var(--border); background: #e2e8f0; touch-action: auto; }
     #map-box * { touch-action: auto; }
     #kakao-map, #leaflet-map { width: 100%; height: 100%; }
@@ -129,7 +128,9 @@
     table { width: 100%; border-collapse: collapse; font-size: 0.82rem; }
     th, td { padding: 8px 6px; border-bottom: 1px solid #e2e8f0; text-align: left; vertical-align: middle; }
     th { background: #f8fafc; color: var(--muted); white-space: nowrap; }
+    tfoot td { background: #eff6ff; font-weight: 800; color: #1e3a8a; border-top: 2px solid #93c5fd; }
     tr.trashed-row { background: #fff8f8; }
+    .num { text-align: right; white-space: nowrap; }
 
     .badge { padding: 3px 7px; border-radius: 6px; font-size: 0.72rem; font-weight: 800; white-space: nowrap; display: inline-block; }
     .st-waiting { background: #dbeafe; color: #1e40af; }
@@ -178,6 +179,7 @@
 
       #map-box { height: 250px; }
       #driver-table th, #driver-table td { padding: 7px 4px; font-size: 0.78rem; }
+      #settlement-table th, #settlement-table td { padding: 7px 5px; font-size: 0.78rem; }
 
       #dispatch-desktop-wrap { display: none; }
       .mobile-record-list { display: flex; }
@@ -338,28 +340,59 @@
     </div>
 
     <div class="mid-grid">
-      <section id="sec-driver-mgr" class="card">
-        <div class="card-title"><span>🚕 기사 고유 코드 · 아이콘 색상</span></div>
-        <div class="grid-driver-add">
-          <input type="text" id="new-d-code" placeholder="코드(102)" />
-          <input type="text" id="new-d-name" placeholder="기사명/차량" />
-          <input type="color" id="new-d-color" value="#1d4ed8" title="지도 아이콘 색상 선택" />
-          <button type="button" class="btn-success btn-sm" onclick="DRIVER_MGR.addDriver()">등록</button>
-        </div>
-        <div class="table-wrap">
-          <table id="driver-table">
-            <thead><tr><th>색상</th><th>코드</th><th>기사명</th><th>상태/접속</th><th>관리</th></tr></thead>
-            <tbody id="driver-table-body"></tbody>
-          </table>
-        </div>
-      </section>
+      <div style="display:flex; flex-direction:column; gap:12px; min-width:0;">
+        <!-- 기사 고유 코드 및 아이콘 색상 관리 -->
+        <section id="sec-driver-mgr" class="card">
+          <div class="card-title"><span>🚕 기사 고유 코드 · 아이콘 색상</span></div>
+          <div class="grid-driver-add">
+            <input type="text" id="new-d-code" placeholder="코드(102)" />
+            <input type="text" id="new-d-name" placeholder="기사명/차량" />
+            <input type="color" id="new-d-color" value="#1d4ed8" title="지도 아이콘 색상 선택" />
+            <button type="button" class="btn-success btn-sm" onclick="DRIVER_MGR.addDriver()">등록</button>
+          </div>
+          <div class="table-wrap">
+            <table id="driver-table">
+              <thead><tr><th>색상</th><th>코드</th><th>기사명</th><th>상태/접속</th><th>관리</th></tr></thead>
+              <tbody id="driver-table-body"></tbody>
+            </table>
+          </div>
+        </section>
 
+        <!-- 기사별 완료 건수 및 매출 합계 정산표 -->
+        <section id="sec-driver-settlement" class="card">
+          <div class="card-title">
+            <div>
+              <span>💰 기사별 완료 · 매출 정산표</span>
+              <span id="settlement-period-label" style="display:block; font-size:0.74rem; color:var(--primary); font-weight:700; margin-top:2px;">기준 기간: 전체 기간</span>
+            </div>
+            <button type="button" class="btn-outline btn-xs" onclick="DISPATCH_MGR.exportSettlementCSV()">📥 정산표 CSV</button>
+          </div>
+          <div class="table-wrap">
+            <table id="settlement-table">
+              <thead>
+                <tr>
+                  <th>코드</th>
+                  <th>기사명</th>
+                  <th class="num">완료건수</th>
+                  <th class="num">진행중</th>
+                  <th class="num">주행거리</th>
+                  <th class="num">매출합계</th>
+                </tr>
+              </thead>
+              <tbody id="settlement-table-body"></tbody>
+              <tfoot id="settlement-table-foot"></tfoot>
+            </table>
+          </div>
+        </section>
+      </div>
+
+      <!-- 기간별 · 기사별 운행 기록 및 휴지통 -->
       <section id="sec-dispatch-records" class="card">
         <div class="card-title">
           <span id="record-card-heading">📋 실시간 배차 현황 &amp; 운행 기록</span>
           <div style="display:flex; gap:6px; flex-wrap:wrap;">
             <button type="button" class="btn-trash btn-xs" id="btn-toggle-trash" onclick="DISPATCH_MGR.toggleTrash()">🗑️ 휴지통 (<span id="trash-count">0</span>)</button>
-            <button type="button" class="btn-outline btn-xs" id="btn-export-csv" onclick="DISPATCH_MGR.exportCSV()">📥 CSV 저장</button>
+            <button type="button" class="btn-outline btn-xs" id="btn-export-csv" onclick="DISPATCH_MGR.exportCSV()">📥 기록 CSV</button>
           </div>
         </div>
 
@@ -430,7 +463,7 @@
       </button>
       <button type="button" class="m-nav-btn" id="mnav-drivers" onclick="ADMIN.scrollToSection('sec-driver-mgr', 'mnav-drivers')">
         <span class="m-nav-ico">🚕</span>
-        <span>기사관리</span>
+        <span>기사·정산</span>
       </button>
     </nav>
   </main>
@@ -800,6 +833,7 @@
         this.render();
         this.renderMapDrivers();
         DISPATCH_MGR.syncDriverFilterOptions();
+        DISPATCH_MGR.renderSettlement();
       },
       render() {
         const sel = document.getElementById('force-driver-select'), prev = sel.value;
@@ -857,6 +891,7 @@
         if (target) target.marker_color = color;
         this.render();
         this.renderMapDrivers();
+        DISPATCH_MGR.renderSettlement();
         toast(`기사(${code}) 아이콘 색상이 변경되었습니다.`);
       },
       async toggleActive(code, cur) { await ADMIN.getSupabase().from('yeoju_drivers').update({ active: !cur }).eq('code', code); await this.loadDrivers(); },
@@ -930,15 +965,20 @@
         this.render();
       },
 
-      getNormalFilteredRows() {
+      getDateLabelText() {
         const startVal = document.getElementById('flt-date-start')?.value || '';
         const endVal = document.getElementById('flt-date-end')?.value || '';
-        const driverVal = document.getElementById('flt-driver')?.value || 'all';
+        if (startVal && endVal) return startVal === endVal ? `${startVal} (당일)` : `${startVal} ~ ${endVal}`;
+        if (startVal) return `${startVal} 이후`;
+        if (endVal) return `${endVal} 이전`;
+        return '전체 기간';
+      },
 
+      getPeriodRows() {
+        const startVal = document.getElementById('flt-date-start')?.value || '';
+        const endVal = document.getElementById('flt-date-end')?.value || '';
         return this.rows.filter(r => {
           if (r.deleted_at) return false;
-          if (this.filter !== 'all' && r.status !== this.filter) return false;
-          if (driverVal !== 'all' && r.driver_code !== driverVal) return false;
           if (startVal || endVal) {
             const rowYMD = toLocalYMD(new Date(r.created_at));
             if (startVal && rowYMD < startVal) return false;
@@ -948,7 +988,106 @@
         });
       },
 
+      /* 선택한 기간 동안 기사별 완료 건수 및 매출 정산 데이터 계산 */
+      getSettlementStats() {
+        const periodRows = this.getPeriodRows();
+        const statsMap = new Map();
+
+        DRIVER_MGR.drivers.forEach(d => {
+          statsMap.set(d.code, {
+            code: d.code,
+            name: d.name,
+            color: d.marker_color || '#059669',
+            completedCount: 0,
+            activeCount: 0,
+            distanceMeters: 0,
+            revenue: 0
+          });
+        });
+
+        periodRows.forEach(r => {
+          if (!r.driver_code) return;
+          if (!statsMap.has(r.driver_code)) {
+            statsMap.set(r.driver_code, {
+              code: r.driver_code,
+              name: r.driver_name || '미등록 기사',
+              color: '#64748b',
+              completedCount: 0,
+              activeCount: 0,
+              distanceMeters: 0,
+              revenue: 0
+            });
+          }
+          const item = statsMap.get(r.driver_code);
+          if (r.status === 'completed') {
+            item.completedCount += 1;
+            item.distanceMeters += (r.distance_meters || 0);
+            item.revenue += (r.total_fare || 0);
+          } else if (r.status === 'accepted') {
+            item.activeCount += 1;
+          }
+        });
+
+        return Array.from(statsMap.values()).sort((a, b) => {
+          if (b.revenue !== a.revenue) return b.revenue - a.revenue;
+          if (b.completedCount !== a.completedCount) return b.completedCount - a.completedCount;
+          return String(a.code).localeCompare(String(b.code));
+        });
+      },
+
+      renderSettlement() {
+        const lbl = document.getElementById('settlement-period-label');
+        const tbody = document.getElementById('settlement-table-body');
+        const tfoot = document.getElementById('settlement-table-foot');
+        if (!tbody || !tfoot) return;
+
+        if (lbl) lbl.textContent = `기준 기간: ${this.getDateLabelText()} (완료 건 기준)`;
+
+        const stats = this.getSettlementStats();
+        if (!stats.length) {
+          tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;padding:18px;color:var(--muted);">등록된 기사 및 정산 내역이 없습니다.</td></tr>';
+          tfoot.innerHTML = '';
+          return;
+        }
+
+        let sumCompleted = 0, sumActive = 0, sumDist = 0, sumRevenue = 0;
+        tbody.innerHTML = stats.map(s => {
+          sumCompleted += s.completedCount;
+          sumActive += s.activeCount;
+          sumDist += s.distanceMeters;
+          sumRevenue += s.revenue;
+          const km = (s.distanceMeters / 1000).toFixed(1);
+          return `<tr>
+            <td><strong>${esc(s.code)}</strong></td>
+            <td><span class="color-dot" style="background:${esc(s.color)};margin-right:4px;vertical-align:middle;"></span>${esc(s.name)}</td>
+            <td class="num"><strong>${s.completedCount}건</strong></td>
+            <td class="num" style="color:${s.activeCount > 0 ? '#b45309' : 'var(--muted)'};">${s.activeCount}건</td>
+            <td class="num">${km}km</td>
+            <td class="num"><strong style="color:var(--primary);">${s.revenue.toLocaleString()}원</strong></td>
+          </tr>`;
+        }).join('');
+
+        tfoot.innerHTML = `<tr>
+          <td colspan="2">전체 합계 (${stats.length}명)</td>
+          <td class="num">${sumCompleted}건</td>
+          <td class="num">${sumActive}건</td>
+          <td class="num">${(sumDist / 1000).toFixed(1)}km</td>
+          <td class="num">${sumRevenue.toLocaleString()}원</td>
+        </tr>`;
+      },
+
+      getNormalFilteredRows() {
+        const driverVal = document.getElementById('flt-driver')?.value || 'all';
+        return this.getPeriodRows().filter(r => {
+          if (this.filter !== 'all' && r.status !== this.filter) return false;
+          if (driverVal !== 'all' && r.driver_code !== driverVal) return false;
+          return true;
+        });
+      },
+
       render() {
+        this.renderSettlement();
+
         const trashedRows = this.rows.filter(r => Boolean(r.deleted_at))
           .sort((a, b) => new Date(b.deleted_at) - new Date(a.deleted_at));
         document.getElementById('trash-count').textContent = trashedRows.length;
@@ -1134,6 +1273,21 @@
         if (error) return toast(`휴지통 비우기 오류: ${error.message}`);
         toast(`🧹 휴지통 ${trashed.length}건이 영구 삭제되었습니다.`);
         await this.loadAll();
+      },
+
+      exportSettlementCSV() {
+        const stats = this.getSettlementStats();
+        if (!stats.length) return toast('내보낼 정산 데이터가 없습니다.');
+        const period = this.getDateLabelText();
+        const h = ['기준기간', '기사코드', '기사명', '완료건수', '진행중건수', '총주행거리(km)', '매출합계(원)'];
+        const csv = [h.join(','), ...stats.map(s => [
+          `"${period}"`, `"${s.code}"`, `"${s.name}"`, s.completedCount, s.activeCount,
+          (s.distanceMeters / 1000).toFixed(2), s.revenue
+        ].join(','))];
+        const a = document.createElement('a');
+        a.href = URL.createObjectURL(new Blob(['\uFEFF' + csv.join('\n')], { type: 'text/csv;charset=utf-8;' }));
+        a.download = `여주시_기사별정산표_${new Date().toISOString().slice(0,10)}.csv`;
+        a.click();
       },
 
       exportCSV() {
